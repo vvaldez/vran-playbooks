@@ -12,27 +12,27 @@
 
     # # Template ./roles/osp-templates/templates into $pb_tmp_dir
     # - include_role:
-    #     name: osp-templates
+    #     name: template-directory
     #   vars:
-    #     osp_templates_input_dir: roles/osp-templates/templates/
-    #     osp_templates_output_dir: "{{ pb_tmp_dir }}"
-    #     osp_templates_changed_when: false
+    #     template_directory_input_dir: roles/template-directory/templates/
+    #     template_directory_output_dir: "{{ pb_tmp_dir }}"
+    #     template_directory_changed_when: false
     #   no_log: true
 
     # Template ../inventory/{{ datacenter }}/templates into $pb_tmp_dir
     - include_role:
-        name: osp-templates
+        name: template-directory
       vars:
-        osp_templates_input_dir: "../ansible-inventory/{{ datacenter }}/templates/"
-        osp_templates_output_dir: "{{ pb_tmp_dir }}"
-        osp_templates_changed_when: false
+        template_directory_input_dir: "../ansible-inventory/{{ datacenter }}/templates/"
+        template_directory_output_dir: "{{ pb_tmp_dir }}"
+        template_directory_changed_when: false
       no_log: true
 
     # Copy $pb_tmp_dir into $pb_output_dir
     - include_role:
-        name: osp-templates
+        name: template-directory
       vars:
-        osp_templates_input_dir: "{{ pb_tmp_dir }}"
-        osp_templates_output_dir: "{{ pb_output_dir }}"
-        osp_templates_changed_when: true
-        osp_templates_copy_only: true
+        template_directory_input_dir: "{{ pb_tmp_dir }}"
+        template_directory_output_dir: "{{ pb_output_dir }}"
+        template_directory_changed_when: true
+        template_directory_copy_only: true
