@@ -1,0 +1,38 @@
+- hosts: localhost
+  gather_facts: no
+  vars:
+    pb_tmp_dir: "/tmp/ansible-generated/{{ named_env }}"
+    pb_output_dir: "./ansible-generated"
+  tasks:
+    - name: Ensure {{ pb_tmp_dir }} doesn't already exist
+      file:
+        path: "{{ pb_tmp_dir }}"
+        state: absent
+      changed_when: false
+
+    # # Template ./roles/osp-templates/templates into $pb_tmp_dir
+    # - include_role:
+    #     name: osp-templates
+    #   vars:
+    #     osp_templates_input_dir: roles/osp-templates/templates/
+    #     osp_templates_output_dir: "{{ pb_tmp_dir }}"
+    #     osp_templates_changed_when: false
+    #   no_log: true
+
+    # Template ../inventory/{{ datacenter }}/templates into $pb_tmp_dir
+    - include_role:
+        name: osp-templates
+      vars:
+        osp_templates_input_dir: "../ansible-inventory/{{ datacenter }}/templates/"
+        osp_templates_output_dir: "{{ pb_tmp_dir }}"
+        osp_templates_changed_when: false
+      no_log: true
+
+    # Copy $pb_tmp_dir into $pb_output_dir
+    - include_role:
+        name: osp-templates
+      vars:
+        osp_templates_input_dir: "{{ pb_tmp_dir }}"
+        osp_templates_output_dir: "{{ pb_output_dir }}"
+        osp_templates_changed_when: true
+        osp_templates_copy_only: true
