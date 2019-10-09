@@ -26,6 +26,8 @@
         template_directory_input_dir: "../ansible-inventory/{{ datacenter }}/templates/"
         template_directory_output_dir: "{{ pb_tmp_dir }}"
         template_directory_changed_when: false
+        template_directory_variable_start_string: "[%"
+        template_directory_variable_end_string: "%]"
       no_log: true
 
     # Copy $pb_tmp_dir into $pb_output_dir
@@ -36,3 +38,5 @@
         template_directory_output_dir: "{{ pb_output_dir }}"
         template_directory_changed_when: true
         template_directory_copy_only: true
+        template_directory_variable_start_string: "[%"
+        template_directory_variable_end_string: "%]"

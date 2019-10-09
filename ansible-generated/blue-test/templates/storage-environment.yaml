@@ -1,0 +1,20 @@
+parameter_defaults:
+  CinderEnableIscsiBackend: False
+  CinderEnableNfsBackend: True
+  CinderNfsMountOptions: ''
+  CinderNfsServers: fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_5/data01/cinder/
+
+  GlanceEnabledImportMethods: web-download
+  GlanceNetappNfsEnabled: False
+  GlanceNfsOptions: _netdev,bg,intr,context=system_u:object_r:glance_var_lib_t:s0
+  GlanceNfsShare: 'fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_5/data01/glance'
+  GlanceNodeStagingUri: file:///var/lib/glance/staging
+  GlanceStagingNfsOptions: _netdev,bg,intr,context=system_u:object_r:glance_var_lib_t:s0
+  GlanceStagingNfsShare: 'fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_5/data01/glance_stage'
+  GlanceBackend: file
+  GlanceNfsEnabled: True
+
+  NovaNfsOptions: context=system_u:object_r:nfs_t:s0
+  NovaNfsShare: 'fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_5/data01/nova'
+  NovaNfsVersion: '4'
+  NovaNfsEnabled: True

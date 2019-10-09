@@ -1,0 +1,17 @@
+#resource_registry:
+#  OS::TripleO::Controller::Net::SoftwareConfig: net-config-linux-bridge-controller.yaml
+#  OS::TripleO::ComputeDVR::Net::SoftwareConfig: net-config-linux-bridge.yaml
+
+resource_registry:
+  OS::TripleO::ComputeDVR::PreNetworkConfig: custom/nested_virt_host_config_and_reboot.yaml
+
+
+parameter_defaults:
+  ControllerCount: 1 
+  OvercloudControllerFlavor: control 
+  ComputeDVRCount: 4
+  OvercloudComputeDVRFlavor: compute 
+
+  ComputeDVRExtraConfig:
+    'nova::cpu_allocation_ratio': '32.0'
+    'nova::compute::libvirt::libvirt_cpu_mode': 'host-passthrough'
