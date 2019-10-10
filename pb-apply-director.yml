@@ -2,6 +2,8 @@
 - hosts: localhost
   connection: local
   gather_facts: no
+  vars:
+    full_env: "{{ datacenter }}-{{ named_env }}"
   vars_prompt:
     - name: prompt_env
       prompt: Confirm the environment to target
@@ -9,8 +11,9 @@
   tasks:
     - assert:
         that:
-          - prompt_env == named_env
-        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not {{ named_env }}"
+          - prompt_env == full_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not \
+          {{ full_env }}"
         success_msg: "Targeting {{ prompt_env }} environment"
 
   tags:

@@ -2,6 +2,8 @@
 - hosts: localhost
   connection: local
   gather_facts: no
+  vars:
+    full_env: "{{ datacenter }}-{{ named_env }}"
   vars_prompt:
     - name: prompt_env
       prompt: Confirm the environment to target
@@ -9,14 +11,21 @@
   tasks:
     - assert:
         that:
-          - prompt_env == named_env
-        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not {{ named_env }}"
+          - prompt_env == full_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not \
+          {{ full_env }}"
         success_msg: "Targeting {{ prompt_env }} environment"
 
   tags:
     - always
 
 - hosts: kvm
+  vars:
+    # The network-scripts portion of the role is considered a provisioning
+    # step. By default, it is not ran unless this is override to yes. When
+    # re-running this role, it is probably not ideal to re-setup and restart
+    # networking. Which will happen when provision=yes.
+    kvm_provision: "{{ provision | default('no') }}"
   tasks:
     - import_role:
         name: kvm

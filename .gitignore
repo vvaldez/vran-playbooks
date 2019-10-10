@@ -1,1 +1,4 @@
 .vault_secret
+
+files/*
+!files/.gitkeep
