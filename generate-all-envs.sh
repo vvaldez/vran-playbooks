@@ -1,7 +1,8 @@
 #!/bin/bash
 
 paths='
-blue/hosts-test
+ibm/hosts-gpte
+ibm/hosts-test
 green/hosts-dev
 green/hosts-test
 red/hosts-prod
@@ -13,5 +14,7 @@ if [[ ! -z ${1} && ${1} == 'quick' ]]; then
 fi
 
 for path in ${paths}; do
-  ansible-playbook -i ../ansible-inventory/${path} pb-generate-templates-locally.yml ${args}
+  ansible-playbook \
+    -i ../ansible-inventory/${path} \
+    pb-generate-templates-locally.yml ${args}
 done
