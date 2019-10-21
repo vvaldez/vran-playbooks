@@ -111,6 +111,14 @@ ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-generate-templates-l
 ./generate-all-envs.sh
 ```
 
+## Running KVM installation
+
+```sh
+# Include the inventory file of the environment to install using `-i path/to/hosts/file`
+# Setup nics and yum update
+ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-apply-kvm.yml
+```
+
 ## Running Director Installation
 
 ```sh

@@ -1,19 +1,15 @@
 - name: director
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-director.git
   scm: git
-  version: beta
 
 - name: kvm
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-kvm.git
   scm: git
-  version: beta
 
 - name: network-scripts
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-network-scripts.git
   scm: git
-  version: beta
 
 - name: template-directory
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-template-directory.git
   scm: git
-  version: beta
