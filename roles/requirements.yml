@@ -1,3 +1,7 @@
+- name: base
+  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-base.git
+  scm: git
+
 - name: director
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-director.git
   scm: git
@@ -6,8 +10,16 @@
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-kvm.git
   scm: git
 
+- name: libvirt
+  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-libvirt.git
+  scm: git
+
 - name: network-scripts
   src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-network-scripts.git
+  scm: git
+
+- name: subscription
+  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-subscription.git
   scm: git
 
 - name: template-directory

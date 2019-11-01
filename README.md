@@ -1,3 +1,10 @@
+# pb-apply-kvm
+
+Assumptions made:
+
+- Can SSH in as root using public address.
+- DNS is configured so redhat.com resolves.
+
 # `ansible-inventory` Structure
 
 ```
