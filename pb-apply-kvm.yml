@@ -20,12 +20,45 @@
     - always
 
 - hosts: kvm
-  vars:
-    # The network-scripts portion of the role is considered a provisioning
-    # step. By default, it is not ran unless this is override to yes. When
-    # re-running this role, it is probably not ideal to re-setup and restart
-    # networking. Which will happen when provision=yes.
-    kvm_provision: "{{ provision | default('no') }}"
   tasks:
+    - vars:
+        subscription: "{{ kvm.subscription }}"
+      import_role:
+        name: subscription
+      tags:
+        - subscription
+
+    - vars:
+        base: "{{ kvm }}"
+        # The network-scripts portion of the role is considered a provisioning
+        # step. By default, it is not ran unless this is override to yes. When
+        # re-running this role, it is probably not ideal to re-setup and restart
+        # networking. Which will happen when nic_config=yes.
+        setup_nics: "{{ setup_nics | default('no') }}"
+      import_role:
+        name: base
+      tags:
+        - base
+
     - import_role:
         name: kvm
+      tags:
+        - kvm
+
+    - name: yum update
+      yum:
+        name: '*'
+        state: latest
+
+
+
+- hosts: kvm
+  tasks:
+    - include_role:
+        name: libvirt
+      with_items: "{{ kvm.libvirt.domains }}"
+      loop_control:
+        loop_var: domain
+
+  tags:
+    - libvirt
