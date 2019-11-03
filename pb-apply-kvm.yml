@@ -34,7 +34,7 @@
         # step. By default, it is not ran unless this is override to yes. When
         # re-running this role, it is probably not ideal to re-setup and restart
         # networking. Which will happen when nic_config=yes.
-        setup_nics: "{{ setup_nics | default('no') }}"
+        base_setup_nics: "{{ setup_nics | default('no') }}"
       import_role:
         name: base
       tags:
