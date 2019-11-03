@@ -1,4 +1,13 @@
+# Secrets file
 .vault_secret
 
+# Ignore contents of files/
 files/*
 !files/.gitkeep
+
+# Ignore OSX files
+.DS_Store
+
+# Ignore subfolders of roles/
+roles/*
+!roles/requirements.yml

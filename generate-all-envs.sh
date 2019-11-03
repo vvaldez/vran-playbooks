@@ -2,6 +2,7 @@
 
 paths='
 ibm/hosts-gpte
+ibm/hosts-kermit
 ibm/hosts-test
 green/hosts-dev
 green/hosts-test
