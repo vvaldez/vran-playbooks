@@ -1,0 +1,15 @@
+- name: External
+  vip: true
+  name_lower: external
+  vlan: 10
+  ip_subnet: '169.47.188.0/24'
+  allocation_pools: [{'start': '169.47.188.100', 'end': '169.47.188.254'}]
+  gateway_ip: '169.47.188.1'
+
+- name: InternalApi
+  name_lower: internal_api
+  vip: true
+  vlan: 0
+  ip_subnet: '10.211.62.0/24'
+  allocation_pools: [{'start': '10.211.62.253', 'end': '10.211.62.254'}]
+

@@ -1,0 +1,39 @@
+
+"network_config": [
+ {
+  "type": "ovs_bridge",
+  "name": "br-ctlplane",
+  "ovs_extra": [
+   "br-set-external-id br-ctlplane bridge-id br-ctlplane"
+  ],
+  "members": [
+   {
+    "type": "interface",
+    "name": "{{ '{{' }}LOCAL_INTERFACE{{ '}}' }}",
+    "primary": "true",
+    "mtu": {{ '{{' }}LOCAL_MTU{{ '}}' }},
+    "dns_servers": {{ '{{' }}UNDERCLOUD_NAMESERVERS{{ '}}' }}
+   }
+  ],
+  "addresses": [
+    {
+      "ip_netmask": "{{ '{{' }}PUBLIC_INTERFACE_IP{{ '}}' }}"
+    }
+  ],
+  "routes": [
+    {
+      "ip_netmask": "10.0.0.0/8",
+      "next_hop": "10.221.21.1"
+    },
+    {
+      "ip_netmask": "161.26.0.0/16",
+      "next_hop": "10.221.21.1"
+    },
+    {
+      "ip_netmask": "166.8.0.0/14",
+      "next_hop": "10.221.21.1"
+    }
+  ],
+  "mtu": {{ '{{' }}LOCAL_MTU{{ '}}' }}
+}
+]

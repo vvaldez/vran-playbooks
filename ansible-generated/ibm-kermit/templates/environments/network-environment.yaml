@@ -1,0 +1,21 @@
+parameter_defaults:
+  DnsServers: [10.170.172.135,169.45.246.132] 
+  NetworkDeploymentActions: ['CREATE','UPDATE']
+  BondInterfaceOvsOptions: "bond_mode=balance-slb lacp=active"
+  NeutronServicePlugins: 'router,qos,trunk'
+  NeutronPluginExtensions: qos,port_security,dns_domain_ports
+  NeutronDnsDomain: "example.com"
+  NeutronGlobalPhysnetMtu: 1500
+  ControllerExtraConfig:
+    neutron::agents::dhcp::dnsmasq_local_resolv: true
+  EC2MetadataIp: 10.211.62.10
+  ControlPlaneDefaultRoute: 10.211.62.1
+  NtpServer: 'pool.ntp.org' 
+  NeutronNetworkType: 'vxlan,flat' 
+  NeutronTunnelTypes: 'vxlan' 
+  NeutronDhcpAgentDnsmasqDnsServers: ["10.170.172.135"]
+  ControlPlaneSubnetCidr: '24'
+  ControlFixedIPs: [{'ip_address':'10.211.62.15'}]
+  PublicVirtualFixedIPs: [{'ip_address':'169.47.188.15'}]
+  NeutronBridgeMappings: datacentre:br-ex
+  NeutronFlatNetworks: datacentre
