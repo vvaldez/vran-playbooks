@@ -1,20 +1,8 @@
 parameter_defaults:
-  CinderEnableIscsiBackend: False
-  CinderEnableNfsBackend: True
-  CinderNfsMountOptions: ''
-  CinderNfsServers: fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_4/data01/RED/cinder/
-
-  GlanceEnabledImportMethods: web-download
-  GlanceNetappNfsEnabled: False
-  GlanceNfsOptions: _netdev,bg,intr,context=system_u:object_r:glance_var_lib_t:s0
-  GlanceNfsShare: 'fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_4/data01/RED/glance'
-  GlanceNodeStagingUri: file:///var/lib/glance/staging
-  GlanceStagingNfsOptions: _netdev,bg,intr,context=system_u:object_r:glance_var_lib_t:s0
-  GlanceStagingNfsShare: 'fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_4/data01/RED/glance_stage'
-  GlanceBackend: file
-  GlanceNfsEnabled: True
-
-  NovaNfsOptions: context=system_u:object_r:nfs_t:s0
-  NovaNfsShare: 'fsf-wdc0401m-fz.service.softlayer.com:/IBM02SEV1039729_4/data01/RED/nova'
-  NovaNfsVersion: '4'
-  NovaNfsEnabled: True
+  CephClientKey: AQDKY75dAAAAABAA1TAKj7Qml22vvS+W6UcU9A==
+  CephClusterFSID: 6ca2f0a1-74c9-4eae-ba99-d5fe319584ac
+  CephExternalMonHost: 10.221.21.230, 10.221.21.231, 10.221.21.232
+  CephClientUserName: openstack
+  NovaRbdPoolName: dal10_nova
+  CinderRbdPoolName: dal10_cinder
+  GlanceRbdPoolName: dal10_glance

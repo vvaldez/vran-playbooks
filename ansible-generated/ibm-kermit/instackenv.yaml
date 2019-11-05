@@ -5,7 +5,7 @@ nodes:
     pm_user: {{ instackenv.pm.user }}
     pm_password: '{{ instackenv.pm.password }}'
     pm_addr: 10.177.209.43
-    capabilities: profile:controller,boot_option:local
+    capabilities: profile:control,boot_option:local
 
   - name: ctrl02
     arch: x86_64
@@ -13,7 +13,7 @@ nodes:
     pm_user: {{ instackenv.pm.user }}
     pm_password: '{{ instackenv.pm.password }}'
     pm_addr: 10.177.209.31
-    capabilities: profile:controller,boot_option:local
+    capabilities: profile:control,boot_option:local
 
   - name: ctrl03
     arch: x86_64
@@ -21,7 +21,7 @@ nodes:
     pm_user: {{ instackenv.pm.user }}
     pm_password: '{{ instackenv.pm.password }}'
     pm_addr: 10.177.209.27
-    capabilities: profile:controller,boot_option:local
+    capabilities: profile:control,boot_option:local
 
   - name: compute01
     arch: x86_64

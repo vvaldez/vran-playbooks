@@ -3,14 +3,14 @@
 #  OS::TripleO::ComputeDVR::Net::SoftwareConfig: net-config-linux-bridge.yaml
 
 resource_registry:
-  OS::TripleO::ComputeDVR::PreNetworkConfig: /home/stack/templates/custom/nested_virt_host_config_and_reboot.yaml
+  OS::TripleO::ComputeDVR::PreNetworkConfig: /home/stack/ansible-generated/templates/custom/nested_virt_host_config_and_reboot.yaml
 
 
 parameter_defaults:
-  ControllerCount: 3 
-  OvercloudControllerFlavor: control 
-  ComputeDVRCount: 2
-  OvercloudComputeDVRFlavor: compute 
+  ControllerCount: 3
+  OvercloudControllerFlavor: control
+  ComputeDVRCount: 1
+  OvercloudComputeDVRFlavor: compute
 
   ComputeDVRExtraConfig:
     'nova::cpu_allocation_ratio': '32.0'

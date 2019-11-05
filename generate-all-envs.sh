@@ -1,7 +1,6 @@
 #!/bin/bash
 
 paths='
-ibm/hosts-gpte
 ibm/hosts-kermit
 '
 args=''

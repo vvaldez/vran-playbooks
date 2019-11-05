@@ -17,14 +17,14 @@ parameters:
       for OVS bonds or like mode=4 for Linux bonds using this option.'
     type: string
   ExternalNetworkVlanID:
-    default: 10
+    default: 0
     description: Vlan ID for the external network traffic.
     type: number
   ControlPlaneDefaultRoute: # Override this via parameter_defaults
     description: The default route of the control plane network.
     type: string
   ExternalInterfaceDefaultRoute:
-    default: '169.47.188.1'
+    default: '150.238.2.193'
     description: default route for the external network
     type: string
   ControlPlaneSubnetCidr: # Override this via parameter_defaults
@@ -46,15 +46,24 @@ resources:
       config:
         str_replace:
           template:
-            get_file: /home/stack/templates/scripts/run-os-net-config.sh
+            get_file: /usr/share/openstack-tripleo-heat-templates/network/scripts/run-os-net-config.sh
           params:
             $network_config:
               network_config:
 
-              - type: interface
-                name: nic1
+              - type: linux_bond
+                name: bond0
                 mtu: 9000
                 use_dhcp: false
+                bonding_options: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
+                members:
+                - type: interface
+                  name: nic1
+                  mtu: 9000
+                  primary: true
+                - type: interface
+                  mtu: 9000
+                  name: nic3
                 addresses:
                 - ip_netmask:
                     list_join:
@@ -66,11 +75,11 @@ resources:
                   next_hop:
                     get_param: EC2MetadataIp
                 - ip_netmask: 10.0.0.0/8
-                  next_hop: 10.211.62.1
+                  next_hop: 10.221.21.1
                 - ip_netmask: 161.26.0.0/16
-                  next_hop: 10.211.62.1
+                  next_hop: 10.221.21.1
                 - ip_netmask: 166.8.0.0/14
-                  next_hop: 10.211.62.1
+                  next_hop: 10.221.21.1
                 dns_servers:
                   get_param: DnsServers
 
@@ -79,8 +88,15 @@ resources:
                 dns_servers:
                   get_param: DnsServers
                 members:
-                - type: interface
-                  name: nic2
+                - type: linux_bond
+                  name: bond1
+                  bonding_options: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
+                  members:
+                  - type: interface
+                    name: nic2
+                    primary: true
+                  - type: interface
+                    name: nic4
                 addresses:
                 - ip_netmask:
                     get_param: ExternalIpSubnet
