@@ -24,7 +24,7 @@ parameters:
     description: The default route of the control plane network.
     type: string
   ExternalInterfaceDefaultRoute:
-    default: '150.238.2.193'
+    default: '192.168.1.10'
     description: default route for the external network
     type: string
   ControlPlaneSubnetCidr: # Override this via parameter_defaults
@@ -74,12 +74,13 @@ resources:
                 - ip_netmask: 169.254.169.254/32
                   next_hop:
                     get_param: EC2MetadataIp
-                - ip_netmask: 10.0.0.0/8
-                  next_hop: 10.221.21.1
-                - ip_netmask: 161.26.0.0/16
-                  next_hop: 10.221.21.1
-                - ip_netmask: 166.8.0.0/14
-                  next_hop: 10.221.21.1
+                -   ip_netmask: 10.0.0.0/8
+                    next_hop: 10.221.21.1
+                -   ip_netmask: 161.26.0.0/16
+                    next_hop: 10.221.21.1
+                -   ip_netmask: 166.8.0.0/14
+                    next_hop: 10.221.21.1
+
                 dns_servers:
                   get_param: DnsServers
 

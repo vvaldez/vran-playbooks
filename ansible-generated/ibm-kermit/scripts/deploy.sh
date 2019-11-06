@@ -17,4 +17,5 @@ openstack overcloud deploy --templates \
 -e $CNF/octavia.yaml \
 -e $CNF/service_net_environment.yaml
 
+# -e $THT/environments/disable-telemetry.yaml \
 # -e $CNF/inject-trust-anchor.yaml \
