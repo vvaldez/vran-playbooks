@@ -55,7 +55,8 @@ resources:
                 name: bond0
                 mtu: 9000
                 use_dhcp: false
-                bonding_options: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
+                bonding_options:
+                  get_param: BondInterfaceOvsOptions
                 members:
                 - type: interface
                   name: nic1
@@ -89,14 +90,18 @@ resources:
                 dns_servers:
                   get_param: DnsServers
                 members:
-                - type: linux_bond
+                - type: ovs_bond
                   name: bond1
-                  bonding_options: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
+                  mtu: 9000
+                  bonding_options:
+                    get_param: BondInterfaceOvsOptions
                   members:
                   - type: interface
                     name: nic2
+                    mtu: 9000
                     primary: true
                   - type: interface
+                    mtu: 9000
                     name: nic4
                 addresses:
                 - ip_netmask:

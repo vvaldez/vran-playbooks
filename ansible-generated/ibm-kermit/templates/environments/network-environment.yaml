@@ -1,11 +1,11 @@
 parameter_defaults:
   DnsServers: ["10.221.21.2"]
   NetworkDeploymentActions: ['CREATE','UPDATE']
-  BondInterfaceOvsOptions: "bond_mode=balance-slb lacp=active"
+  BondInterfaceOvsOptions: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
   NeutronServicePlugins: 'router,qos,trunk'
   NeutronPluginExtensions: qos,port_security,dns_domain_ports
   NeutronDnsDomain: example.com
-  NeutronGlobalPhysnetMtu: 1500
+  NeutronGlobalPhysnetMtu: 9000
   ControllerExtraConfig:
     neutron::agents::dhcp::dnsmasq_local_resolv: true
   EC2MetadataIp: 10.221.21.11

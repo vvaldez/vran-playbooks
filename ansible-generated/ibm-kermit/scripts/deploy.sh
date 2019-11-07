@@ -12,6 +12,7 @@ openstack overcloud deploy --templates \
 -e $CNF/environments/network-isolation.yaml \
 -e $CNF/ips-from-pool-all.yaml \
 -e $CNF/network-config.yaml \
+-e $CNF/neutron-ovs-dvr.yaml \
 -e $CNF/node-config.yaml \
 -e $CNF/octavia.yaml \
 -e $CNF/overcloud-images.yaml \
