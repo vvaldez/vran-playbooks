@@ -13,5 +13,6 @@ parameter_defaults:
   OvercloudComputeDVRFlavor: compute
 
   ComputeDVRExtraConfig:
-    'nova::cpu_allocation_ratio': '32.0'
-    'nova::compute::libvirt::libvirt_cpu_mode': 'host-passthrough'
+    nova::compute::vnc_keymap: ''
+    nova::cpu_allocation_ratio: '32.0'
+    nova::compute::libvirt::libvirt_cpu_mode: 'host-passthrough'
