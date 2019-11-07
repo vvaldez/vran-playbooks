@@ -1,39 +1,43 @@
-# pb-apply-kvm
+# Playbooks
+
+### pb-apply-kvm.yml
 
 Assumptions made:
 
-- Can SSH in as root using public address.
+- Can SSH in as root using private address.
+- DNS is configured so redhat.com resolves.
+
+### pb-apply-director.yml
+
+Assumptions made:
+
+- Can SSH in as root using private address.
 - DNS is configured so redhat.com resolves.
 
 # `ansible-inventory` Structure
 
 ```
 ansible-inventory/
-├── blue/
+├── ibm/
 │   ├── group_vars/
 │   │   ├── all.yml
-│   │   └── test.yml
-│   ├── hosts-test
+│   │   ├── gonzo.yml
+|   |   └── kermit.yml
+│   ├── hosts-gonzo
+│   ├── hosts-kermit
 │   └── templates/
-│       └── .... (Datacenter specific input OSP templates)
-├── green/
-│   ├── group_vars/
-│   │   ├── all.yml
-│   │   ├── dev.yml
-│   │   └── test.yml
-│   ├── hosts-dev
-│   ├── hosts-test
-│   └── templates/
-│       └── .... (Datacenter specific input OSP templates)
-└── red/
-    ├── group_vars/
-    │   ├── all.yml
-    │   ├── prod.yml
-    │   └── test.yml
-    ├── hosts-prod
-    ├── hosts-test
+│       ├── gonzo  (Datacenter specific input OSP templates)
+│       └── kermit (Datacenter specific input OSP templates)
+└── green/
+    ├── group_vars/
+    │   ├── all.yml
+    │   ├── dev.yml
+    │   └── test.yml
+    ├── hosts-dev
+    ├── hosts-test
     └── templates/
         └── .... (Datacenter specific input OSP templates)
+
 ```
 
 # `ansible-playbooks` Structure
@@ -49,15 +53,13 @@ ansible-playbooks/
 ├── pb-apply-kvm.yml
 ├── README.md
 ├── ansible-generated/
-│   └── blue-test/
-│   │   └── ... (Output OSP templates)
 │   └── green-dev/
 │   │   └── ... (Output OSP templates)
 │   └── green-test/
 │   │   └── ... (Output OSP templates)
-│   └── red-prod/
+│   └── ibm-gonzo/
 │   │   └── ... (Output OSP templates)
-│   └── red-test/
+│   └── ibm-kermit/
 │       └── ... (Output OSP templates)
 └── roles/
     └── requirements.yml
@@ -95,49 +97,51 @@ Generate playbook won't be added to Tower ... it's a developer action, not somet
 
 # Usage
 
-## Installation
+### Installation
 
 ```sh
 # Install Ansible Roles
-ansible-galaxy -r roles/requirements.yml
+ansible-galaxy install --role-file roles/requirements.yml
 
 # Force the latest version of roles to be installed
-ansible-galaxy install -r roles/requirements.yml --force
+ansible-galaxy install --role-file roles/requirements.yml --force
 ```
 
-## Generating Output Templates Locally
+### Generating Output Templates Locally
 
 ```sh
 # Include the inventory file of the environment to generate templates for using `-i path/to/hosts/file`
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-generate-templates-locally.yml
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-generate-templates-locally.yml
 
 # Quick mode will only generate templates that show up as changed by `git status`
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-generate-templates-locally.yml -e quick=true
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-generate-templates-locally.yml -e quick=true
 
 # Helper script to generate the templates for all environments
 ./generate-all-envs.sh
 ```
 
-## Running KVM installation
+### Running KVM installation
 
 ```sh
-# Include the inventory file of the environment to install using `-i path/to/hosts/file`
-# Setup nics and yum update
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-apply-kvm.yml
+# Include the inventory file of the environment to install using `-i path/to/hosts/file
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit --vault-password-file .vault_secret pb-apply-kvm.yml
+
+# Enforce nic configration as well
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit --vault-password-file .vault_secret pb-apply-kvm.yml -e setup_nics=yes
 ```
 
-## Running Director Installation
+### Running Director Installation
 
 ```sh
 # Include the inventory file of the environment to install using `-i path/to/hosts/file`
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-director-install.yml
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml
 
 # Run only a certain numbered section(s) of the installation guide
 # https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/director_installation_and_usage/
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-director-install.yml --tags 4.1,4.2,4.3
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --tags 4.1,4.2,4.3
 
 # Enable debug mode for more verbose output
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-director-install.yml --tags 4.1 -e debug=true
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --tags 4.1 -e debug=true
 ```
 
 # Ansible Vault
@@ -154,7 +158,7 @@ The playbooks must be ran with `--vault-password-file ./vault_secret` as argumen
 ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-install-director.yml --vault-password-file ./vault_secret
 ```
 
-## Generate a new vault string
+### Generate a new vault string
 
 1. Make sure the `./vault_secret` file is populated correctly
 
@@ -164,7 +168,7 @@ ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-install-director.yml
   ansible-vault encrypt_string --vault-id .vault_secret --name 'key' 'secret_value'
   ```
 
-## Encrypt SSL Key to place in `group_vars/` file
+### Encrypt SSL Key to place in `group_vars/` file
 
 ```sh
 $ cat ssl-key
@@ -178,6 +182,24 @@ Reading plaintext input from stdin. (ctrl-d to end input)
           $ANSIBLE_VAULT;1.1;AES256
           ...
 Encryption successful
+```
+
+### Decrypt individual keys
+
+```
+$ ansible-vault decrypt
+Vault password:
+Reading ciphertext input from stdin
+$ANSIBLE_VAULT;1.1;AES256
+37653465336131656562313865633336393566373832343534313839343966356633366162636163
+6362643233363263633537376162343630663332343530630a363236313236653839313236323061
+62313466613133326539613865336666633164393961343931353661373564343632393035613264
+6266303235663565350a393662393062643738613837313166343066636363656231383334316261
+6363
+Decryption successful # (ctrl-d to end input)
+unencrypted value here
+
+$
 ```
 
 ## Ansible Vault Considerations for Input and Output Templates
