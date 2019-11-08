@@ -39,3 +39,10 @@ openstack \
   --vcpus 1 \
   --ram 128 \
   m1.micro
+
+openstack \
+  flavor \
+  create \
+  --vcpus 4 \
+  --ram 4096 \
+  m1.small

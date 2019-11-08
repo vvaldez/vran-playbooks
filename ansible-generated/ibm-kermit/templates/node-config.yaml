@@ -9,7 +9,7 @@ resource_registry:
 parameter_defaults:
   ControllerCount: 3
   OvercloudControllerFlavor: control
-  ComputeDVRCount: 1
+  ComputeDVRCount: 8
   OvercloudComputeDVRFlavor: compute
 
   ComputeDVRExtraConfig:
