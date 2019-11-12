@@ -1,0 +1,15 @@
+- job:
+    name: pb-apply-kvm
+    run: pb-apply-kvm.yaml
+    nodeset:
+      nodes:
+        - name: kvm
+          label: centos7
+
+- project:
+    check:
+      jobs:
+        - pb-apply-kvm
+    gate:
+      jobs:
+        - pb-apply-kvm
