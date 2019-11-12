@@ -1,6 +1,10 @@
 - job:
     name: pb-apply-kvm
-    run: pb-apply-kvm.yaml
+    run: pb-apply-kvm.yml
+    vars:
+      datacenter: foo
+      named_env: test
+      prompt_env: foo-test
     nodeset:
       nodes:
         - name: kvm
