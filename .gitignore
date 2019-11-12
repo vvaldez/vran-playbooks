@@ -11,3 +11,6 @@ files/*
 # Ignore subfolders of roles/
 roles/*
 !roles/requirements.yml
+
+# Ignore virtualenv
+venv/

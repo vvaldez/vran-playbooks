@@ -4,6 +4,7 @@
   gather_facts: no
   vars:
     full_env: "{{ datacenter }}-{{ named_env }}"
+    pb_disable_prompt: "{{ disable_prompt | default('no') }}"
   vars_prompt:
     - name: prompt_env
       prompt: Confirm the environment to target
@@ -15,9 +16,26 @@
         fail_msg: "Incorrect environment entered. {{ prompt_env }} is not \
           {{ full_env }}"
         success_msg: "Targeting {{ prompt_env.strip() }} environment"
+      when: not pb_disable_prompt | bool
 
   tags:
     - always
+
+
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - assert:
+        that:
+          - kvm is defined
+        fail_msg: "Variable `kvm` must be defined."
+
+    - assert:
+        that:
+          - kvm.hostname is defined
+        fail_msg: "Variable `kvm.hostname` must be defined."
 
 
 
@@ -29,6 +47,7 @@
         name: subscription
       tags:
         - subscription
+      when: "kvm is defined and 'subscription' in kvm"
 
     - vars:
         base: "{{ kvm }}"
@@ -61,6 +80,7 @@
       with_items: "{{ kvm.libvirt.domains }}"
       loop_control:
         loop_var: domain
+      when: "kvm is defined and 'libvirt' in kvm"
 
   tags:
     - libvirt

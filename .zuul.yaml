@@ -1,6 +1,13 @@
 - job:
     name: pb-apply-kvm
-    run: pb-apply-kvm.yaml
+    run: pb-apply-kvm.yml
+    vars:
+      datacenter: foo
+      named_env: test
+      disable_prompt: yes
+      kvm:
+        hostname: zuul-ci.example.com
+
     nodeset:
       nodes:
         - name: kvm
