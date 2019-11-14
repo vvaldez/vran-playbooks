@@ -49,13 +49,36 @@
         - subscription
       when: "kvm is defined and 'subscription' in kvm"
 
-    - vars:
-        base: "{{ kvm }}"
+    - name: Install bridge-utils to ifup bridges
+      yum:
+        name: bridge-utils
+        state: installed
+
+    - name: Setup networking by clearing existing NIC configs and placing new ones
+      vars:
         # The network-scripts portion of the role is considered a provisioning
         # step. By default, it is not ran unless this is override to yes. When
         # re-running this role, it is probably not ideal to re-setup and restart
         # networking. Which will happen when nic_config=yes.
         base_setup_nics: "{{ setup_nics | default('no') }}"
+      block:
+        - name: "Include network-scripts role to template
+            /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
+          vars:
+            network_scripts_dest_path: /etc/sysconfig/network-scripts
+            network_scripts_nics: "{{ base.nics }}"
+            network_scripts_clear_existing: yes
+            network_scripts_restart: yes
+          include_role:
+            name: network-scripts
+          when: "'nics' in base"
+
+      when: base_setup_nics | bool
+      tags:
+        - network
+
+    - vars:
+        base: "{{ kvm }}"
       import_role:
         name: base
       tags:
