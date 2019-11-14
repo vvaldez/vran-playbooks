@@ -7,7 +7,6 @@
       disable_prompt: yes
       kvm:
         hostname: zuul-ci.example.com
-
     nodeset:
       nodes:
         - name: kvm
