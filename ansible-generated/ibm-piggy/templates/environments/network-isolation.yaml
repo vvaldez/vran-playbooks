@@ -1,0 +1,18 @@
+# Enable the creation of Neutron networks for isolated Overcloud
+# traffic and configure each role to assign ports (related
+# to that role) on these networks.
+# primary role is: Controller
+resource_registry:
+  # networks as defined in network_data.yaml
+  OS::TripleO::Network::External: /usr/share/openstack-tripleo-heat-templates/network/external.yaml
+
+  # Port assignments for the VIPs
+  OS::TripleO::Network::Ports::ExternalVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external.yaml
+  OS::TripleO::Network::Ports::RedisVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/vip.yaml
+
+  # Port assignments by role, edit role definition to assign networks to roles.
+  # Port assignments for the Controller
+  OS::TripleO::Controller::Ports::ExternalPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external.yaml
+
+  # Port assignments for the ComputeDVR
+  OS::TripleO::ComputeDVR::Ports::ExternalPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external.yaml

@@ -1,0 +1,22 @@
+resource_registry:
+  OS::TripleO::Controller::Ports::ExternalPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external_from_pool.yaml
+  OS::TripleO::ComputeDVR::Ports::ExternalPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external_from_pool.yaml
+
+parameter_defaults:
+  ControllerIPs:
+    ctlplane:
+    - 10.221.23.5
+    - 10.221.23.6
+    - 10.221.23.7
+    external:
+    - 150.238.9.131
+    - 150.238.9.132
+    - 150.238.9.133
+
+  ComputeDVRIPs:
+    ctlplane:
+    - 10.221.23.8
+    - 10.221.23.9
+    external:
+    - 150.238.9.134
+    - 150.238.9.135

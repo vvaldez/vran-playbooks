@@ -2,6 +2,7 @@
 
 paths='
 ibm/hosts-kermit
+ibm/hosts-piggy
 '
 args=''
 
