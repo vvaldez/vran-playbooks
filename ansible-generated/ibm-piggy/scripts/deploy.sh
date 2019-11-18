@@ -16,7 +16,7 @@ openstack overcloud deploy --templates \
 -e $CNF/node-config.yaml \
 -e $CNF/octavia.yaml \
 -e $CNF/overcloud-images.yaml \
--e $CNF/service_net_environment.yaml \
--e $CNF/storage-environment.yaml
+-e $CNF/service_net_environment.yaml
 
+# -e $CNF/storage-environment.yaml
 # -e $CNF/inject-trust-anchor.yaml \

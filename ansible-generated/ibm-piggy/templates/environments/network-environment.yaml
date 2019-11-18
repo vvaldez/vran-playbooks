@@ -11,12 +11,12 @@ parameter_defaults:
   EC2MetadataIp: 10.221.23.3
   ControlPlaneDefaultRoute: 10.221.23.1
   ExternalInterfaceDefaultRoute: 150.238.9.129
-  NtpServer: 10.221.21.2
+  NtpServer: 0.us.pool.ntp.org
   NeutronNetworkType: 'vxlan,flat'
   NeutronTunnelTypes: 'vxlan'
   NeutronDhcpAgentDnsmasqDnsServers: ["10.221.21.2"]
   ControlPlaneSubnetCidr: 24
-  ControlFixedIPs: [{"ip_address": "10.221.21.49"}]
+  ControlFixedIPs: [{"ip_address": "10.221.23.4"}]
   PublicVirtualFixedIPs: [{"ip_address": "150.238.9.130"}]
   NeutronBridgeMappings: datacentre:br-ex
   NeutronFlatNetworks: datacentre

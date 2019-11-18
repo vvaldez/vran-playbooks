@@ -76,11 +76,11 @@ resources:
                   next_hop:
                     get_param: EC2MetadataIp
                 -   ip_netmask: 10.0.0.0/8
-                    next_hop: 10.221.21.1
+                    next_hop: 10.221.23.1
                 -   ip_netmask: 161.26.0.0/16
-                    next_hop: 10.221.21.1
+                    next_hop: 10.221.23.1
                 -   ip_netmask: 166.8.0.0/14
-                    next_hop: 10.221.21.1
+                    next_hop: 10.221.23.1
 
                 dns_servers:
                   get_param: DnsServers
