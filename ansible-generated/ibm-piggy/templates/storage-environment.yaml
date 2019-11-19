@@ -1,10 +1,17 @@
 parameter_defaults:
-  CephClientKey: {{ overcloud.ceph.CephClientKey }}
-  CephClusterFSID: 6ca2f0a1-74c9-4eae-ba99-d5fe319584ac
-  CephExternalMonHost: 10.221.21.230, 10.221.21.231, 10.221.21.232
+  #### BACKEND SELECTION ####
 
-  CephClientUserName: openstack
-  NovaRbdPoolName: dal10_nova
-  CinderRbdPoolName: dal10_cinder
-  GlanceRbdPoolName: dal10_glance
-  GnocchiRbdPoolName: dal10_metrics
+  ## Whether to enable iscsi backend for Cinder.
+  CinderEnableIscsiBackend: false
+  ## Whether to enable rbd (Ceph) backend for Cinder.
+  CinderEnableRbdBackend: false
+  ## Cinder Backup backend can be either 'ceph', 'swift' or 'nfs'.
+  CinderBackupBackend: ceph
+  ## Whether to enable NFS backend for Cinder.
+  # CinderEnableNfsBackend: false
+  ## Whether to enable rbd (Ceph) backend for Nova ephemeral storage.
+  NovaEnableRbdBackend: false
+  ## Glance backend can be either 'rbd' (Ceph), 'swift' or 'file'.
+  GlanceBackend: file
+  ## Gnocchi backend can be either 'rbd' (Ceph), 'swift' or 'file'.
+  GnocchiBackend: file

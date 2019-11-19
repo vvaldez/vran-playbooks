@@ -3,7 +3,7 @@
 THT=/usr/share/openstack-tripleo-heat-templates
 CNF=~/ansible-generated/templates
 
-openstack overcloud deploy --templates \
+time openstack overcloud deploy --templates \
 -r $CNF/roles_data.yaml \
 -n $CNF/network_data.yaml \
 -e $THT/environments/ceph-ansible/ceph-ansible-external.yaml \
@@ -16,7 +16,7 @@ openstack overcloud deploy --templates \
 -e $CNF/node-config.yaml \
 -e $CNF/octavia.yaml \
 -e $CNF/overcloud-images.yaml \
--e $CNF/service_net_environment.yaml
+-e $CNF/service_net_environment.yaml \
+-e $CNF/storage-environment.yaml
 
-# -e $CNF/storage-environment.yaml
 # -e $CNF/inject-trust-anchor.yaml \
