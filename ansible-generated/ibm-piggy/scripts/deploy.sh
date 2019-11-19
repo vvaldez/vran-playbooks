@@ -3,7 +3,9 @@
 THT=/usr/share/openstack-tripleo-heat-templates
 CNF=~/ansible-generated/templates
 
-time openstack overcloud deploy --templates \
+time openstack overcloud deploy \
+--stack overcloud-piggy \
+--templates \
 -r $CNF/roles_data.yaml \
 -n $CNF/network_data.yaml \
 -e $THT/environments/ceph-ansible/ceph-ansible-external.yaml \
