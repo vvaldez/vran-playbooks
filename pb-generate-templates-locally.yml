@@ -1,34 +1,46 @@
 - hosts: localhost
   gather_facts: no
   vars:
-    pb_inventory_templates_dir: "../ansible-inventory/{{ datacenter }}/\
+    shared_dir: "../ansible-inventory/{{ datacenter }}/\
+      templates/shared/"
+    cluster_dir: "../ansible-inventory/{{ datacenter }}/\
       templates/{{ named_env }}/"
-    pb_tmp_dir: "/tmp/ansible-generated/{{ datacenter }}-{{ named_env }}"
-    pb_output_dir: "./ansible-generated"
+    tmp_dir: "/tmp/ansible-generated/{{ datacenter }}-{{ named_env }}"
+    output_dir: "./ansible-generated"
     quick: no
   tasks:
-    - name: Ensure {{ pb_tmp_dir }} doesn't already exist
+    - name: Ensure {{ tmp_dir }} doesn't already exist
       file:
-        path: "{{ pb_tmp_dir }}"
+        path: "{{ tmp_dir }}"
         state: absent
       changed_when: false
 
-    # Template $pb_inventory_templates_dir into $pb_tmp_dir
+    # Template $shared_dir into $tmp_dir
     - include_role:
         name: template-directory
       vars:
-        template_directory_input_dir: "{{ pb_inventory_templates_dir }}"
-        template_directory_output_dir: "{{ pb_tmp_dir }}"
+        template_directory_input_dir: "{{ shared_dir }}"
+        template_directory_output_dir: "{{ tmp_dir }}"
         template_directory_changed_when: false
         template_directory_quick_mode: "{{ quick|bool }}"
       no_log: true
 
-    # Copy $pb_tmp_dir into $pb_output_dir
+    # Template $cluster_dir into $tmp_dir
     - include_role:
         name: template-directory
       vars:
-        template_directory_input_dir: "{{ pb_tmp_dir }}"
-        template_directory_output_dir: "{{ pb_output_dir }}"
+        template_directory_input_dir: "{{ cluster_dir }}"
+        template_directory_output_dir: "{{ tmp_dir }}"
+        template_directory_changed_when: false
+        template_directory_quick_mode: "{{ quick|bool }}"
+      no_log: true
+
+    # Copy $tmp_dir into $output_dir
+    - include_role:
+        name: template-directory
+      vars:
+        template_directory_input_dir: "{{ tmp_dir }}"
+        template_directory_output_dir: "{{ output_dir }}"
         template_directory_changed_when: true
         template_directory_quick_mode: false
         template_directory_copy_only: true
