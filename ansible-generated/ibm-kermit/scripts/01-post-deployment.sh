@@ -6,7 +6,7 @@ source ~/overcloudrc
 
 openstack \
   network \
-  create provider_network \
+  create provider-network \
   --provider-physical-network datacentre \
   --provider-network-type flat \
   --external \
@@ -16,7 +16,7 @@ openstack \
   subnet \
   create \
   provider-subnet \
-  --network provider_network \
+  --network provider-network \
   --dhcp \
   --allocation-pool start=150.238.2.211,end=150.238.2.216 \
   --gateway 150.238.2.193 \

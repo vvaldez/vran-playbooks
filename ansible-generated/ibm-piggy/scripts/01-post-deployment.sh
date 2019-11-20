@@ -6,7 +6,7 @@ source ~/overcloudrc
 
 openstack \
   network \
-  create provider_network \
+  create provider-network \
   --provider-physical-network datacentre \
   --provider-network-type flat \
   --external \
@@ -16,10 +16,10 @@ openstack \
   subnet \
   create \
   provider-subnet \
-  --network provider_network \
+  --network provider-network \
   --dhcp \
   --allocation-pool start=150.238.9.141,end=150.238.9.143 \
-  --gateway 150.238.2.193 \
+  --gateway 150.238.9.129 \
   --subnet-range 150.238.9.128/26
 
 # Create images

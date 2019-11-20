@@ -1,0 +1,94 @@
+- hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  tasks:
+    - block:
+        - name: Grab overcloudrc file from the Director locally
+          fetch:
+            src: "/home/stack/overcloud-{{ named_env }}rc"
+            dest: "files/overcloud-{{ named_env}}rc.public"
+            flat: yes
+
+        - name: Grab the private keystone endpoint to use
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack endpoint list --interface admin --service identity -c URL -f value"
+          register: shell_output
+          changed_when: false
+
+        - name: Grab the list of existing images on the overcloud
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack image list -c Name -f value"
+          register: image_output
+          changed_when: false
+
+        - name: Set some facts for the bastion host to use
+          set_fact:
+            named_env: "{{ named_env }}"
+            auth_url: "{{ shell_output.stdout }}"
+            existing_images: "{{ image_output.stdout_lines }}"
+          delegate_to: bastion.dal10.ole.redhat.com
+          delegate_facts: yes
+
+    - block:
+        - name: Grab the list of existing HEAT stacks on the overcloud
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack list  -c 'Stack Name' -f value"
+          register: stack_output
+          changed_when: false
+
+        - name: Create the base-flavors stack if it doesn't exist
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/flavors.yaml base-flavors --wait"
+          register: shell_output
+          when: "'base-flavors' not in stack_output.stdout_lines"
+
+        - name: Show output
+          debug:
+            var: shell_output.stdout
+          when: shell_output.stdout is defined
+
+        - name: Create the base-networks stack if it doesn't exist
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/external_network.yaml base-networks --wait"
+          register: shell_output
+          when: "'base-networks' not in stack_output.stdout_lines"
+
+        - name: Show output
+          debug:
+            var: shell_output.stdout
+          when: shell_output.stdout is defined
+
+
+
+- hosts: bastion.dal10.ole.redhat.com
+  name: Upload each image in files/raw-images/*
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Make a copy of overcloudrc for private endpoint
+      copy:
+        src: files/overcloud-{{ named_env}}rc.public
+        dest: files/overcloud-{{ named_env}}rc.private
+        force: no
+
+    - name: Replace the public endpoint with the private endpoint in overcloudrc
+      replace:
+        path: "files/overcloud-{{ named_env}}rc.private"
+        regexp: '(.*=)(.*)(//.*)'
+        replace: '\1{{ auth_url }}\3'
+
+    - name: Create image if it doesn't already exist
+      vars:
+        filename: "{{ item | basename }}"
+      shell: |
+        . files/overcloud-{{ named_env }}rc &&
+        openstack image create \
+        --disk-format raw \
+        --container-format bare \
+        --file {{ item }} \
+        {{ filename }}
+      with_fileglob:
+        - "files/raw-images/*"
+      register: shell_output
+      when: "filename not in existing_images"
+
+    - name: Show output
+      debug:
+        var: shell_output.stdout
+      when: shell_output.stdout is defined

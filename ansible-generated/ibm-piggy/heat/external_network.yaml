@@ -1,0 +1,29 @@
+heat_template_version: newton
+
+description: >
+  This Heat stack will create the initial Overcloud networking
+  resources for baremetal and virtual hosts
+
+parameters:
+
+resources:
+  provider_network:
+    type: OS::Neutron::ProviderNet
+    properties:
+      network_type: flat
+      physical_network: datacentre
+      router_external: true
+      shared: true
+      name: provider-network
+
+  provider_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: provider_network }
+      cidr: 150.238.9.128/26
+      gateway_ip: 150.238.9.129
+      allocation_pools:
+        - start: 150.238.9.141
+          end: 150.238.9.143
+      enable_dhcp: true
+      name: provider-subnet
