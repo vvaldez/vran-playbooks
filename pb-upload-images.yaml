@@ -77,7 +77,7 @@
       vars:
         filename: "{{ item | basename }}"
       shell: |
-        . files/overcloud-{{ named_env }}rc &&
+        . files/overcloud-{{ named_env }}rc.private &&
         openstack image create \
         --disk-format raw \
         --container-format bare \
