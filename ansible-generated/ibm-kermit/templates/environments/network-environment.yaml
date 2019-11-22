@@ -1,5 +1,5 @@
 parameter_defaults:
-  DnsServers: ["10.221.21.2"]
+  DnsServers: ["10.221.24.4"]
   NetworkDeploymentActions: ['CREATE','UPDATE']
   BondInterfaceOvsOptions: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
   NeutronServicePlugins: 'router,qos,trunk'
@@ -11,10 +11,10 @@ parameter_defaults:
   EC2MetadataIp: 10.221.21.11
   ControlPlaneDefaultRoute: 10.221.21.1
   ExternalInterfaceDefaultRoute: 150.238.2.193
-  NtpServer: 10.221.21.2
+  NtpServer: 10.221.24.4
   NeutronNetworkType: 'vxlan,flat'
   NeutronTunnelTypes: 'vxlan'
-  NeutronDhcpAgentDnsmasqDnsServers: ["10.221.21.2"]
+  NeutronDhcpAgentDnsmasqDnsServers: ["10.221.24.4"]
   ControlPlaneSubnetCidr: 24
   ControlFixedIPs: [{"ip_address": "10.221.21.49"}]
   PublicVirtualFixedIPs: [{"ip_address": "150.238.2.199"}]

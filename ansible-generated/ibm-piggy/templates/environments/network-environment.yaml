@@ -1,5 +1,5 @@
 parameter_defaults:
-  DnsServers: ["10.221.21.2"]
+  DnsServers: ["10.221.24.4"]
   NetworkDeploymentActions: ['CREATE','UPDATE']
   BondInterfaceOvsOptions: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast xmit_hash_policy=1"
   NeutronServicePlugins: 'router,qos,trunk'
@@ -14,7 +14,7 @@ parameter_defaults:
   NtpServer: 0.us.pool.ntp.org
   NeutronNetworkType: 'vxlan,flat'
   NeutronTunnelTypes: 'vxlan'
-  NeutronDhcpAgentDnsmasqDnsServers: ["10.221.21.2"]
+  NeutronDhcpAgentDnsmasqDnsServers: ["10.221.24.4"]
   ControlPlaneSubnetCidr: 24
   ControlFixedIPs: [{"ip_address": "10.221.23.4"}]
   PublicVirtualFixedIPs: [{"ip_address": "150.238.9.130"}]
