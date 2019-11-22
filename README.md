@@ -144,6 +144,13 @@ ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml 
 ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --tags 4.1 -e debug=true
 ```
 
+### Tearing down existing Director
+
+```sh
+# Unregister Director from Satellite, destroy and undefine libvirt domain
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-tear-down-env.yml --vault-password-file .vault_secret
+```
+
 # Ansible Vault
 
 Ansible Vault is used to encrypt sensitive strings in the `ansible-inventory/` repository. `./vault_secret` in the `ansible-playbooks/` repository must contain the secret string to decrypt the sensitive strings:
