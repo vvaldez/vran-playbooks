@@ -1,0 +1,23 @@
+heat_template_version: queens
+
+description: >
+  This Heat stack will create the initial Overcloud flavors
+
+resources:
+  c_2_d_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 2
+      disk: 10
+      name: CPU_2_Memory_2048_Disk_10
+      is_public: true
+
+  c_2_d_50:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 2
+      disk: 50
+      name: CPU_2_Memory_2048_Disk_50
+      is_public: true

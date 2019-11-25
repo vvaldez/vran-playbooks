@@ -8,15 +8,15 @@ parameter_defaults:
   NeutronGlobalPhysnetMtu: 9000
   ControllerExtraConfig:
     neutron::agents::dhcp::dnsmasq_local_resolv: true
-  EC2MetadataIp: 10.221.21.11
+  EC2MetadataIp: 10.221.21.3
   ControlPlaneDefaultRoute: 10.221.21.1
-  ExternalInterfaceDefaultRoute: 150.238.2.193
+  ExternalInterfaceDefaultRoute: 150.238.9.129
   NtpServer: 10.221.24.4
   NeutronNetworkType: 'vxlan,flat'
   NeutronTunnelTypes: 'vxlan'
   NeutronDhcpAgentDnsmasqDnsServers: ["10.221.24.4"]
   ControlPlaneSubnetCidr: 24
   ControlFixedIPs: [{"ip_address": "10.221.21.49"}]
-  PublicVirtualFixedIPs: [{"ip_address": "150.238.2.199"}]
+  PublicVirtualFixedIPs: [{"ip_address": "150.238.9.131"}]
   NeutronBridgeMappings: datacentre:br-ex
   NeutronFlatNetworks: datacentre

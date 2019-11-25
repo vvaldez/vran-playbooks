@@ -18,9 +18,9 @@ openstack \
   provider-subnet \
   --network provider-network \
   --dhcp \
-  --allocation-pool start=150.238.2.211,end=150.238.2.216 \
-  --gateway 150.238.2.193 \
-  --subnet-range 150.238.2.192/27
+  --allocation-pool start=150.238.9.170,end=150.238.9.190 \
+  --gateway 150.238.9.129 \
+  --subnet-range 150.238.9.128/26
 
 # Create images
 wget http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img -O /home/stack/files/cirros-0.4.0-x86_64-disk.img

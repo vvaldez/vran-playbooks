@@ -1,10 +1,10 @@
 parameter_defaults:
   CephClientKey: {{ overcloud.ceph.CephClientKey }}
-  CephClusterFSID: 6ca2f0a1-74c9-4eae-ba99-d5fe319584ac
+  CephClusterFSID: 816c4b92-feaa-4e02-9a96-a9824f50a90f
   CephExternalMonHost: 10.221.21.230, 10.221.21.231, 10.221.21.232
 
   CephClientUserName: openstack
-  NovaRbdPoolName: dal10_nova
-  CinderRbdPoolName: dal10_cinder
-  GlanceRbdPoolName: dal10_glance
-  GnocchiRbdPoolName: dal10_metrics
+  NovaRbdPoolName: kermit_nova
+  CinderRbdPoolName: kermit_cinder
+  GlanceRbdPoolName: kermit_glance
+  GnocchiRbdPoolName: kermit_metrics
