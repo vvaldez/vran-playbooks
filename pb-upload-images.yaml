@@ -50,7 +50,7 @@
             named_env: "{{ named_env }}"
             auth_url: "{{ shell_output.stdout }}"
             existing_images: "{{ image_output.stdout_lines }}"
-          delegate_to: bastion.dal10.ole.redhat.com
+          delegate_to: bastion.dal10
           delegate_facts: yes
 
     - block:
@@ -88,8 +88,8 @@
   tasks:
     - name: Make a copy of overcloudrc for private endpoint
       copy:
-        src: files/overcloud-{{ named_env}}rc.public
-        dest: files/overcloud-{{ named_env}}rc.private
+        src: files/overcloud-{{ named_env }}rc.public
+        dest: files/overcloud-{{ named_env }}rc.private
         force: no
 
     - name: Replace the public endpoint with the private endpoint in overcloudrc
