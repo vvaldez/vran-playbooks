@@ -1,17 +1,10 @@
 parameter_defaults:
-  #### BACKEND SELECTION ####
+  CephClientKey: {{ overcloud.ceph.CephClientKey }}
+  CephClusterFSID: 32159b3f-a9cc-41fa-afde-84b8cc29b90d
+  CephExternalMonHost: 10.221.23.230, 10.221.23.231, 10.221.23.232
 
-  ## Whether to enable iscsi backend for Cinder.
-  CinderEnableIscsiBackend: false
-  ## Whether to enable rbd (Ceph) backend for Cinder.
-  CinderEnableRbdBackend: false
-  ## Cinder Backup backend can be either 'ceph', 'swift' or 'nfs'.
-  CinderBackupBackend: ceph
-  ## Whether to enable NFS backend for Cinder.
-  # CinderEnableNfsBackend: false
-  ## Whether to enable rbd (Ceph) backend for Nova ephemeral storage.
-  NovaEnableRbdBackend: false
-  ## Glance backend can be either 'rbd' (Ceph), 'swift' or 'file'.
-  GlanceBackend: file
-  ## Gnocchi backend can be either 'rbd' (Ceph), 'swift' or 'file'.
-  GnocchiBackend: file
+  CephClientUserName: openstack
+  NovaRbdPoolName: piggy_nova
+  CinderRbdPoolName: piggy_cinder
+  GlanceRbdPoolName: piggy_glance
+  GnocchiRbdPoolName: piggy_metrics
