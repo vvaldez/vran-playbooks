@@ -113,9 +113,6 @@ ansible-galaxy install --role-file roles/requirements.yml --force
 # Include the inventory file of the environment to generate templates for using `-i path/to/hosts/file`
 ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-generate-templates-locally.yml
 
-# Quick mode will only generate templates that show up as changed by `git status`
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-generate-templates-locally.yml -e quick=true
-
 # Helper script to generate the templates for all environments
 ./generate-all-envs.sh
 ```
@@ -134,14 +131,21 @@ ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit --vault-password-file 
 
 ```sh
 # Include the inventory file of the environment to install using `-i path/to/hosts/file`
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml
+# Until SSL/TLS is being used on the Overcoud, use `--skip-tags A.7`
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --skip-tags A.7
 
 # Run only a certain numbered section(s) of the installation guide
 # https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/director_installation_and_usage/
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --tags 4.1,4.2,4.3
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1,4.2,4.3
 
 # Enable debug mode for more verbose output
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --tags 4.1 -e debug=true
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1 -e debug=true
+```
+
+### Syncing latest templates in `ansible-generated/<env>` to Director
+
+```sh
+ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --tags templates
 ```
 
 ### Tearing down existing Director
