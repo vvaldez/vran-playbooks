@@ -21,10 +21,10 @@ ansible-inventory/
 ├── ibm/
 │   ├── group_vars/
 │   │   ├── all.yml
-│   │   ├── gonzo.yml
+│   │   ├── piggy.yml
 │   │   ├── kermit.yml
 │   │   └── overcloud.yml
-│   ├── hosts-gonzo
+│   ├── hosts-piggy
 │   ├── hosts-kermit
 │   └── templates/
 │       ├── shared/  # Datacenter specific input OSP templates
@@ -60,7 +60,7 @@ ansible-playbooks/
 │   │   └── ...     # Output OSP templates
 │   └── green-test/
 │   │   └── ...     # Output OSP templates
-│   └── ibm-gonzo/
+│   └── ibm-piggy/
 │   │   └── ...     # Output OSP templates
 │   └── ibm-kermit/
 │       └── ...     # Output OSP templates
@@ -114,7 +114,7 @@ ansible-galaxy install --role-file roles/requirements.yml --force
 
 ```sh
 # Include the inventory file of the environment to generate templates for using `-i path/to/hosts/file`
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-generate-templates-locally.yml
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-generate-templates-locally.yml
 
 # Helper script to generate the templates for all environments
 ./generate-all-envs.sh
@@ -124,10 +124,10 @@ ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-generate-templates-
 
 ```sh
 # Include the inventory file of the environment to install using `-i path/to/hosts/file
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit --vault-password-file .vault_secret pb-apply-kvm.yml
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy --vault-password-file .vault_secret pb-apply-kvm.yml
 
 # Enforce nic configration as well
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit --vault-password-file .vault_secret pb-apply-kvm.yml -e setup_nics=yes
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy --vault-password-file .vault_secret pb-apply-kvm.yml -e setup_nics=yes
 ```
 
 ### Running Director Installation
@@ -135,27 +135,27 @@ ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit --vault-password-file 
 ```sh
 # Include the inventory file of the environment to install using `-i path/to/hosts/file`
 # Until SSL/TLS is being used on the Overcoud, use `--skip-tags A.7`
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --skip-tags A.7
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --skip-tags A.7
 
 # Run only a certain numbered section(s) of the installation guide
 # https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/director_installation_and_usage/
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1,4.2,4.3
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1,4.2,4.3
 
 # Enable debug mode for more verbose output
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1 -e debug=true
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1 -e debug=true
 ```
 
 ### Syncing latest templates in `ansible-generated/<env>` to Director
 
 ```sh
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-apply-director.yml --vault-password-file .vault_secret --tags templates
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --tags templates
 ```
 
 ### Tearing down existing Director
 
 ```sh
 # Unregister Director from Satellite, destroy and undefine libvirt domain
-ansible-playbook -i ../ansible-inventory/ibm/hosts-kermit pb-tear-down-env.yml --vault-password-file .vault_secret
+ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-tear-down-env.yml --vault-password-file .vault_secret
 ```
 
 # Ansible Vault
