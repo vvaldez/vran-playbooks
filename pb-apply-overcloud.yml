@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    full_env: "{{ datacenter }}-{{ named_env }}"
+    pb_disable_prompt: "{{ disable_prompt | default('no') }}"
+  vars_prompt:
+    - name: prompt_env
+      prompt: Confirm the environment to target
+      private: no
+  tasks:
+    - assert:
+        that:
+          - prompt_env.strip() == full_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not \
+          {{ full_env }}"
+        success_msg: "Targeting {{ prompt_env.strip() }} environment"
+      when: not pb_disable_prompt | bool
+
+  tags:
+    - always
+
+
+
+- hosts: overcloud
+  tasks:
+    - vars:
+        subscription: "{{ overcloud.subscription }}"
+      import_role:
+        name: subscription
+      tags:
+        - subscription
+      when: "subscription is defined"
