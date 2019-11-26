@@ -22,22 +22,26 @@ ansible-inventory/
 │   ├── group_vars/
 │   │   ├── all.yml
 │   │   ├── gonzo.yml
-|   |   └── kermit.yml
+│   │   ├── kermit.yml
+│   │   └── overcloud.yml
 │   ├── hosts-gonzo
 │   ├── hosts-kermit
 │   └── templates/
-│       ├── gonzo  (Datacenter specific input OSP templates)
-│       └── kermit (Datacenter specific input OSP templates)
+│       ├── shared/  # Datacenter specific input OSP templates
+│       ├── gonzo/   # Environment specific input OSP templates. These take precedence over shared/
+│       └── kermit/  # Environment specific input OSP templates. These take precedence over shared/
 └── green/
     ├── group_vars/
     │   ├── all.yml
     │   ├── dev.yml
-    │   └── test.yml
+    │   ├── test.yml
+    │   └── overcloud.yml
     ├── hosts-dev
     ├── hosts-test
     └── templates/
-        └── .... (Datacenter specific input OSP templates)
-
+        ├── shared/  # Datacenter specific input OSP templates
+        ├── dev/     # Environment specific input OSP templates. These take precedence over shared/
+        └── test/    # Environment specific input OSP templates. These take precedence over shared/
 ```
 
 # `ansible-playbooks` Structure
@@ -49,18 +53,17 @@ ansible-playbooks/
 ├── ansible.cfg
 ├── generate-all-envs.sh
 ├── pb-generate-templates-locally.yml
-├── pb-apply-director.yml
-├── pb-apply-kvm.yml
+├── pb-*.yml #### Client specific playbooks
 ├── README.md
 ├── ansible-generated/
 │   └── green-dev/
-│   │   └── ... (Output OSP templates)
+│   │   └── ...     # Output OSP templates
 │   └── green-test/
-│   │   └── ... (Output OSP templates)
+│   │   └── ...     # Output OSP templates
 │   └── ibm-gonzo/
-│   │   └── ... (Output OSP templates)
+│   │   └── ...     # Output OSP templates
 │   └── ibm-kermit/
-│       └── ... (Output OSP templates)
+│       └── ...     # Output OSP templates
 └── roles/
     └── requirements.yml
 ```
@@ -69,8 +72,8 @@ ansible-playbooks/
 
 Refactor and demo out the structure to be used for `ansible-playbooks.git` and `ansible-inventory.git` for OpenStack deployments. Some key points to achieve:
 
-- Allow for "standard" set of templates provided by `osp-templates` role
-- "standard" set of templates should be overridable by environment specific templates in `ansible-inventory.git`
+- Allow for "standard" set of templates provided by `ansible-inventory/<datacenter>/templates/shared/`
+- "standard" set of templates should be overridable by environment specific templates in `ansible-inventory/<datacenter>/templates/<environment>/`
 - Apply `director` role to Director server. This will configure from zero to `deploy.sh`
 - Branching on the `ansible-playbooks.git` repository can be used to achieve `master`, `osp10`, `osp13`, `osp14` differences
 - Only `master` branch is utilized on `ansible-inventory.git` repository. Different environments are contained to sub-folders.

@@ -20,10 +20,10 @@ resources:
     type: OS::Neutron::Subnet
     properties:
       network_id: { get_resource: provider_network }
-      cidr: 150.238.9.128/26
-      gateway_ip: 150.238.9.129
+      cidr: 150.238.2.192/27
+      gateway_ip: 150.238.2.193
       allocation_pools:
-        - start: 150.238.9.141
-          end: 150.238.9.143
+        - start: 150.238.2.212
+          end: 150.238.2.222
       enable_dhcp: true
       name: provider-subnet
