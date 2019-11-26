@@ -1,6 +1,9 @@
 # Secrets file
 .vault_secret
 
+# Ignore Ansible generated files
+ansible-errors.json
+
 # Ignore contents of files/
 files/*
 !files/.gitkeep
