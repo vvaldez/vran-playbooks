@@ -1,0 +1,47 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    vars_prompt_message: Confirm the environment to target
+    vars_prompt_expected: "{{ datacenter }}-{{ named_env }}"
+    vars_prompt_disable: "{{ disable_prompt | default('no') }}"
+  roles:
+    - vars-prompt
+  tags:
+    - always
+
+
+
+- hosts: director
+  become: yes
+  become_user: stack
+  tasks:
+    - block:
+        - name: 'source ~/stackrc && ~/ansible-generated/scripts/deploy.sh'
+          shell: |
+            source ~/stackrc && \
+            ~/ansible-generated/scripts/deploy.sh
+          async: 5400
+          poll: 60
+
+        - name: Print stack status
+          shell: |
+            source ~/stackrc && \
+            openstack stack list
+          register: shell_output
+
+        - debug:
+            var: shell_output.stdout_lines
+
+
+      rescue:
+        - name: 'Grab the deployment failure'
+          shell: |
+            source ~/stackrc && \
+            openstack stack failures list overcloud-{{ named_env }} | \
+            sed 's/\\n/\n/g'
+          register: shell_output
+
+        - debug:
+            var: shell_output.stdout_lines
