@@ -1,27 +1,39 @@
 - name: base
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-base.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-base.git
   scm: git
+  version: '1.0'
 
 - name: director
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-director.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-director.git
   scm: git
+  version: '1.0'
 
 - name: kvm
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-kvm.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-kvm.git
   scm: git
+  version: '1.0'
 
 - name: libvirt
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-libvirt.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-libvirt.git
   scm: git
+  version: '1.0'
 
 - name: network-scripts
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-network-scripts.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-network-scripts.git
   scm: git
+  version: '1.0'
 
 - name: subscription
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-subscription.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-subscription.git
   scm: git
+  version: '1.0'
 
 - name: template-directory
-  src: ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/role-template-directory.git
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-template-directory.git
   scm: git
+  version: '1.0'
+
+- name: vars-prompt
+  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-vars-prompt.git
+  scm: git
+  version: '1.0'
