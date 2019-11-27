@@ -1,6 +1,6 @@
 parameter_defaults:
   CephClientKey: {{ overcloud.ceph.CephClientKey }}
-  CephClusterFSID: 719ea386-f65e-424a-bfd5-937e933b1dec
+  CephClusterFSID: a2eb52b9-5f58-4884-b4aa-38a07486ea95
   CephExternalMonHost: 10.221.23.230, 10.221.23.231, 10.221.23.232
 
   CephClientUserName: openstack
