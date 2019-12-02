@@ -49,19 +49,19 @@
         # The network-scripts portion of the role is considered a provisioning
         # step. By default, it is not ran unless this is override to yes. When
         # re-running this role, it is probably not ideal to re-setup and restart
-        # networking. Which will happen when nic_config=yes.
+        # networking. Which will happen when setup_nics=yes.
         base_setup_nics: "{{ setup_nics | default('no') }}"
       block:
         - name: "Include network-scripts role to template
             /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
           vars:
             network_scripts_dest_path: /etc/sysconfig/network-scripts
-            network_scripts_nics: "{{ base.nics }}"
+            network_scripts_nics: "{{ kvm.nics }}"
             network_scripts_clear_existing: yes
             network_scripts_restart: yes
           include_role:
             name: network-scripts
-          when: "'nics' in base"
+          when: "'nics' in kvm"
 
       when: base_setup_nics | bool
       tags:
