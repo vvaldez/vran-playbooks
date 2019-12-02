@@ -52,6 +52,7 @@
     - block:
         - name: openstack overcloud deploy
           shell: |
+            cd ~ &&
             source ~/stackrc && \
             ~/ansible-generated/scripts/deploy.sh
           async: 5400
