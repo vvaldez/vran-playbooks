@@ -55,6 +55,14 @@
             dest: "/root/.ssh/{{ named_env }}_rsa"
             flat: yes
 
+        - name: Ensure 0600 on private key file
+          file:
+            path: "/root/.ssh/{{ named_env }}_rsa"
+            state: file
+            mode: 0600
+          become_user: root
+          delegate_to: bastion.dal10
+
         - name: Fetch the heat-admin public key locally
           fetch:
             src: "/home/stack/.ssh/id_rsa.pub"
