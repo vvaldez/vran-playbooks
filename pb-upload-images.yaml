@@ -60,8 +60,9 @@
             path: "~/.ssh/{{ named_env }}_rsa"
             state: file
             mode: 0600
-          become_user: root
-          delegate_to: bastion.dal10
+          become: no
+          connection: local
+          delegate_to: localhost
 
         - name: Fetch the heat-admin public key locally
           fetch:
