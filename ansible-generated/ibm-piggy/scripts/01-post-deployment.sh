@@ -46,3 +46,24 @@ openstack \
   --vcpus 4 \
   --ram 4096 \
   m1.small
+
+openstack \
+  network \
+  create \
+  test-network
+
+openstack \
+  subnet \
+  create \
+  --network test-network \
+  --dhcp \
+  --subnet-range 192.168.10.0/24 \
+  test-subnet
+
+openstack \
+  server \
+  create \
+  --image cirros-0.4.0 \
+  --flavor CPU_2_Memory_2048_Disk_10 \
+  --network test-network \
+  cirros_server
