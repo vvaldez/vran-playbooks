@@ -22,7 +22,7 @@ parameter_defaults:
     tripleo::firewall::firewall_rules:
       '300 Prometheus exporter':
         port: 9100
-        proto: udp
+        proto: tcp
         action: accept
       '301 Prometheus ceph-mgr plugin':
         port: 9283
