@@ -75,11 +75,8 @@ resources:
         # to configure kernel args) is migrated to host-config-and-reboot environment. As FFU is using
         # ansible (config-download), rebooting via bash (below code), will NOT work, but the expectation
         # is that kernel args will not be changed during FFU, with no reboot during FFU.
-        if [ -f /tmp/kernel_args_reboot_required.ansible ]; then
-          rm /tmp/kernel_args_reboot_required.ansible
-          systemctl stop os-collect-config.service
-          /sbin/reboot
-        fi
+        systemctl stop os-collect-config.service
+        /sbin/reboot
 
   RebootDeployment:
     type: OS::TripleO::Reboot::SoftwareDeployment
