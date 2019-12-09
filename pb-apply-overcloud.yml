@@ -16,7 +16,7 @@
 - hosts: overcloud
   tasks:
     - vars:
-        subscription: "{{ overcloud.subscription }}"
+        subscription: "{{ base.subscription }}"
       import_role:
         name: subscription
       tags:

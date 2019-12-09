@@ -16,3 +16,15 @@ parameter_defaults:
     nova::compute::vnc_keymap: ''
     nova::cpu_allocation_ratio: '32.0'
     nova::compute::libvirt::libvirt_cpu_mode: 'host-passthrough'
+
+
+  ExtraConfig:
+    tripleo::firewall::firewall_rules:
+      '300 Prometheus exporter':
+        port: 9100
+        proto: tcp
+        action: accept
+      '301 Prometheus ceph-mgr plugin':
+        port: 9283
+        proto: tcp
+        action: accept

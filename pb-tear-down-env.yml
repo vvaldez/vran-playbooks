@@ -8,18 +8,22 @@
     vars_prompt_disable: "{{ disable_prompt | default('no') }}"
   roles:
     - vars-prompt
+
   tags:
     - always
 
 
+
 - hosts: director
-  name: Unregister director
   become: yes
   become_user: root
+  ignore_unreachable: yes
+  name: Unregister director
   tasks:
     - name: Unregister director
       redhat_subscription:
         state: absent
+
   tags:
     - director
 
