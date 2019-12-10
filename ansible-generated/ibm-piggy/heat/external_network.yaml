@@ -23,7 +23,7 @@ resources:
       cidr: 150.238.2.192/27
       gateway_ip: 150.238.2.193
       allocation_pools:
-        - start: 150.238.2.212
+        - start: 150.238.2.203
           end: 150.238.2.222
       enable_dhcp: true
       name: provider-subnet
