@@ -18,7 +18,7 @@ openstack \
   provider-subnet \
   --network provider-network \
   --dhcp \
-  --allocation-pool start=150.238.9.170,end=150.238.9.190 \
+  --allocation-pool start=150.238.9.152,end=150.238.9.190 \
   --gateway 150.238.9.129 \
   --subnet-range 150.238.9.128/26
 
