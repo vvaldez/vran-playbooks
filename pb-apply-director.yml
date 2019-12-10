@@ -14,6 +14,25 @@
 
 
 - hosts: director
+  name: Apply base, subscription, and director roles
   tasks:
-    - import_role:
+    - name: Subscribe system
+      vars:
+        subscription: "{{ undercloud.subscription }}"
+      import_role:
+        name: subscription
+      when: "'subscription' in undercloud"
+      tags:
+        - subscription
+
+    - name: Apply base role
+      vars:
+        base: "{{ undercloud }}"
+      import_role:
+        name: base
+      tags:
+        - base
+
+    - name: Apply director role
+      import_role:
         name: director

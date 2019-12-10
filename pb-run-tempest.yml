@@ -1,0 +1,67 @@
+- name: Initialize Tempest
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  vars:
+    workspace_name: "tempest-{{ named_env }}"
+  tasks:
+    # Check if workspace exists already
+    - name: Check existing workspaces
+      shell: tempest workspace list -c Name -f value
+      register: shell_output
+      changed_when: false
+
+    # If not, then setup the workspace correctly
+    - block:
+        - name: tempest init
+          shell: "cd ~ && tempest init {{ workspace_name }}"
+
+        - name: Grab provider-network ID
+          shell: "source ~/overcloud-{{ named_env }}rc && openstack network show provider-network -c id -f value"
+          register: nested_shell_output
+          changed_when: false
+
+        - name: discover-tempest-config
+          shell: |
+            source ~/overcloud-{{ named_env }}rc
+
+            cd ~/{{ workspace_name }} && \
+            discover-tempest-config \
+              --convert-to-raw \
+              --network-id {{ nested_shell_output.stdout }} \
+              --create
+
+        - name: Fix etc/tempest.conf key
+          shell: "crudini --set ~/{{ workspace_name }}/etc/tempest.conf volume-feature-enabled api_v2 True"
+
+      # If anything above fails, then the workspace wasn't setup correctly
+      # Remove it by deleting the workspace directory
+      rescue:
+        - name: Delete workspace on rescue
+          file:
+            path: "~/{{ workspace_name }}"
+            state: absent
+
+        - set_fact:
+            rescued: yes
+
+      when: workspace_name not in shell_output.stdout_lines
+
+    # This block always reaches, unless rescued is defined. At that point
+    # the workspace should not exist anymore
+    - block:
+        - name: Create saved_state.json
+          shell: "cd ~/{{ workspace_name }} && tempest cleanup --init-saved-state"
+
+        - name: Run Tempest smoke tests
+          shell: "cd ~/{{ workspace_name }} && tempest run --smoke --concurrency 5"
+          register: shell_output
+
+      always:
+        - name: Tempest test output
+          debug:
+            var: shell_output.stdout_lines
+          failed_when: shell_output.rc != 0
+
+      when: rescued is not defined
