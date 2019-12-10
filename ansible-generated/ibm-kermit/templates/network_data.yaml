@@ -3,7 +3,7 @@
   vip: true
   vlan: 0
   ip_subnet: 150.238.9.128/26
-  allocation_pools: [{"start": "150.238.9.150", "end": "150.238.9.169"}]
+  allocation_pools: [{"start": "150.238.9.150", "end": "150.238.9.151"}]
   gateway_ip: 150.238.9.129
 
 - name: InternalApi
