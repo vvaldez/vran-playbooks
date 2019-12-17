@@ -136,11 +136,12 @@
         - "files/raw-images/*"
       register: shell_output
       when: "filename not in existing_images"
+      tags:
+        - images
 
     - name: Show output
       debug:
         var: shell_output.stdout
       when: shell_output.stdout is defined
-
-  tags:
-    - images
+      tags:
+        - images
