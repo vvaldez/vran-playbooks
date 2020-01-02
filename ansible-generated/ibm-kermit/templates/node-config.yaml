@@ -28,3 +28,6 @@ parameter_defaults:
         port: 9283
         proto: tcp
         action: accept
+    nova::config::nova_config:
+      'filter_scheduler/build_failure_weight_multiplier':
+        value: 1
