@@ -5,7 +5,6 @@
 resource_registry:
   OS::TripleO::ComputeDVR::PreNetworkConfig: /home/stack/ansible-generated/templates/custom/nested_virt_host_config_and_reboot.yaml
 
-
 parameter_defaults:
   ControllerCount: 3
   OvercloudControllerFlavor: control
@@ -16,9 +15,7 @@ parameter_defaults:
     nova::compute::vnc_keymap: ''
     nova::cpu_allocation_ratio: '32.0'
     nova::compute::libvirt::libvirt_cpu_mode: 'host-passthrough'
-    nova::compute::libvirt::config::libvirtd_config:
-      vnc_listen:
-        value: 0.0.0.0
+    nova::compute::libvirt::vncserver_listen: 0.0.0.0
 
   ExtraConfig:
     tripleo::firewall::firewall_rules:
