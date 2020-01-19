@@ -29,3 +29,4 @@ parameter_defaults:
     nova::config::nova_config:
       'filter_scheduler/build_failure_weight_multiplier':
         value: 1
+    nova::compute::force_config_drive: true
