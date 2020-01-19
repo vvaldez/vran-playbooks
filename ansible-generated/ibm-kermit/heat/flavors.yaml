@@ -4,7 +4,52 @@ description: >
   This Heat stack will create the initial Overcloud flavors
 
 resources:
-  c_2_d_10:
+  CPU_1_Memory_1024_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 1024
+      vcpus: 1
+      disk: 10
+      name: CPU_1_Memory_1024_Disk_10
+      is_public: true
+
+  CPU_1_Memory_1024_Disk_50:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 1024
+      vcpus: 1
+      disk: 50
+      name: CPU_1_Memory_1024_Disk_50
+      is_public: true
+
+  CPU_1_Memory_1024_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 1024
+      vcpus: 1
+      disk: 100
+      name: CPU_1_Memory_1024_Disk_100
+      is_public: true
+
+  CPU_1_Memory_2048_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 1
+      disk: 10
+      name: CPU_1_Memory_2048_Disk_10
+      is_public: true
+
+  CPU_1_Memory_2048_Disk_50:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 1
+      disk: 50
+      name: CPU_1_Memory_2048_Disk_50
+      is_public: true
+
+  CPU_2_Memory_2048_Disk_10:
     type: OS::Nova::Flavor
     properties:
       ram: 2048
@@ -13,11 +58,326 @@ resources:
       name: CPU_2_Memory_2048_Disk_10
       is_public: true
 
-  c_2_d_50:
+  CPU_2_Memory_2048_Disk_30:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 2
+      disk: 30
+      name: CPU_2_Memory_2048_Disk_30
+      is_public: true
+
+  CPU_2_Memory_2048_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 2
+      disk: 40
+      name: CPU_2_Memory_2048_Disk_40
+      is_public: true
+
+  CPU_2_Memory_2048_Disk_50:
     type: OS::Nova::Flavor
     properties:
       ram: 2048
       vcpus: 2
       disk: 50
       name: CPU_2_Memory_2048_Disk_50
+      is_public: true
+
+  CPU_2_Memory_2048_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 2048
+      vcpus: 2
+      disk: 100
+      name: CPU_2_Memory_2048_Disk_100
+      is_public: true
+
+  CPU_2_Memory_3072_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 3072
+      vcpus: 2
+      disk: 10
+      name: CPU_2_Memory_3072_Disk_10
+      is_public: true
+
+  CPU_2_Memory_3072_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 3072
+      vcpus: 2
+      disk: 40
+      name: CPU_2_Memory_3072_Disk_40
+      is_public: true
+
+  CPU_2_Memory_4096_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 2
+      disk: 10
+      name: CPU_2_Memory_4096_Disk_10
+      is_public: true
+
+  CPU_2_Memory_4096_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 2
+      disk: 40
+      name: CPU_2_Memory_4096_Disk_40
+      is_public: true
+
+  CPU_2_Memory_4096_Disk_50:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 2
+      disk: 50
+      name: CPU_2_Memory_4096_Disk_50
+      is_public: true
+
+  CPU_2_Memory_4096_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 2
+      disk: 100
+      name: CPU_2_Memory_4096_Disk_100
+      is_public: true
+
+  CPU_2_Memory_6144_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 6144
+      vcpus: 2
+      disk: 40
+      name: CPU_2_Memory_6144_Disk_40
+      is_public: true
+
+  CPU_2_Memory_6144_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 6144
+      vcpus: 2
+      disk: 100
+      name: CPU_2_Memory_6144_Disk_100
+      is_public: true
+
+  CPU_2_Memory_7168_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 7168
+      vcpus: 2
+      disk: 10
+      name: CPU_2_Memory_7168_Disk_10
+      is_public: true
+
+  CPU_2_Memory_8192_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 8192
+      vcpus: 2
+      disk: 40
+      name: CPU_2_Memory_8192_Disk_40
+      is_public: true
+
+  CPU_2_Memory_8192_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 8192
+      vcpus: 2
+      disk: 100
+      name: CPU_2_Memory_8192_Disk_100
+      is_public: true
+
+  CPU_2_Memory_11264_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 11264
+      vcpus: 2
+      disk: 40
+      name: CPU_2_Memory_11264_Disk_40
+      is_public: true
+
+  CPU_2_Memory_12288_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 12288
+      vcpus: 2
+      disk: 100
+      name: CPU_2_Memory_12288_Disk_100
+      is_public: true
+
+  CPU_4_Memory_4096_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 4
+      disk: 10
+      name: CPU_4_Memory_4096_Disk_10
+      is_public: true
+
+  CPU_4_Memory_4096_Disk_15:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 4
+      disk: 15
+      name: CPU_4_Memory_4096_Disk_15
+      is_public: true
+
+  CPU_4_Memory_4096_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 4
+      disk: 40
+      name: CPU_4_Memory_4096_Disk_40
+      is_public: true
+
+  CPU_4_Memory_4096_Disk_50:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 4096
+      vcpus: 4
+      disk: 50
+      name: CPU_4_Memory_4096_Disk_50
+      is_public: true
+
+  CPU_4_Memory_6144_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 6144
+      vcpus: 4
+      disk: 10
+      name: CPU_4_Memory_6144_Disk_10
+      is_public: true
+
+  CPU_4_Memory_6144_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 6144
+      vcpus: 4
+      disk: 40
+      name: CPU_4_Memory_6144_Disk_40
+      is_public: true
+
+  CPU_4_Memory_6144_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 6144
+      vcpus: 4
+      disk: 100
+      name: CPU_4_Memory_6144_Disk_100
+      is_public: true
+
+  CPU_4_Memory_8192_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 8192
+      vcpus: 4
+      disk: 10
+      name: CPU_4_Memory_8192_Disk_10
+      is_public: true
+
+  CPU_4_Memory_8192_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 8192
+      vcpus: 4
+      disk: 40
+      name: CPU_4_Memory_8192_Disk_40
+      is_public: true
+
+  CPU_4_Memory_8192_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 8192
+      vcpus: 4
+      disk: 100
+      name: CPU_4_Memory_8192_Disk_100
+      is_public: true
+
+  CPU_4_Memory_10240_Disk_50:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 10240
+      vcpus: 4
+      disk: 50
+      name: CPU_4_Memory_10240_Disk_50
+      is_public: true
+
+  CPU_4_Memory_10240_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 10240
+      vcpus: 4
+      disk: 100
+      name: CPU_4_Memory_10240_Disk_100
+      is_public: true
+
+  CPU_4_Memory_12288_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 12288
+      vcpus: 4
+      disk: 40
+      name: CPU_4_Memory_12288_Disk_40
+      is_public: true
+
+  CPU_4_Memory_12288_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 12288
+      vcpus: 4
+      disk: 100
+      name: CPU_4_Memory_12288_Disk_100
+      is_public: true
+
+  CPU_4_Memory_16384_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 16384
+      vcpus: 4
+      disk: 40
+      name: CPU_4_Memory_16384_Disk_40
+      is_public: true
+
+  CPU_4_Memory_16384_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 16384
+      vcpus: 4
+      disk: 100
+      name: CPU_4_Memory_16384_Disk_100
+      is_public: true
+
+  CPU_6_Memory_6144_Disk_10:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 6144
+      vcpus: 6
+      disk: 10
+      name: CPU_6_Memory_6144_Disk_10
+      is_public: true
+
+  CPU_6_Memory_16384_Disk_40:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 16384
+      vcpus: 6
+      disk: 40
+      name: CPU_6_Memory_16384_Disk_40
+      is_public: true
+
+  CPU_8_Memory_30720_Disk_100:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 30720
+      vcpus: 8
+      disk: 100
+      name: CPU_8_Memory_30720_Disk_100
       is_public: true
