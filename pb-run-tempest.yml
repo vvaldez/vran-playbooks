@@ -45,8 +45,18 @@
               --network-id {{ nested_shell_output.stdout }} \
               --create
 
-        - name: Fix etc/tempest.conf key
+        - name: Ensure crudini is installed
+          become: yes
+          become_user: root
+          yum:
+            name: crudini
+            state: installed
+
+        - name: Set volume-feature-enabled.api_v2 in tempest.conf
           shell: "crudini --set ~/{{ workspace_name }}/etc/tempest.conf volume-feature-enabled api_v2 True"
+
+        - name: Set compute.fixed_network_name in tempest.conf
+          shell: "crudini --set ~/{{ workspace_name }}/etc/tempest.conf compute fixed_network_name ansible-generated-tempest-network"
 
       # If anything above fails, then the workspace wasn't setup correctly
       # Remove it by deleting the workspace directory
