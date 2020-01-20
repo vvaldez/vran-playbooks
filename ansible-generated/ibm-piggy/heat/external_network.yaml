@@ -2,7 +2,8 @@ heat_template_version: newton
 
 description: >
   This Heat stack will create the initial Overcloud networking
-  resources for baremetal and virtual hosts
+  resources for baremetal and virtual hosts. Also creates a test network and
+  subnet to be used by Tempest.
 
 parameters:
 
@@ -27,3 +28,18 @@ resources:
           end: 150.238.2.222
       enable_dhcp: true
       name: provider-subnet
+
+  tempest_network:
+    type: OS::Neutron::Net
+    properties:
+      name: ansible-generated-tempest-network
+      shared: true
+
+  tempest_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: tempest_network }
+      cidr: 192.168.0.0/24
+      gateway_ip: 192.168.0.1
+      enable_dhcp: true
+      name: ansible-generated-tempest-subnet
