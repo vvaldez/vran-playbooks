@@ -19,3 +19,8 @@ tripleo::profile::base::sshd::options:
     - 'LC_IDENTIFICATION LC_ALL LANGUAGE'
     - 'XMODIFIERS'
   Subsystem: 'sftp  /usr/libexec/openssh/sftp-server'
+tripleo::firewall::firewall_rules:
+  '300 Prometheus exporter':
+    port: 9100
+    proto: tcp
+    action: accept
