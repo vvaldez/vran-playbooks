@@ -25,4 +25,4 @@ parameter_defaults:
     nova::config::nova_config:
       'filter_scheduler/build_failure_weight_multiplier':
         value: 0
-    nova::compute::force_config_drive: true
+    nova::compute::force_config_drive: false
