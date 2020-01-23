@@ -13,7 +13,7 @@ parameter_defaults:
 
   ComputeDVRExtraConfig:
     nova::compute::vnc_keymap: ''
-    nova::cpu_allocation_ratio: '8.0'
+    nova::cpu_allocation_ratio: '12.0'
     nova::compute::libvirt::libvirt_cpu_mode: 'host-passthrough'
 
   ExtraConfig:
