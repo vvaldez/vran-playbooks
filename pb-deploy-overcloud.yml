@@ -33,7 +33,7 @@
             state: directory
             owner: stack
             group: stack
-          with_filetree: "ansible-generated/{{ datacenter }}-{{ named_env }}"
+          with_filetree: "../ansible-inventory/ansible-generated/{{ datacenter }}-{{ named_env }}"
           when: item.state == 'directory'
 
         - name: Template ansible-generated/ deployment files to director
@@ -43,7 +43,7 @@
             owner: stack
             group: stack
             mode: preserve
-          with_filetree: "ansible-generated/{{ datacenter }}-{{ named_env }}"
+          with_filetree: "../ansible-inventory/ansible-generated/{{ datacenter }}-{{ named_env }}"
           when: item.state == 'file'
 
     # Attempt to deploy the overcloud.

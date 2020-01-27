@@ -1,3 +1,0 @@
-resource_registry:
-  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/ansible-generated/templates/nic-config/controller.yaml
-  OS::TripleO::ComputeDVR::Net::SoftwareConfig: /home/stack/ansible-generated/templates/nic-config/computedvr.yaml

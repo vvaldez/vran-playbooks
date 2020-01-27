@@ -18,6 +18,15 @@ Assumptions made:
 
 ```
 ansible-inventory/
+├── ansible-generated/
+│   └── green-dev/
+│   │   └── ...     # Output OSP templates
+│   └── green-test/
+│   │   └── ...     # Output OSP templates
+│   └── ibm-piggy/
+│   │   └── ...     # Output OSP templates
+│   └── ibm-kermit/
+│       └── ...     # Output OSP templates
 ├── ibm/
 │   ├── group_vars/
 │   │   ├── all.yml
@@ -55,15 +64,6 @@ ansible-playbooks/
 ├── pb-generate-templates-locally.yml
 ├── pb-*.yml #### Client specific playbooks
 ├── README.md
-├── ansible-generated/
-│   └── green-dev/
-│   │   └── ...     # Output OSP templates
-│   └── green-test/
-│   │   └── ...     # Output OSP templates
-│   └── ibm-piggy/
-│   │   └── ...     # Output OSP templates
-│   └── ibm-kermit/
-│       └── ...     # Output OSP templates
 └── roles/
     └── requirements.yml
 ```
@@ -221,14 +221,14 @@ $
 The workflow for generating and syncing templates on the Director is such:
 
 1. Populate variable files in `groups_vars/` in `ansible-inventory/` repo.
-2. Generate output templates into `ansible-playbooks/ansible-generated/`
-3. During a playbook run, re-template the files in `ansible-playbooks/ansible-generated/` into `/home/stack/ansible-generated/` on the director.
+2. Generate output templates into `ansible-inventory/ansible-generated/`
+3. During a playbook run, re-template the files in `ansible-inventory/ansible-generated/` into `/home/stack/ansible-generated/` on the director.
 
-Input templates (from roles or inventory) and output templates in `ansible-playbooks/ansible-generated/` are commited into Git. This is a valuable feature, as it allows for changes to input templates, re-generation of output templates, and the quick ability to `diff` the generated templates to see how changes to the input affects the output.
+Input templates (from roles or inventory) and output templates in `ansible-inventory/ansible-generated/` are commited into Git. This is a valuable feature, as it allows for changes to input templates, re-generation of output templates, and the quick ability to `diff` the generated templates to see how changes to the input affects the output.
 
-Sensitive strings in the variables files are encrypted using Ansible Vault because they should not be tracked and human readable in Git, or even on the jumpbox itself. Additionally, we do not want the decrypted strings human readable within the output templates held in `ansible-playbooks/ansible-generated/`.
+Sensitive strings in the variables files are encrypted using Ansible Vault because they should not be tracked and human readable in Git, or even on the jumpbox itself. Additionally, we do not want the decrypted strings human readable within the output templates held in `ansible-inventory/ansible-generated/`.
 
-For this reason, decryption of sensitive strings **is not performed** during **step 2** above, where output templates get generated into `ansible-playbooks/ansible-generated/`. At this step we simply put the place holder for the variable into the output templates. Actual decryption of these senstive strings is **only** performed during **step 3**. The human-readable decrypted strings are then only placed onto the director box within `/home/stack/ansible-generated/`.
+For this reason, decryption of sensitive strings **is not performed** during **step 2** above, where output templates get generated into `ansible-inventory/ansible-generated/`. At this step we simply put the place holder for the variable into the output templates. Actual decryption of these senstive strings is **only** performed during **step 3**. The human-readable decrypted strings are then only placed onto the director box within `/home/stack/ansible-generated/`.
 
 Example of an input template `instackenv.yml` utilizing an encrypted string (The actual Jinja2 variable substitution is [escaped](https://jinja.palletsprojects.com/en/2.10.x/templates/#escaping):
 
@@ -238,7 +238,7 @@ Example of an input template `instackenv.yml` utilizing an encrypted string (The
     pm_password: '{{ '{{' }} instackenv.pm.password }}'
 ```
 
-Example of the generated output template in `ansible-playbooks/ansible-generated/instackenv.yml`:
+Example of the generated output template in `ansible-inventory/ansible-generated/instackenv.yml`:
 
 ```yml
     pm_type: pxe_ipmitool
