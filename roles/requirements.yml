@@ -6,7 +6,7 @@
 - name: director
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-director.git
   scm: git
-  version: '1.1'
+  version: '1.2'
 
 - name: kvm
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-kvm.git
@@ -36,4 +36,4 @@
 - name: vars-prompt
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-vars-prompt.git
   scm: git
-  version: '1.0'
+  version: '1.1'
