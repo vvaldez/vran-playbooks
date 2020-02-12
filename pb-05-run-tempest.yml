@@ -78,7 +78,7 @@
           shell: "cd ~/{{ workspace_name }} && tempest cleanup --init-saved-state"
 
         - name: Run Tempest smoke tests
-          shell: "cd ~/{{ workspace_name }} && tempest run --smoke --concurrency 5"
+          shell: "cd ~/{{ workspace_name }} && tempest run --smoke --concurrency 1"
           register: shell_output
 
       always:
