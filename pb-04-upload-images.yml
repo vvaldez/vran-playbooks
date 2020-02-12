@@ -81,19 +81,29 @@
           changed_when: false
 
         - name: Create the base-flavors stack if it doesn't exist
-          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/flavors.yaml base-flavors --wait"
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/flavors.yaml ansible-generated-base-flavors --wait"
           register: shell_output
-          when: "'base-flavors' not in stack_output.stdout_lines"
+          when: "'ansible-generated-base-flavors' not in stack_output.stdout_lines"
 
         - name: Show output
           debug:
             var: shell_output.stdout
           when: shell_output.stdout is defined
 
-        - name: Create the base-networks stack if it doesn't exist
-          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/external_network.yaml base-networks --wait"
+        - name: Create the ansible-generated-base-networks stack if it doesn't exist
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/external_network.yaml ansible-generated-base-networks --wait"
           register: shell_output
-          when: "'base-networks' not in stack_output.stdout_lines"
+          when: "'ansible-generated-base-networks' not in stack_output.stdout_lines"
+
+        - name: Show output
+          debug:
+            var: shell_output.stdout
+          when: shell_output.stdout is defined
+
+        - name: Create the ansible-generated-tempest-networks stack if it doesn't exist
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/external_network.yaml ansible-generated-tempest-networks --wait"
+          register: shell_output
+          when: "'ansible-generated-tempest-networks' not in stack_output.stdout_lines"
 
         - name: Show output
           debug:
