@@ -18,10 +18,13 @@
   tasks:
     - name: Subscribe system
       vars:
-        subscription: "{{ undercloud.subscription }}"
+        rhsm_server_hostname: "{{ undercloud.subscription.rhsm_server_hostname }}"
+        rhsm_org_id: "{{ undercloud.subscription.rhsm_org_id }}"
+        rhsm_activationkey: "{{ undercloud.subscription.rhsm_activationkey }}"
+        rhsm_repositories: "{{ undercloud.subscription.rhsm_repositories }}"
       import_role:
-        name: subscription
-      when: "'subscription' in undercloud"
+        name: rhsm
+      when: "undercloud is defined and'subscription' in undercloud"
       tags:
         - subscription
 

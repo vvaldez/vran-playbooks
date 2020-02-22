@@ -16,9 +16,12 @@
 - hosts: overcloud
   tasks:
     - vars:
-        subscription: "{{ overcloud.subscription }}"
+        rhsm_server_hostname: "{{ overcloud.subscription.rhsm_server_hostname }}"
+        rhsm_org_id: "{{ overcloud.subscription.rhsm_org_id }}"
+        rhsm_activationkey: "{{ overcloud.subscription.rhsm_activationkey }}"
+        rhsm_repositories: "{{ overcloud.subscription.rhsm_repositories }}"
       import_role:
-        name: subscription
+        name: rhsm
       tags:
+      when: "overcloud is defined and 'subscription' in overcloud"
         - subscription
-      when: "subscription is defined"
