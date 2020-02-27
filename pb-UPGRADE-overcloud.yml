@@ -12,7 +12,7 @@
     - always
 
 
-# https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/keeping_red_hat_openstack_platform_updated/index
+# https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/keeping_red_hat_openstack_platform_updated/index#assembly-upgrading_the_undercloud
 - name: 3.1. Performing a minor update of an undercloud
   hosts: director
   become: yes
