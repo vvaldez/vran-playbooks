@@ -32,9 +32,12 @@
 - hosts: kvm
   tasks:
     - vars:
-        subscription: "{{ kvm.subscription }}"
+        rhsm_server_hostname: "{{ kvm.subscription.rhsm_server_hostname }}"
+        rhsm_org_id: "{{ kvm.subscription.rhsm_org_id }}"
+        rhsm_activationkey: "{{ kvm.subscription.rhsm_activationkey }}"
+        rhsm_repositories: "{{ kvm.subscription.rhsm_repositories }}"
       import_role:
-        name: subscription
+        name: rhsm
       tags:
         - subscription
       when: "kvm is defined and 'subscription' in kvm"
