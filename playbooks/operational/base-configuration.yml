@@ -38,10 +38,13 @@
         - network
 
     - vars:
-        subscription: "{{ base.subscription }}"
+        rhsm_server_hostname: "{{ base.subscription.rhsm_server_hostname }}"
+        rhsm_org_id: "{{ base.subscription.rhsm_org_id }}"
+        rhsm_activationkey: "{{ base.subscription.rhsm_activationkey }}"
+        rhsm_repositories: "{{ base.subscription.rhsm_repositories }}"
       import_role:
-        name: subscription
-      when: "'subscription' in base"
+        name: rhsm
+      when: "base is defined and 'subscription' in base"
       tags:
         - subscription
 

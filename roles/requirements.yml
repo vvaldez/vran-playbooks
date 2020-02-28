@@ -23,10 +23,9 @@
   scm: git
   version: '1.0'
 
-- name: subscription
-  src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-subscription.git
+- name: rhsm
+  src: git@github.com:oasis-roles/rhsm.git
   scm: git
-  version: '1.0'
 
 - name: template-directory
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-template-directory.git
