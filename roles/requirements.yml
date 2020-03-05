@@ -1,7 +1,11 @@
 - name: base
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-base.git
   scm: git
-  version: '1.0'
+  version: '1.1'
+
+- name: chrony
+  src: git@github.com:oasis-roles/chrony.git
+  scm: git
 
 - name: director
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-director.git
@@ -21,7 +25,7 @@
 - name: network-scripts
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-network-scripts.git
   scm: git
-  version: '1.0'
+  version: '1.1'
 
 - name: rhsm
   src: git@github.com:oasis-roles/rhsm.git
