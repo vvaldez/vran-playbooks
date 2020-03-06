@@ -1,0 +1,13 @@
+- hosts: director
+  become: yes
+  become_user: stack
+  collections:
+    - tripleo.operator
+  tasks:
+    - import_role:
+        name: tripleo_overcloud_status
+      vars:
+        tripleo_overcloud_status_plan: overcloud-piggy
+
+    - debug:
+        var: tripleo_overcloud_status_result.stdout_lines
