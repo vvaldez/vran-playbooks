@@ -10,7 +10,7 @@
 - name: director
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-director.git
   scm: git
-  version: '1.2'
+  version: '1.3'
 
 - name: kvm
   src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-kvm.git
