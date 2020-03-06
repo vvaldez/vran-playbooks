@@ -6,7 +6,7 @@
     cluster_dir: "../ansible-inventory/{{ datacenter }}/\
       templates/{{ named_env }}/"
     tmp_dir: "/tmp/ansible-generated/{{ datacenter }}-{{ named_env }}"
-    output_dir: "../ansible-inventory/ansible-generated"
+    output_dir: "../ansible-inventory/{{ datacenter }}/ansible-generated"
     quick: no
   tasks:
     - name: Ensure {{ tmp_dir }} doesn't already exist
