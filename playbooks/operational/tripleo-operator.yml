@@ -1,6 +1,4 @@
 - hosts: director
-  become: yes
-  become_user: stack
   collections:
     - tripleo.operator
   tasks:
