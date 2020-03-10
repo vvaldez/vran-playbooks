@@ -16,21 +16,7 @@
 - hosts: director
   name: Apply base, subscription, and director roles
   tasks:
-    - name: Subscribe system
-      vars:
-        rhsm_server_hostname: "{{ undercloud.subscription.rhsm_server_hostname }}"
-        rhsm_org_id: "{{ undercloud.subscription.rhsm_org_id }}"
-        rhsm_activationkey: "{{ undercloud.subscription.rhsm_activationkey }}"
-        rhsm_repositories: "{{ undercloud.subscription.rhsm_repositories }}"
-      import_role:
-        name: rhsm
-      when: "undercloud is defined and'subscription' in undercloud"
-      tags:
-        - subscription
-
     - name: Apply base role
-      vars:
-        base: "{{ undercloud }}"
       import_role:
         name: base
       tags:
