@@ -9,23 +9,27 @@ vrrp_script chk_haproxy {
 }
 
 vrrp_instance VI_1 {
-    interface eth1
-    {% if id_from_host == "0" %}
+    interface eth0
+{% if id_from_host.stdout|int == 0 %}
     state MASTER
-    priority 100
-    {% else %}
-    state BACKUP
     priority 200
-    {% endif %}
+{% else %}
+    state BACKUP
+    priority 100
+{% endif %}
+
+    track_interface {
+      eth0
+    }
 
     virtual_router_id 33
     unicast_src_ip {{ ansible_eth0.ipv4.address }}
     unicast_peer {
-    {% for gh in groups['glb'] %}
-    {% if hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] != ansible_eth0.ipv4.address %}
-{{ hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] }}
-    {% endif %}
-    {% endfor %}
+{% for gh in groups['glb'] %}
+{% if hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] != ansible_eth0.ipv4.address %}
+     {{ hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] }}
+{% endif %}
+{% endfor %}
     }
 
     authentication {
@@ -38,7 +42,7 @@ vrrp_instance VI_1 {
     }
 
   virtual_ipaddress {
-    {{ loadbalancer_vip }} # virtual ip address
+    {{ loadbalancer_vip }} dev eth1# virtual ip address
   }
 
 }
