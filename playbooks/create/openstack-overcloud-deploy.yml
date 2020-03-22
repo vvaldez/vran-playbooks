@@ -33,7 +33,7 @@
             state: directory
             owner: stack
             group: stack
-          with_filetree: "../ansible-inventory/ansible-generated/{{ datacenter }}-{{ named_env }}"
+          with_filetree: "{{ inventory_dir }}/ansible-generated/{{ datacenter }}-{{ named_env }}"
           when: item.state == 'directory'
 
         - name: Template ansible-generated/ deployment files to director
@@ -43,20 +43,33 @@
             owner: stack
             group: stack
             mode: preserve
-          with_filetree: "../ansible-inventory/ansible-generated/{{ datacenter }}-{{ named_env }}"
+          with_filetree: "{{ inventory_dir }}/ansible-generated/{{ datacenter }}-{{ named_env }}"
           when: item.state == 'file'
+      tags:
+        - templates
 
     # Attempt to deploy the overcloud.
     # If success, print the stack status
     # If failure, print the failures
     - block:
         - name: openstack overcloud deploy
-          shell: |
-            cd ~ &&
-            source ~/stackrc && \
-            ~/ansible-generated/scripts/deploy.sh
-          async: 5400
-          poll: 60
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_deploy
+          vars:
+            CNF: /home/stack/ansible-generated/templates
+            THT: /usr/share/openstack-tripleo-heat-templates
+            tripleo_overcloud_deploy_debug: true
+            tripleo_overcloud_deploy_environment_files: "{{ overcloud.environment_files }}"
+            tripleo_overcloud_deploy_home_dir: /home/stack
+            tripleo_overcloud_deploy_log_output: false
+            tripleo_overcloud_deploy_networks_file: "{{ overcloud.networks_file }}"
+            tripleo_overcloud_deploy_roles_file: "{{ overcloud.roles_file }}"
+            tripleo_overcloud_deploy_stack: "{{ overcloud.stack_name }}"
+            tripleo_overcloud_deploy_timeout: 7200
+            tripleo_overcloud_deploy_poll: 60
+
+        - debug:
+            var: tripleo_overcloud_deploy_result.stdout_lines
 
         - name: openstack stack list
           shell: |
@@ -81,3 +94,6 @@
         - debug:
             var: shell_output.stdout_lines
           changed_when: false
+
+      tags:
+        - deploy
