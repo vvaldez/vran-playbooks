@@ -1,0 +1,87 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    vars_prompt_message: Confirm the environment to target
+    vars_prompt_expected: "{{ datacenter }}-{{ named_env }}"
+    vars_prompt_disable: "{{ disable_prompt | default('no') }}"
+  roles:
+    - vars-prompt
+  tags:
+    - always
+
+
+# https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/keeping_red_hat_openstack_platform_updated/index#assembly-upgrading_the_undercloud
+- name: 3.1. Performing a minor update of an undercloud
+  hosts: director
+  tasks:
+    - yum:
+        name: python-tripleoclient
+        state: latest
+
+    - become: yes
+      become_user: stack
+      import_role:
+        name: tripleo.operator.tripleo_undercloud_upgrade
+      vars:
+        tripleo_undercloud_upgrade_debug: false
+        tripleo_undercloud_upgrade_home_dir: /home/stack
+        tripleo_undercloud_upgrade_log_output: false
+
+    - debug:
+        var: tripleo_undercloud_upgrade_result.stdout_lines
+
+    - name: Reboot
+      reboot:
+
+  tags:
+    - upgrade
+
+
+- name: 3.2. Updating the overcloud images
+  hosts: director
+  become: yes
+  become_user: stack
+  tasks:
+    - file:
+        path: /home/stack/images/*
+        state: absent
+
+    - shell: |
+        cd /home/stack/images
+        tar -xvf {{ item }}
+      loop:
+        - /usr/share/rhosp-director-images/overcloud-full-latest-13.0.tar
+        - /usr/share/rhosp-director-images/ironic-python-agent-latest-13.0.tar
+
+    - import_role:
+        name: tripleo.operator.tripleo_overcloud_image_upload
+      vars:
+        tripleo_overcloud_image_upload_debug: false
+        tripleo_overcloud_image_upload_home_dir: /home/stack
+        tripleo_overcloud_image_upload_image_path: /home/stack/images
+        tripleo_overcloud_image_upload_log_output: false
+        tripleo_overcloud_image_upload_update_existing: true
+
+    - debug:
+        var: tripleo_overcloud_image_upload_output
+
+    - import_role:
+        name: tripleo.operator.tripleo_overcloud_node_configure
+      vars:
+        tripleo_overcloud_node_configure_all_manageable: true
+
+    - debug:
+        var: tripleo_overcloud_node_configure_output.stdout_lines
+
+    - shell: |
+        source /home/stack/stackrc
+        openstack image list
+      register: shell_output
+
+    - debug:
+        var: shell_output.stdout_lines
+
+  tags:
+    - images
