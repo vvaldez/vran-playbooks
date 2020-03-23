@@ -25,3 +25,10 @@
     - name: Apply director role
       import_role:
         name: director
+
+    - name: Set overcloud flavors to use UEFI
+      shell: |
+        source /home/stack/stackrc;
+
+        openstack flavor set --property capabilities:boot_mode='uefi' control
+        openstack flavor set --property capabilities:boot_mode='uefi' compute

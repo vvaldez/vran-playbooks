@@ -23,7 +23,7 @@
         - name: Grab overcloudrc file from the Director locally
           fetch:
             src: "/home/stack/overcloud-{{ named_env }}rc"
-            dest: "files/overcloud-{{ named_env}}rc.public"
+            dest: "{{ playbook_dir }}/files/overcloud-{{ named_env}}rc.public"
             flat: yes
 
         - name: Grab the private keystone endpoint to use
@@ -43,6 +43,22 @@
             existing_images: "{{ image_output.stdout_lines }}"
           delegate_to: bastion.dal10
           delegate_facts: yes
+
+        - name: Make a copy of overcloudrc for private endpoint
+          copy:
+            src: "{{ playbook_dir }}/files/overcloud-{{ named_env }}rc.public"
+            dest: "{{ playbook_dir }}/files/overcloud-{{ named_env }}rc.private"
+            force: no
+          delegate_to: localhost
+          become: no
+
+        - name: Replace the public endpoint with the private endpoint in overcloudrc
+          replace:
+            path: "{{ playbook_dir }}/files/overcloud-{{ named_env}}rc.private"
+            regexp: '(.*=)(.*)(//.*)'
+            replace: '\1{{ shell_output.stdout }}\3'
+          delegate_to: localhost
+          become: no
 
       tags:
         - overcloudrc
@@ -101,7 +117,7 @@
           when: shell_output.stdout is defined
 
         - name: Create the ansible-generated-tempest-networks stack if it doesn't exist
-          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/external_network.yaml ansible-generated-tempest-networks --wait"
+          shell: ". ~/overcloud-{{ named_env }}rc && openstack stack create -t ~/ansible-generated/heat/external_tempest.yaml ansible-generated-tempest-networks --wait"
           register: shell_output
           when: "'ansible-generated-tempest-networks' not in stack_output.stdout_lines"
 
@@ -112,46 +128,3 @@
 
       tags:
         - stacks
-
-
-
-- hosts: bastion.dal10
-  name: Upload each image in files/raw-images/*
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: Make a copy of overcloudrc for private endpoint
-      copy:
-        src: files/overcloud-{{ named_env }}rc.public
-        dest: files/overcloud-{{ named_env }}rc.private
-        force: no
-
-    - name: Replace the public endpoint with the private endpoint in overcloudrc
-      replace:
-        path: "files/overcloud-{{ named_env}}rc.private"
-        regexp: '(.*=)(.*)(//.*)'
-        replace: '\1{{ auth_url }}\3'
-
-    - name: Create image if it doesn't already exist
-      vars:
-        filename: "{{ item | basename }}"
-      shell: |
-        . files/overcloud-{{ named_env }}rc.private &&
-        openstack image create \
-        --disk-format raw \
-        --container-format bare \
-        --file {{ item }} \
-        {{ filename }}
-      with_fileglob:
-        - "files/raw-images/*"
-      register: shell_output
-      when: "filename not in existing_images"
-      tags:
-        - images
-
-    - name: Show output
-      debug:
-        var: shell_output.stdout
-      when: shell_output.stdout is defined
-      tags:
-        - images
