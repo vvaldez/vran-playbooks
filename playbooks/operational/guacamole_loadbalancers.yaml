@@ -30,7 +30,7 @@
         name: haproxy
         state: started
         enabled: yes
-    - name: Register host ID from short hostname assumes lb0x
+    - name: Register vip subnet from VIP
       shell: "hostname -s |cut -c4"
       register: id_from_host
     - name: Install keepalived

@@ -41,9 +41,14 @@ vrrp_instance VI_1 {
         chk_haproxy
     }
 
-  virtual_ipaddress {
-    {{ loadbalancer_vip }} dev eth1# virtual ip address
-  }
+    virtual_ipaddress {
+      {{ loadbalancer_vip }} dev eth1# virtual ip address
+    }
+    
+    virtual_routes {
+      {{ loadbalancer_vip_net }} scope link src {{ loadbalancer_vip }} dev eth1
+      default via {{ loadbalancer_gw }} dev eth1 src {{ loadbalancer_vip }}
+    }
 
 }
 
