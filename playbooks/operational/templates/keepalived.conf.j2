@@ -47,7 +47,7 @@ vrrp_instance VI_1 {
     
     virtual_routes {
       {{ loadbalancer_vip_net }} scope link src {{ loadbalancer_vip }} dev eth1
-      default via {{ loadbalancer_gw }} dev eth1 src {{ loadbalancer_vip }}
+      default via {{ loadbalancer_vip_gw }} dev eth1 src {{ loadbalancer_vip }}
     }
 
 }
