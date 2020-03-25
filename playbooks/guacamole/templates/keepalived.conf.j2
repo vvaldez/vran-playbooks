@@ -1,0 +1,53 @@
+global_defs {
+    enable_script_security
+    script_user root
+}
+
+vrrp_script chk_haproxy {
+    script "/usr/sbin/pidof haproxy"
+    interval 2
+}
+
+vrrp_instance VI_1 {
+    interface eth0
+{% if id_from_host.stdout|int == 0 %}
+    state MASTER
+    priority 200
+{% else %}
+    state BACKUP
+    priority 100
+{% endif %}
+
+    track_interface {
+      eth0
+    }
+
+    virtual_router_id 33
+    unicast_src_ip {{ ansible_eth0.ipv4.address }}
+    unicast_peer {
+{% for gh in groups['glb'] %}
+{% if hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] != ansible_eth0.ipv4.address %}
+     {{ hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] }}
+{% endif %}
+{% endfor %}
+    }
+
+    authentication {
+        auth_type PASS
+        auth_pass {{ guacamole.keepalived_password }}
+    }
+
+    track_script {
+        chk_haproxy
+    }
+
+    virtual_ipaddress {
+      {{ guacamole.loadbalancer_vip }} dev eth1# virtual ip address
+    }
+
+    virtual_routes {
+      {{ guacamole.loadbalancer_vip_net }} scope link src {{ guacamole.loadbalancer_vip }} dev eth1
+      default via {{ guacamole.loadbalancer_vip_gw }} dev eth1 src {{ guacamole.loadbalancer_vip }}
+    }
+
+}

@@ -1,0 +1,73 @@
+---
+- name: Pull backend server facts
+  hosts: gsrv
+  gather_facts: true
+
+
+
+- name: Install and configure haproxy and keepalived
+  hosts: glb
+  gather_facts: true
+  vars:
+    lb_firewalld_services:
+      - ssh
+      - http
+      - https
+
+
+
+  tasks:
+    - name: Update packages using yum
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install HAProxy
+      yum:
+        name: "haproxy"
+        state: present
+
+    - name: Configure haproxy.cfg
+      template:
+        src: templates/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+
+    - name: Enable and start haproxy
+      systemd:
+        name: haproxy
+        state: started
+        enabled: yes
+
+    - name: Register vip subnet from VIP
+      shell: "hostname -s |cut -c4"
+      register: id_from_host
+
+    - name: Install keepalived
+      yum:
+        name: "keepalived"
+        state: present
+
+    - name: Configure keepalived.conf
+      template:
+        src: templates/keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+
+    - name: Enable and start keepalived
+      systemd:
+        name: keepalived
+        state: started
+        enabled: yes
+
+    - name: Make sure a service is running
+      systemd:
+        state: started
+        name: firewalld
+
+    - name: Enable firewall services for loadbalancer in public zone
+      firewalld:
+        service: "{{ item }}"
+        zone: public
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ lb_firewalld_services }}"

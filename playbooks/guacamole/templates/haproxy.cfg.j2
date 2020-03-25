@@ -1,0 +1,60 @@
+global
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    stats socket /var/lib/haproxy/stats
+
+defaults
+    mode http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor  #     except 127.0.0.0/8
+    retries                 2
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+
+frontend  main
+    bind *:80
+    mode http
+
+    acl is_g1 urlp(route) g1
+    acl is_g2 urlp(route) g2
+    acl is_g3 urlp(route) g3
+    use_backend vnc00 if is_g1
+    use_backend vnc01 if is_g2
+    use_backend vnc02 if is_g3
+
+    default_backend         web
+
+#---------------------------------------------------------------------
+# round robin balancing between the various backends
+#---------------------------------------------------------------------
+
+backend web
+    balance	leastconn
+    {% for gh in groups['gsrv'] %}
+    server {{ hostvars[gh]['inventory_hostname_short'] }} {{ hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] }}:80 check
+    {% endfor %}
+
+{% for gh in groups['gsrv'] %}
+backend {{ hostvars[gh]['inventory_hostname_short'] }}
+    server {{ hostvars[gh]['inventory_hostname_short'] }} {{ hostvars[gh]['ansible_facts']['eth0']['ipv4']['address'] }}:80 check
+{% endfor %}

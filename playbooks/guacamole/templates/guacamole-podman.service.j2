@@ -1,0 +1,10 @@
+[Unit]
+Description=Guacamole container
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/podman start -a guacamole_web
+ExecStop=/usr/bin/podman stop -t 2 guacamole_web
+
+[Install]
+WantedBy=local.target

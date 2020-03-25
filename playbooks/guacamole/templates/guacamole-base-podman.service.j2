@@ -1,0 +1,10 @@
+[Unit]
+Description=Guacamole base 
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/podman start -a guacamole_base
+ExecStop=/usr/bin/podman stop -t 2 guacamole_base
+
+[Install]
+WantedBy=local.target
