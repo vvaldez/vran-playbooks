@@ -34,7 +34,7 @@ vrrp_instance VI_1 {
 
     authentication {
         auth_type PASS
-        auth_pass {{ keepalived_password }}
+        auth_pass {{ guacamole.keepalived_password }}
     }
 
     track_script {
@@ -42,13 +42,12 @@ vrrp_instance VI_1 {
     }
 
     virtual_ipaddress {
-      {{ loadbalancer_vip }} dev eth1# virtual ip address
+      {{ guacamole.loadbalancer_vip }} dev eth1# virtual ip address
     }
-    
+
     virtual_routes {
-      {{ loadbalancer_vip_net }} scope link src {{ loadbalancer_vip }} dev eth1
-      default via {{ loadbalancer_vip_gw }} dev eth1 src {{ loadbalancer_vip }}
+      {{ guacamole.loadbalancer_vip_net }} scope link src {{ guacamole.loadbalancer_vip }} dev eth1
+      default via {{ guacamole.loadbalancer_vip_gw }} dev eth1 src {{ guacamole.loadbalancer_vip }}
     }
 
 }
-
