@@ -90,10 +90,10 @@
       shell: "podman container rm -f guacamole_web"
       ignore_errors: yes
     - name: Clean up previous guac_base pod install
-      shell: "podman container rm -f guacamole_web"
+      shell: "podman container rm -f guacamole_base"
       ignore_errors: yes
     - name: Run Guac Daemon
-      shell: "podman run --net host --name base-guacd -e GUACD_LOG_LEVEL=debug -d guacamole/guacd"
+      shell: "podman run --net host --name guacamole_base -e GUACD_LOG_LEVEL=debug -d guacamole/guacd"
     - name: Create systemd service script for Guac Base
       template:
         src: templates/guacamole-base-podman.service.j2
