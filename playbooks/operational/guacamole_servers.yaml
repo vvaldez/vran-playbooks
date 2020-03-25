@@ -86,15 +86,35 @@
         name: container_manage_cgroup
         state: yes
         persistent: yes
-    - name: Clean up previous guac pod install
+    - name: Clean up previous guac_web pod install
       shell: "podman container rm -f guacamole_web"
       ignore_errors: yes
-    - name: Run Guac server
+    - name: Clean up previous guac_base pod install
+      shell: "podman container rm -f guacamole_web"
+      ignore_errors: yes
+    - name: Run Guac Daemon
+      shell: "podman run --net host --name base-guacd -e GUACD_LOG_LEVEL=debug -d guacamole/guacd"
+    - name: Create systemd service script for Guac Base
+      template:
+        src: templates/guacamole-base-podman.service.j2
+        dest: /etc/systemd/system/guacamole-base-podman.service
+    - name: Run Guac web server
       shell: "podman run --name guacamole_web -p 8080:8080 --net=host -e GUACD_HOSTNAME=localhost -e GUACD_PORT=4822 -e JWT_SECRET_KEY={{ guac_secret_key }} -d guacamole-jwt"
     - name: Create systemd service script for Guac Pod
       template:
         src: templates/guacamole-podman.service.j2
         dest: /etc/systemd/system/guacamole-podman.service
+    - name: Enable and start Guacamole Base
+      systemd:
+        name: guacamole-base-podman.service
+        state: started
+        enabled: yes
+    - name: Enable and start Guacamole Web Services
+      systemd:
+        name: guacamole-podman.service
+        state: started
+        enabled: yes
+
     - name: Enable and start Guacamole
       systemd:
         name: guacamole-podman.service
