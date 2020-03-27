@@ -35,6 +35,9 @@ frontend  main
     bind *:80
     mode http
 
+    bind *:443 ssl crt /etc/ssl/certs/ole.redhat.com-2019.pem
+    redirect scheme https if !{ ssl_fc }
+
     acl is_g1 urlp(route) g1
     acl is_g2 urlp(route) g2
     acl is_g3 urlp(route) g3
