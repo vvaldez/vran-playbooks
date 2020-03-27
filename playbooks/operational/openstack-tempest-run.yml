@@ -11,6 +11,31 @@
   tags:
     - always
 
+
+
+- name: Remove existing workspace
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  vars:
+    remove: no
+  tasks:
+    - block:
+        - name: Remove existing tempest workspace
+          shell: |
+            tempest workspace list
+            tempest workspace remove --name tempest-{{ named_env }}
+
+        - name: Remove existing tempest director
+          file:
+            path: "/home/stack/tempest-{{ named_env }}"
+            state: absent
+
+      when: remove | bool
+
+
+
 - name: Initialize Tempest
   hosts: director
   become: yes
