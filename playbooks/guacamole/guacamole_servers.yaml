@@ -74,7 +74,7 @@
     - name: Enable and start NGINX
       systemd:
         name: rh-nginx18-nginx.service
-        state: started
+        state: restarted
         enabled: yes
 
     - name: Import ssh key for git access

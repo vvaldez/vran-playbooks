@@ -40,7 +40,7 @@
     - name: Enable and start haproxy
       systemd:
         name: haproxy
-        state: started
+        state: restarted
         enabled: yes
 
     - name: Register vip subnet from VIP
@@ -60,7 +60,7 @@
     - name: Enable and start keepalived
       systemd:
         name: keepalived
-        state: started
+        state: restarted
         enabled: yes
 
     - name: Make sure a service is running
