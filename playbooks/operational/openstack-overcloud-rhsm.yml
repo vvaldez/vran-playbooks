@@ -1,0 +1,37 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    vars_prompt_message: Confirm the environment to target
+    vars_prompt_expected: "{{ datacenter }}-{{ named_env }}"
+    vars_prompt_disable: "{{ disable_prompt | default('no') }}"
+  roles:
+    - vars-prompt
+  tags:
+    - always
+
+
+
+- hosts: overcloud
+  become: yes
+  become_user: root
+  tasks:
+    - name: Subscribe to Satellite
+      block:
+        - name: Install katello package
+          yum:
+            name: "https://{{ overcloud.subscription.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+            state: installed
+            validate_certs: no
+
+        - vars:
+            rhsm_server_hostname: "{{ overcloud.subscription.rhsm_server_hostname }}"
+            rhsm_org_id: "{{ overcloud.subscription.rhsm_org_id }}"
+            rhsm_activationkey: "{{ overcloud.subscription.rhsm_activationkey }}"
+            rhsm_repositories: "{{ overcloud.subscription.rhsm_repositories }}"
+          import_role:
+            name: rhsm
+      when: "overcloud is defined and 'subscription' in overcloud"
+      tags:
+        - subscription

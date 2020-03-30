@@ -11,6 +11,31 @@
   tags:
     - always
 
+
+
+- name: Remove existing workspace
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  vars:
+    remove: no
+  tasks:
+    - block:
+        - name: Remove existing tempest workspace
+          shell: |
+            tempest workspace list
+            tempest workspace remove --name tempest-{{ named_env }}
+
+        - name: Remove existing tempest director
+          file:
+            path: "/home/stack/tempest-{{ named_env }}"
+            state: absent
+
+      when: remove | bool
+
+
+
 - name: Initialize Tempest
   hosts: director
   become: yes
@@ -18,6 +43,8 @@
   gather_facts: no
   vars:
     workspace_name: "tempest-{{ named_env }}"
+    # Setting this to 0 causes the default value (system vcpus) to be used.
+    concurrency: 0
   tasks:
     # Check if workspace exists already
     - name: Check existing workspaces
@@ -58,6 +85,9 @@
         - name: Set compute.fixed_network_name in tempest.conf
           shell: "crudini --set ~/{{ workspace_name }}/etc/tempest.conf compute fixed_network_name ansible-generated-tempest-network"
 
+        - name: Set compute.min_compute_nodes in tempest.conf
+          shell: "crudini --set ~/{{ workspace_name }}/etc/tempest.conf compute min_compute_nodes 6"
+
       # If anything above fails, then the workspace wasn't setup correctly
       # Remove it by deleting the workspace directory
       rescue:
@@ -78,7 +108,7 @@
           shell: "cd ~/{{ workspace_name }} && tempest cleanup --init-saved-state"
 
         - name: Run Tempest smoke tests
-          shell: "cd ~/{{ workspace_name }} && tempest run --smoke --concurrency 1"
+          shell: "cd ~/{{ workspace_name }} && tempest run --smoke {{ concurrency | ternary(\"--concurrency %s\" % concurrency, '') }}"
           register: shell_output
 
       always:
@@ -86,5 +116,7 @@
           debug:
             var: shell_output.stdout_lines
           failed_when: shell_output.rc != 0
+      tags:
+        - run
 
       when: rescued is not defined
