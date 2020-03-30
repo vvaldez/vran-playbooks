@@ -27,6 +27,11 @@
         name: "haproxy"
         state: present
 
+    - name: Configure Guacamole SSL for HA Proxy
+      template:
+        src: templates/guacamole.pem.j2
+        dest: /etc/ssl/certs/ole.redhat.com-2019.pem
+
     - name: Configure haproxy.cfg
       template:
         src: templates/haproxy.cfg.j2
@@ -35,7 +40,7 @@
     - name: Enable and start haproxy
       systemd:
         name: haproxy
-        state: started
+        state: restarted
         enabled: yes
 
     - name: Register vip subnet from VIP
@@ -55,7 +60,7 @@
     - name: Enable and start keepalived
       systemd:
         name: keepalived
-        state: started
+        state: restarted
         enabled: yes
 
     - name: Make sure a service is running
