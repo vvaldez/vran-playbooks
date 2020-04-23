@@ -13,7 +13,7 @@
 
 
 
-- name: Remove existing workspace
+- name: Remove existing workspace. Set `-e remove=yes` to run.
   hosts: director
   become: yes
   become_user: stack
@@ -36,7 +36,7 @@
 
 
 
-- name: Initialize Tempest
+- name: Initialize and run Tempest. The default concurrency is number of undercloud vcpus. Set `-e concurrency=<num>` to override.
   hosts: director
   become: yes
   become_user: stack
