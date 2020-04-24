@@ -13,65 +13,26 @@
 
 
 
-- hosts: director
+- name: Fetch overcloudrc and SSH keys locally
+  hosts: director
   become: yes
   become_user: stack
   gather_facts: no
   tasks:
-    # Fetch the overcloudrc file to the bastion and create a private network version.
     - block:
-        - name: Grab overcloudrc file from the Director locally
+        - name: Fetch overcloudrc to ./files/ locally
           fetch:
             src: "/home/stack/overcloud-{{ named_env }}rc"
-            dest: "{{ playbook_dir }}/files/overcloud-{{ named_env}}rc.public"
+            dest: "{{ lookup('env', 'PWD') }}/files/"
             flat: yes
 
-        - name: Grab the private keystone endpoint to use
-          shell: ". ~/overcloud-{{ named_env }}rc && openstack endpoint list --interface admin --service identity -c URL -f value"
-          register: shell_output
-          changed_when: false
-
-        - name: Grab the list of existing images on the overcloud
-          shell: ". ~/overcloud-{{ named_env }}rc && openstack image list -c Name -f value"
-          register: image_output
-          changed_when: false
-
-        - name: Set some facts for the bastion host to use
-          set_fact:
-            named_env: "{{ named_env }}"
-            auth_url: "{{ shell_output.stdout }}"
-            existing_images: "{{ image_output.stdout_lines }}"
-          delegate_to: bastion.dal10
-          delegate_facts: yes
-
-        - name: Make a copy of overcloudrc for private endpoint
-          copy:
-            src: "{{ playbook_dir }}/files/overcloud-{{ named_env }}rc.public"
-            dest: "{{ playbook_dir }}/files/overcloud-{{ named_env }}rc.private"
-            force: no
-          delegate_to: localhost
-          become: no
-
-        - name: Replace the public endpoint with the private endpoint in overcloudrc
-          replace:
-            path: "{{ playbook_dir }}/files/overcloud-{{ named_env}}rc.private"
-            regexp: '(.*=)(.*)(//.*)'
-            replace: '\1{{ shell_output.stdout }}\3'
-          delegate_to: localhost
-          become: no
-
-      tags:
-        - overcloudrc
-
-    # Fetch the overcloud heat-admin private key locally
-    - block:
-        - name: Fetch the heat-admin private key locally
+        - name: Fetch heat-admin private key locally
           fetch:
             src: "/home/stack/.ssh/id_rsa"
             dest: "~/.ssh/{{ named_env }}_rsa"
             flat: yes
 
-        - name: Ensure 0600 on private key file
+        - name: Ensure 0600 on the local private key file
           file:
             path: "~/.ssh/{{ named_env }}_rsa"
             state: file
@@ -87,9 +48,8 @@
             flat: yes
 
       tags:
-        - keys
+        - fetch
 
-    # Create the flavors and network stacks if they don't already exist
     - block:
         - name: Grab the list of existing HEAT stacks on the overcloud
           shell: ". ~/overcloud-{{ named_env }}rc && openstack stack list  -c 'Stack Name' -f value"
