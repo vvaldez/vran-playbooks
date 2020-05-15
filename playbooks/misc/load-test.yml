@@ -1,0 +1,76 @@
+- hosts: computes
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Find the allocated vCPUs
+      shell: |
+        # Get the sum of all domain CPU vCPUs
+        sum=0
+        for i in $(virsh list --all --uuid); do
+          count=$(virsh dominfo ${i} | grep 'CPU(s)' | awk '{print $2}')
+          sum=$(($sum + $count))
+        done
+
+        echo ${sum}
+
+      register: shell_output
+
+    - set_fact:
+        allocated_cpus: "{{ shell_output.stdout }}"
+
+    - name: Sum the allocated vCPUs
+      shell: |
+        # Build the array of values
+        arr=()
+        {% for host in groups['computes'] %}
+        arr+=("{{ hostvars[host]['allocated_cpus'] }}")
+        {% endfor %}
+
+        # Sum the values
+        sum=0
+        for i in ${arr[@]}; do
+          sum=$(($sum + $i))
+        done
+
+        echo ${sum}
+
+      args:
+        executable: /bin/bash
+      register: allocated_cpus_sum
+      delegate_to: localhost
+      run_once: true
+
+    - name: Find the physical vCPUs
+      setup:
+        gather_subset:
+          - hardware
+
+    - name: Sum the physical vCPUs
+      shell: |
+        # Build the array of values
+        arr=()
+        {% for host in groups['computes'] %}
+        arr+=("{{ hostvars[host]['ansible_processor_vcpus'] }}")
+        {% endfor %}
+
+        # Sum the values
+        sum=0
+        for i in ${arr[@]}; do
+          sum=$(($sum + $i))
+        done
+
+        echo ${sum}
+
+      args:
+        executable: /bin/bash
+      register: physical_cpus_sum
+      delegate_to: localhost
+      run_once: true
+
+    - debug:
+        msg:
+          - "Sum of allocated vCPUs: {{ allocated_cpus_sum.stdout }}"
+          - " Sum of physical vCPUs: {{ physical_cpus_sum.stdout }}"
+          - " vCPU allocation ratio: {{ (allocated_cpus_sum.stdout | int / physical_cpus_sum.stdout | int) | round(2) }}"
+      delegate_to: localhost
+      run_once: true
