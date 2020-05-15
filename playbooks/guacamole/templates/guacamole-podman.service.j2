@@ -1,10 +1,14 @@
 [Unit]
 Description=Guacamole container
+Wants=syslog.service
+After=network-online.target
 
 [Service]
-Restart=always
+Restart=on-failure
 ExecStart=/usr/bin/podman start -a guacamole_web
 ExecStop=/usr/bin/podman stop -t 2 guacamole_web
+KillMode=none
+Type=forking
 
 [Install]
-WantedBy=local.target
+WantedBy=multi-user.target
