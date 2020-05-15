@@ -2,6 +2,11 @@
   gather_facts: no
   become: yes
   tasks:
+
+    ###################
+    # Allocated vCPUs
+    ###################
+
     - name: Find the allocated vCPUs
       shell: |
         # Get the sum of all domain CPU vCPUs
@@ -42,6 +47,10 @@
       run_once: true
       register: allocated_cpus_sum
 
+    ###################
+    # Physical vCPUs
+    ###################
+
     - name: Find the physical vCPUs
       setup:
         gather_subset:
@@ -70,16 +79,63 @@
       run_once: true
       register: physical_cpus_sum
 
+    ###################
+    # OVS Ports
+    ###################
+
+    - name: Find the OVS port count
+      shell: |
+        # Get the sum of all OVS ports
+        sum=$(ovs-vsctl show | grep Port | wc -l)
+
+        echo ${sum}
+
+      changed_when: false
+      register: shell_output
+
+    - set_fact:
+        ovs_ports: "{{ shell_output.stdout }}"
+
+    - name: Sum the allocated vCPUs
+      shell: |
+        # Build the array of values
+        arr=()
+        {% for host in groups['computes'] %}
+        arr+=("{{ hostvars[host]['ovs_ports'] }}")
+        {% endfor %}
+
+        # Sum the values
+        sum=0
+        for i in ${arr[@]}; do
+          sum=$(($sum + $i))
+        done
+
+        echo ${sum}
+
+      args:
+        executable: /bin/bash
+      changed_when: false
+      delegate_to: localhost
+      run_once: true
+      register: ovs_ports_sum
+
+    ###################
+    # Output
+    ###################
+
     - debug:
         msg:
           - "Sum of allocated vCPUs: {{ allocated_cpus_sum.stdout }}"
           - " Sum of physical vCPUs: {{ physical_cpus_sum.stdout }}"
           - " vCPU allocation ratio: {{ (allocated_cpus_sum.stdout | int / physical_cpus_sum.stdout | int) | round(2) }}"
+          - "      Sum of OVS ports: {{ ovs_ports_sum.stdout }}"
       delegate_to: localhost
       run_once: true
 
   tags:
     - vcpus
+
+
 
 - hosts: controllers[0]
   gather_facts: no
