@@ -13,6 +13,7 @@
 
         echo ${sum}
 
+      changed_when: false
       register: shell_output
 
     - set_fact:
@@ -36,9 +37,10 @@
 
       args:
         executable: /bin/bash
-      register: allocated_cpus_sum
+      changed_when: false
       delegate_to: localhost
       run_once: true
+      register: allocated_cpus_sum
 
     - name: Find the physical vCPUs
       setup:
@@ -63,9 +65,10 @@
 
       args:
         executable: /bin/bash
-      register: physical_cpus_sum
+      changed_when: false
       delegate_to: localhost
       run_once: true
+      register: physical_cpus_sum
 
     - debug:
         msg:
@@ -74,3 +77,33 @@
           - " vCPU allocation ratio: {{ (allocated_cpus_sum.stdout | int / physical_cpus_sum.stdout | int) | round(2) }}"
       delegate_to: localhost
       run_once: true
+
+  tags:
+    - vcpus
+
+- hosts: controllers[0]
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Find active instance count
+      shell: |
+        docker exec -it $(docker ps --format "{{ '{{' }}.Names{{ '}}' }}" | grep galera) mysql -sN -u root -D nova -e 'SELECT COUNT(*) FROM instances WHERE vm_state="active";'
+      changed_when: false
+      register: active_instances
+
+    - name: Find shelved instance count
+      shell: |
+        docker exec -it $(docker ps --format "{{ '{{' }}.Names{{ '}}' }}" | grep galera) mysql -sN -u root -D nova -e 'SELECT COUNT(*) FROM instances WHERE vm_state="shelved_offloaded";'
+      changed_when: false
+      register: shelved_instances
+
+    - debug:
+        msg:
+          - "   Shelved instances: {{ shelved_instances.stdout }}"
+          - "    Active instances: {{ active_instances.stdout }}"
+          - "Shelved/Active ratio: {{ (shelved_instances.stdout | int / active_instances.stdout | int) | round(2) }}"
+      delegate_to: localhost
+      run_once: true
+
+  tags:
+    - instances
