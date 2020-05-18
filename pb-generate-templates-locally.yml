@@ -1,11 +1,9 @@
 - hosts: localhost
   gather_facts: no
   vars:
-    shared_dir: "../ansible-inventory/{{ datacenter }}/\
-      templates/shared/"
-    cluster_dir: "../ansible-inventory/{{ datacenter }}/\
-      templates/{{ named_env }}/"
-    tmp_dir: "/tmp/ansible-generated/{{ datacenter }}-{{ named_env }}"
+    shared_dir: "../ansible-inventory/{{ datacenter }}/templates/shared/"
+    cluster_dir: "../ansible-inventory/{{ datacenter }}/templates/{{ named_env }}/"
+    tmp_dir: "/tmp/ansible-generated/{{ datacenter }}/{{ named_env }}"
     output_dir: "../ansible-inventory/{{ datacenter }}/ansible-generated"
     quick: no
   tasks:
