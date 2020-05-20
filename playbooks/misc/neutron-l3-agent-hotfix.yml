@@ -1,0 +1,45 @@
+- hosts: controllers computes
+  gather_facts: false
+  tasks:
+
+  - name: Copy Dockerfile and RPMs
+    copy:
+      src: "../../files/{{ item }}"
+      dest: /home/heat-admin/neutron_hf/
+    loop:
+      - openstack-neutron-ml2-12.1.1-18.el7ost.noarch.rpm
+      - python-neutron-12.1.1-18.el7ost.noarch.rpm
+      - openstack-neutron-common-12.1.1-18.el7ost.noarch.rpm
+      - openstack-neutron-12.1.1-18.el7ost.noarch.rpm
+      - Dockerfile
+    tags:
+      - docker
+
+  - name: Build the container locally
+    docker_image:
+      path: /home/heat-admin/neutron_hf/
+      name: "{{ undercloud_gateway | mandatory }}:8787/rhosp13/openstack-neutron-l3-agent"
+      tag: "13.0-119-hf-1835202"
+    tags:
+      - docker
+
+  - name: Backup file
+    shell: cp /var/lib/tripleo-config/hashed-docker-container-startup-config-step_4.json /root/hashed-docker-container-startup-config-step_4.json.backup
+
+  - name: Update Paunch json file
+    replace:
+      path: /var/lib/tripleo-config/hashed-docker-container-startup-config-step_4.json
+      regexp: 'satellite.dal10.ole.redhat.com:5000/gls-prod-rhosp13-osp13_containers-neutron-l3-agent:13.0-113'
+      replace: '{{ undercloud_gateway | mandatory }}:8787/rhosp13/openstack-neutron-l3-agent:13.0-119-hf-1835202'
+
+  - name: Fire it up with Paunch
+    shell: |
+      paunch --debug apply --file /var/lib/tripleo-config/hashed-docker-container-startup-config-step_4.json --config-id tripleo_step4 --managed-by tripleo-Controller
+    register: paunch_debug
+    when: '"control" in inventory_hostname'
+
+  - name: Fire it up with Paunch
+    shell: |
+      paunch --debug apply --file /var/lib/tripleo-config/hashed-docker-container-startup-config-step_4.json --config-id tripleo_step4 --managed-by tripleo-Compute
+    register: paunch_debug
+    when: '"compute" in inventory_hostname'
