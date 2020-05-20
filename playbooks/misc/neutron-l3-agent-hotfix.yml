@@ -1,3 +1,7 @@
+<<<<<<< Updated upstream
+=======
+# This playbook was pulled from https://access.redhat.com/support/cases/#/case/02612623
+>>>>>>> Stashed changes
 - hosts: controllers computes
   gather_facts: false
   tasks:
