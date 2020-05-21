@@ -1,0 +1,75 @@
+- hosts: director
+  gather_facts: no
+  become: yes
+  become_user: stack
+  vars:
+    delete: no
+  tasks:
+    - name: Find orphaned security groups. If -e delete=yes is set, delete them as well.
+      shell: |
+        #!/bin/bash
+
+        # Source overcloudrc
+        source /home/stack/overcloud-*rc
+
+        # init
+        sgs_to_delete=()
+
+        # Grab lists
+        openstack security group list -f value -c ID -c Project > /tmp/security-group-list.txt
+        openstack project list -f value -c ID > /tmp/project-list.txt
+        openstack stack list -f value > /tmp/stack-list.txt
+
+        # Write lists to files
+        security_groups=$(cat /tmp/security-group-list.txt)
+        projects=$(cat /tmp/project-list.txt)
+
+        # For each security group
+        while IFS= read -r line; do
+          id=$(echo ${line} | cut -d ' ' -f 1)
+          project=$(echo ${line} | cut -d ' ' -f 2 -s)
+
+          # If project is empty, skip this security group
+          if [[ -z ${project} ]]; then
+            continue
+          fi
+
+          # Check if the security group's project exists
+          grep -q ${project} /tmp/project-list.txt
+
+          # If the project doesn't exist, add it to an array
+          if [[ $? != 0 ]]; then
+            echo "Project not found. ${id} ${project}"
+            sgs_to_delete+=("${id}")
+          fi
+
+        done <<< "${security_groups}"
+
+        {% if delete | bool %}
+        # Delete security groups if array is non-empty
+        if [[ ! -z "${sgs_to_delete}" ]]; then
+          openstack security group delete ${sgs_to_delete[@]}
+          echo "Above security groups deleted."
+        else
+          echo "No orphaned security groups to delete."
+        fi
+        {% endif %}
+      register: sg_output
+
+    - name: Grab information.
+      shell: |
+        echo "Total projects: $(cat /tmp/project-list.txt | wc -l)"
+        echo "Total security groups: $(cat /tmp/security-group-list.txt | wc -l)"
+        echo "Total stacks: $(cat /tmp/stack-list.txt | wc -l)"
+
+        {% if delete | bool %}
+        echo "Total orphaned security groups: {{ (sg_output.stdout_lines | count) | int - 1 }}"
+        {% else %}
+        echo "Total orphaned security groups: {{ sg_output.stdout_lines | count }}"
+        {% endif %}
+      register: shell_output
+
+    - debug:
+        msg:
+          - "{{ sg_output.stdout_lines }}"
+          - "{{ shell_output.stdout_lines }}"
