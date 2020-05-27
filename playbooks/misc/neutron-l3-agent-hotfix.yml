@@ -1,6 +1,7 @@
 # This playbook was pulled from https://access.redhat.com/support/cases/#/case/02612623
 - hosts: controllers computes
   gather_facts: false
+  become: yes
   tasks:
 
   - name: Copy Dockerfile and RPMs
@@ -19,7 +20,7 @@
   - name: Build the container locally
     docker_image:
       path: /home/heat-admin/neutron_hf/
-      name: "{{ undercloud_gateway | mandatory }}:8787/rhosp13/openstack-neutron-l3-agent"
+      name: "{{ undercloud.local_ip | ipaddr('address') }}:8787/rhosp13/openstack-neutron-l3-agent"
       tag: "13.0-119-hf-1835202"
     tags:
       - docker
@@ -31,7 +32,7 @@
     replace:
       path: /var/lib/tripleo-config/hashed-docker-container-startup-config-step_4.json
       regexp: 'satellite.dal10.ole.redhat.com:5000/gls-prod-rhosp13-osp13_containers-neutron-l3-agent:13.0-113'
-      replace: '{{ undercloud_gateway | mandatory }}:8787/rhosp13/openstack-neutron-l3-agent:13.0-119-hf-1835202'
+      replace: "{{ undercloud.local_ip | ipaddr('address') }}:8787/rhosp13/openstack-neutron-l3-agent:13.0-119-hf-1835202"
 
   - name: Fire it up with Paunch
     shell: |
