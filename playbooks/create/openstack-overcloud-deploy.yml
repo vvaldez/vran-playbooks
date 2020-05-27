@@ -19,6 +19,14 @@
   tasks:
     # Upload the latest output templates to the director
     - block:
+        - name: Copy the existing ansible-generated folder to a backup location
+          vars:
+            date: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+          copy:
+            src: /home/stack/ansible-generated
+            dest: "/var/tmp/ansible-generated_{{ date }}"
+            remote_src: yes
+
         - name: Ensure ansible-generated exists on director
           file:
             path: '/home/stack/ansible-generated/'
