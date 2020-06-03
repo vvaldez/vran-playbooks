@@ -1,48 +1,27 @@
-# Getting started
+# ansible-inventory
 
-This guide aims to provide instructions of how to prepare the variables in the ansible-inventory repository to deploy your own environment. 
+This guide aims to provide instructions of how to structure and prepare the the [ansible-inventory](https://gitlab.consulting.redhat.com/openstack-cop/ansible-bundle/ansible-inventory) repository to deploy your own environment.
 
-Instructions of how to deploy, and contribute are described in main README.rd file in the ansible-playbooks repository. 
-
-The goal is to provide some hints to use ansible-inventory, but a broader getting started documentation with contributions guidelines and automation scripts will be prepared to build a full test environment.
-
-The idea is to avoid make you write from scratch all templates, you could re-use some of the templates and variables already prepared in ansible-inventory directories that were built for automation.
+The goal is to provide some hints to use `ansible-inventory`. The idea is to avoid the need for you to write from scratch all templates. You could re-use some of the templates and variables already prepared in the sample `ansible-inventory` repository.
 
 ## Where to deploy
-If you already have a virtual or baremetal environment you can use this framework to deploy.
 
-Ideally you will store and run these playbooks from your laptop or from a server with SSH access to the servers that will host the OSP infrastructure, from now on named as the "deployment node".
+If you already have a virtual or baremetal environment you can incorparate your templates into this framework and use it to deploy and manage the environment.
 
-## Requirements
-Make sure to have installed python3 and also recommended python3-virtualenv
+The sample `ansible-inventory` repository includes a demonstration environment based on [Vagrant](https://www.vagrantup.com/) that can be used to spin up a fully virtual OpenStack cluster on a [libvirt](https://github.com/vagrant-libvirt/vagrant-libvirt) based hypervisor.
 
-### Pulling down repositories
-```
-git clone ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/ansible-playbooks.git
-git clone ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/ansible-inventory.git
-```
+Ideally you will store and run these playbooks from your laptop or from a server with SSH access to the servers that will host the OSP infrastructure, from now on named as the `bastion`.
 
-### Installing Ansible and dependencies
-As a good practice, install components in an isolated place to avoid breaking other python deps from other tools in the deployment node.
-```
-$ virtualenv osp
-$ source osp/bin/activate
-$ pip3 install -r ansible-playbooks/requirements.txt
-```
+## Setup
 
-### Clone and install tripleo-ansible-operator
-```
-git clone https://opendev.org/openstack/tripleo-operator-ansible
-cd tripleo-operator-ansible/
-ansible-galaxy collection build --force --output-path ~/collections
-ansible-galaxy collection install --force ~/collections/tripleo-operator*
-```
+See [setup](setup.md) documentation.
 
-## Main directories and files 
+## Structure
+
 There are two main locations, one for your variables and other for your templates, replace `dc-name` with a meaningful name that indicates where is your deployment.
 ```
 cd ~/ansible-inventory
-dc-name/{group_vars,host_vars} 
+dc-name/{group_vars,host_vars}
 dc-name/templates/{shared,lab}
 ```
 
@@ -53,6 +32,7 @@ dc-name/hosts
 NOTE: Again, you do not need to create all these, you can copy all from the `vagrant` directory in the ansible-inventory repo to get started and modify accordingly.
 
 ## Populate your variables
+
 Variables will contain your deployment values, for example, networks, IP addresses and features, to produce the heat tripleo yaml templates for the deployment. These templates contain jinja expressions to set the variable values.
 
 Replace `env-name` with a meaningful name, i.e.: lab, ci. This `env-name` is a group in your ansible inventory that will have the deployment host, director and overcloud as children.
@@ -85,7 +65,7 @@ overcloud:
     - /home/stack/ansible-generated/templates/overcloud-images.yaml
 ```
 
-env-name.yml - Networking data for overcloud and undercloud, list of repositories, baremetal node information. 
+env-name.yml - Networking data for overcloud and undercloud, list of repositories, baremetal node information.
 In this example we specify the network information to deploy director.
 ```
 undercloud:
@@ -115,12 +95,13 @@ server-name.yml - Very specific vars like repositories or hostname.
 NOTE: Default variables might not fit all scenarios, add/modify/remove for your environment.
 
 ## Prepare your templates
+
 This is a general view of the templates directory tree, they are named after the default names as in the documentation and contain jinja expressions to format.
 
 ```
 dc-name/
 │ 
-── templates                                                              
+── templates
     ├── env-name
     │   └── templates
     │       └──  # These templates take precedence over shared directory
@@ -128,7 +109,7 @@ dc-name/
         ├── instackenv.yaml     # The inventory file
         ├── scripts
         │   └──                 # Bash scripts to deploy, upgrade, delete
-        ├── templates  
+        ├── templates
         │   ├── environments
         │   │   └──             # Default environment templates
         │   ├──                 # Default templates for the deployment
@@ -140,9 +121,8 @@ dc-name/
 
 
 ## Generate the templates and deploy
+
 From now on you can use the steps in the main README.md of the ansible-playbooks repository to generate the templates and deploy.
 
 
 NOTE: if a failure occurs generating a template, for example if you remove the SSL variables because you are deploying a non-ssl environment, and you leave the SSL templates, you will get a failure, there is work in progress to add more validation in the templates to take this into account. You can either remove the templates or even better contribute to include conditions in the templates.
-
-
