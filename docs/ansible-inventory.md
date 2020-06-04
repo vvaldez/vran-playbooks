@@ -4,7 +4,7 @@ This guide aims to provide instructions of how to structure and prepare the the 
 
 The goal is to provide some hints to use `ansible-inventory`. The idea is to avoid the need for you to write from scratch all templates. You could re-use some of the templates and variables already prepared in the sample `ansible-inventory` repository.
 
-One of the key features of this repository is the ability to parameterize tripleo templates using Jinja2 syntax and then using the Ansible template module to generate output templates. This ability creates the ability to more easily manage numerous openstack clusters than handling static tripleo templates. We'll cover this in more detail in the following documentation.
+One of the key features of this repository is the ability to parameterize tripleo templates using Jinja2 syntax and then using the Ansible template module to generate output templates. This creates the ability to more easily manage numerous OpenStakc clusters than handling static tripleo templates. We'll cover this in more detail in the following documentation.
 
 ## Where to deploy
 
@@ -140,65 +140,33 @@ Variables will contain your deployment values, for example, networks, IP address
 
 Replace `<group>` with a meaningful name, i.e.: lab, ci. This `<group>` is a group in your Ansible inventory that will have the deployment host, director and overcloud as children.
 
-This the the main location of variables, as ansible practices, they are named per the group name of host name.
+This the the main location of variables, as Ansible practices, they are named per the group name of host name. Precedence of the files from least to greatest is:
 
 ```
 1. <environment>/hosts/group_vars/all.yml
 2. <environment>/hosts/group_vars/<group>.yml
-3. <environment>/hosts/hosts_vars/director.example.com.yml
+3. <environment>/hosts/hosts_vars/<host>.yml
 ```
 
-`<environment/hosts/group_vars/all.yml` - Contains general vars for all hosts, list of templates to use for deployment and SSL files. Example here we deploy an environment with SSL, DVR, Fixed IPs for VIPs/Servers, and disable telemetry:
+`<environment>/hosts/group_vars/all.yml` - We use this special variables file to define any "defaults" for variables that apply to all groups. If the same variable is defined in any of the below files, they take precedence.
 
-```yml
-overcloud:
-  stack_name: "overcloud-{{ named_env }}"
-  roles_file: /home/stack/ansible-generated/templates/roles_data.yaml
-  networks_file: /home/stack/ansible-generated/templates/network_data.yaml
-  environment_files:
-    - /usr/share/openstack-tripleo-heat-templates/environments/disable-telemetry.yaml
-    - /usr/share/openstack-tripleo-heat-templates/environments/ssl/tls-endpoints-public-dns.yaml
-    - /usr/share/openstack-tripleo-heat-templates/environments/ssl/inject-trust-anchor.yaml
-    - /home/stack/ansible-generated/templates/environments/network-environment.yaml
-    - /home/stack/ansible-generated/templates/environments/network-isolation.yaml
-    - /home/stack/ansible-generated/templates/enable-tls.yaml
-    - /home/stack/ansible-generated/templates/ips-from-pool-all.yaml
-    - /home/stack/ansible-generated/templates/fixed-ip-vips.yaml
-    - /home/stack/ansible-generated/templates/network-config.yaml
-    - /home/stack/ansible-generated/templates/neutron-ovs-dvr.yaml
-    - /home/stack/ansible-generated/templates/node-config.yaml
-    - /home/stack/ansible-generated/templates/overcloud-images.yaml
-```
-
-`<environment/hosts/group_vars/<group>.yml` - Networking data for overcloud and undercloud, list of repositories, baremetal node information.
+`<environment>/hosts/group_vars/<group>.yml` - Networking data for overcloud and undercloud, list of repositories, baremetal node information.
 In this example we specify the network information to deploy director.
 
 ```yml
-undercloud:
-  hostname: undercloud.example.com
-  local_ip: 172.16.0.1/24
-  local_interface: eth0
-  overcloud_domain_name: example.com
-  masquerade: true
-  dhcp_start: 172.16.0.5
-  dhcp_end: 172.16.0.63
-  inspection_iprange: 172.16.0.64,172.16.0.127
-  gateway: 172.16.0.254
-  generate_service_certificate: true
-  certificate_generation_ca: local
+named_env: <group_name> # A special variable used to name this specific cluster. This should be the identical to the group name.
 
-  undercloud_nameservers:
-    - 8.8.4.4
-    - 8.8.8.8
-  undercloud_ntp_servers:
-    - 0.rhel.pool.ntp.org
-    - 1.rhel.pool.ntp.org
-    - 2.rhel.pool.ntp.org
+undercloud: # All variables used to generate any templates needed up to `openstack undercloud install`
+  ...
+
+overcloud:  # All variables used to generate tripleo overcloud templates
+  ...
+
+instackenv: # All variables used to generate instackenv.yaml file
+  ...
 ```
 
-`<environment/hosts/host_vars/server-name.yml` - Very specific vars like repositories or hostname.
-
-NOTE: Default variables might not fit all scenarios, add/modify/remove for your environment.
+`<environment>/hosts/host_vars/server-name.yml` - Specific variables to apply to individual Ansible hosts.
 
 ## Generate the templates and deploy
 
