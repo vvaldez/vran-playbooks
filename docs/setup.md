@@ -20,7 +20,7 @@ The following steps walkthrough setting up a development workspace to use and co
 
     ```sh
     git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-inventory.git
-    git clone ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/ansible-playbooks.git
+    git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-playbooks.git
     git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-elk.git
     git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-monitoring.git
     ```
