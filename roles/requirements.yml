@@ -2,7 +2,7 @@ roles:
   - name: base
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-base.git
     scm: git
-    version: '1.1'
+    version: '1.2'
 
   - name: director
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-director.git
@@ -22,7 +22,7 @@ roles:
   - name: network-scripts
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-network-scripts.git
     scm: git
-    version: '1.2'
+    version: '1.3'
 
   - name: template-directory
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-template-directory.git
