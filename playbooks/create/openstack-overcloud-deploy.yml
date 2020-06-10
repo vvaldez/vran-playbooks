@@ -67,13 +67,13 @@
             CNF: /home/stack/ansible-generated/templates
             THT: /usr/share/openstack-tripleo-heat-templates
             tripleo_overcloud_deploy_debug: true
-            tripleo_overcloud_deploy_environment_files: "{{ overcloud.environment_files }}"
+            tripleo_overcloud_deploy_environment_files: "{{ overcloud.deploy_command.environment_files }}"
             tripleo_overcloud_deploy_home_dir: /home/stack
             tripleo_overcloud_deploy_log_output: false
-            tripleo_overcloud_deploy_networks_file: "{{ overcloud.networks_file }}"
-            tripleo_overcloud_deploy_roles_file: "{{ overcloud.roles_file }}"
-            tripleo_overcloud_deploy_stack: "{{ overcloud.stack_name }}"
-            tripleo_overcloud_deploy_timeout: 7200
+            tripleo_overcloud_deploy_networks_file: "{{ overcloud.deploy_command.networks_file }}"
+            tripleo_overcloud_deploy_roles_file: "{{ overcloud.deploy_command.roles_file }}"
+            tripleo_overcloud_deploy_stack: "{{ overcloud.deploy_command.stack }}"
+            tripleo_overcloud_deploy_timeout: "{{ overcloud.deploy_command.timeout }}"
             tripleo_overcloud_deploy_poll: 60
 
         - debug:
