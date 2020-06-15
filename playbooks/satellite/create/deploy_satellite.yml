@@ -1,0 +1,24 @@
+---
+- name: Create Satellite VM
+  hosts: kvm_hypervisor
+  gather_facts: False
+  tasks:
+  - name: Create Satellite KVM VM
+    import_role:
+      name: kvm_vm
+    vars:
+      kvm_vm: "{{ hostvars[groups['satellite'].0].kvm_vm }}"
+    tags:
+      - setup
+
+- name: Setup Satellite OS
+  hosts: satellite
+  tasks:
+  - import_role:
+      name: rhsm_register
+    vars:
+      rhsm_repos: "{{ satellite_setup_repos }}"
+      rhsm_packages: "{{ satellite_setup_packages }}"
+    tags:
+      - rhsm_register
+...

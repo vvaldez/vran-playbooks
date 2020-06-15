@@ -1,0 +1,9 @@
+---
+- name: Register to Red Hat Subscription Manager
+  hosts: all
+  gather_facts: False
+  become: True
+  tasks:
+    - import_role:
+        name: rhsm_register
+...

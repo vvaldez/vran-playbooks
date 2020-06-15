@@ -1,0 +1,36 @@
+---
+- name: Prepare KVM Hypervisor
+  hosts: kvm_hypervisor
+  gather_facts: False
+  tasks:
+  - name: Create Tower KVM VM
+    import_role:
+      name: kvm_vm
+    vars:
+      kvm_vm: "{{ hostvars[groups['tower'].0].kvm_vm }}"
+    tags:
+      - setup
+
+- name: Deploy Tower Server
+  hosts: tower
+  gather_facts: False
+  tasks:
+  - import_role:
+      name: rhsm_register
+    vars:
+      rhsm_repos: "{{ tower_setup_repos }}"
+    tags:
+      - rhsm_register
+
+  - import_role:
+      name: tower_setup
+    tags:
+      - setup
+
+  - import_role:
+      name: tower_config
+    vars:
+      tower_config_type: 'Minimal'
+    tags:
+      - config
+...
