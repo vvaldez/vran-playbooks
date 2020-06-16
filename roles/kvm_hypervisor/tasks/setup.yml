@@ -1,0 +1,23 @@
+---
+- name: Installing packages
+  package:
+    name: "{{ kvm_packages }}"
+    state: present
+  notify: enable_services
+  when: not skip_software | default(False)
+
+- name: Gather dmesg to check for NUMA support
+  command: dmesg
+  changed_when: False
+  register: dmesg_result
+
+- block:
+    - name: Enable virtual host NUMA profile if supported
+      command: tuned-adm profile virtual-host
+      changed_when: False
+
+    - name: Activate NUMA if supported
+      command: tuned-adm active
+      changed_when: False
+  when: dmesg_result.stdout is search('NUMA')
+...

@@ -1,0 +1,11 @@
+---
+- name: Enable services
+  systemd: 
+    name: "{{ service }}"
+    state: started
+    enabled: yes
+  listen: enable_services
+  loop: "{{ kvm_services }}"
+  loop_control:
+    loop_var: service
+...

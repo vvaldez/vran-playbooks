@@ -1,0 +1,34 @@
+---
+- name: Load variables based on major OS version
+  include_vars:
+    file: "vars/RedHat-{{ kvm_vm.os_variant.split('rhel')[-1].split('.')[0]}}.yml"
+
+- name: list all VMs
+  virt:
+    command: list_vms
+  register: libvirt_vms
+
+- debug:
+    var: libvirt_vms
+    verbosity: 1
+
+- name: Delete KVM VM
+  include_tasks: teardown_vm.yml
+  when:
+    - teardown_vm | default(False)
+    - kvm_vm.name in libvirt_vms.list_vms
+
+- block:
+    - name: Create KVM VM
+      include_tasks: create_vm.yml
+      when:
+        - not teardown | default(False)
+        - not create_empty_vm | default(False)
+
+    - name: Create Empty KVM VM
+      include_tasks: create_empty_vm.yml
+      when:
+        - not teardown | default(False)
+        - create_empty_vm | default(False)
+  when: not kvm_vm.name in libvirt_vms.list_vms
+...

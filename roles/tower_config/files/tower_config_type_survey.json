@@ -1,0 +1,42 @@
+{
+  "name": "", 
+  "description": "", 
+  "spec": [
+    {
+      "required": true, 
+      "min": null, 
+      "default": "Full", 
+      "max": null, 
+      "question_description": "Type of configuration to apply to Tower", 
+      "choices": "Minimal\nFull", 
+      "new_question": true, 
+      "variable": "tower_config_type", 
+      "question_name": "Tower Configuration", 
+      "type": "multiplechoice"
+    }, 
+    {
+      "question_name": "Tower username", 
+      "question_description": "Tower user that has access to create objects", 
+      "required": true, 
+      "type": "text", 
+      "variable": "tower_username", 
+      "min": 0, 
+      "max": 1024, 
+      "default": "", 
+      "choices": "", 
+      "new_question": true
+    }, 
+    {
+      "question_name": "Tower Password", 
+      "question_description": "Tower password for user", 
+      "required": true, 
+      "type": "password", 
+      "variable": "tower_password", 
+      "min": 0, 
+      "max": 32, 
+      "default": "", 
+      "choices": "", 
+      "new_question": true
+    }
+  ]
+}

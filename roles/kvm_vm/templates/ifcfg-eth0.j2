@@ -1,0 +1,10 @@
+DEVICE={{ kvm_vm.networks.management.vm_interface }}
+BOOTPROTO=static
+ONBOOT=yes
+PEERDNS=no
+IPADDR={{ kvm_vm.networks.management.ipaddr }}
+NETMASK={{ kvm_vm.networks.management.netmask }}
+GATEWAY={{ kvm_vm.networks.management.gateway }}
+DNS1={{ kvm_vm.networks.management.dns1 }}
+DNS2={{ kvm_vm.networks.management.dns2 }}
+DOMAIN={{ kvm_vm.domain }}

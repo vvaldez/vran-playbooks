@@ -1,0 +1,10 @@
+---
+- name: Install Tower CLI packages
+  package:
+    name: "{{ tower_config_packages }}"
+    state: installed
+
+- name: Install Tower CLI pip packages
+  pip:
+    name: "{{ tower_config_pip }}"
+...

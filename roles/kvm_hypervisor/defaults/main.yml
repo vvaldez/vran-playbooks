@@ -1,0 +1,41 @@
+---
+# Type can be 'linux_bridge' or 'ovs'
+kvm_hypervisor_network_type: "linux_bridge"
+kvm_repos_rhel8:
+  - rhel-8-for-x86_64-appstream-rpms
+  - rhel-8-for-x86_64-baseos-rpms
+kvm_repos_rhel7:
+  - rhel-7-server-rpms
+kvm_repos: "{{ kvm_repos_rhel8 }}"
+kvm_packages:
+  - libvirt
+  - libvirt-client
+  - libvirt-daemon
+  - libvirt-daemon-driver-qemu
+  - libvirt-daemon-kvm
+  - libguestfs-tools
+  - libguestfs-xfs
+  - qemu-kvm
+  - virt-manager
+  - virt-install
+  - virt-viewer
+  - xauth
+  - dejavu-sans-fonts
+  - nfs-utils
+  - numad
+  - numactl
+  - tuned
+  - rsync
+  - python2-lxml
+  - python3-lxml
+kvm_services:
+  - libvirtd
+  - numad
+  - tuned
+kvm_bridges:
+  management:
+    name: 'mgmt'
+    interface: bond0.118
+    vlan: 118
+    bond: bond0
+...

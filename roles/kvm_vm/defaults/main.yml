@@ -1,0 +1,22 @@
+---
+kvm_vm_root_password: 'password'
+kvm_vm_dir: '/var/lib/libvirt/images'
+kvm_vm:
+  name: 'kvm_vm'
+  ram: 8192
+  vcpus: 2
+  os_variant: 'rhel7'
+  disk: 'kvm_vm.qcow2'
+  size: '50G'
+  hostname: 'kvm_vm'
+  domain: 'example.com'
+  networks:
+    management:
+      libvirt: mgmt
+      vm_interface: eth0
+      ipaddr: '10.1.1.10'
+      netmask: '255.255.255.0'
+      gateway: '10.1.1.254'
+      dns1: '10.1.1.250'
+      dns2: '10.1.1.251'
+...

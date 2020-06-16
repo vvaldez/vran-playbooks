@@ -1,0 +1,24 @@
+---
+- name: Download and install katello CA consumer package
+  package:
+    name: http://{{ rhsm_satellite_server }}/pub/katello-ca-consumer-{{ rhsm_satellite_server }}-1.0-1.noarch.rpm
+    state: present
+
+- name: Register the system with Satellite
+  redhat_subscription:
+    state: present
+    activationkey: "{{ rhsm_satellite_activationkey }}"
+    org_id: "{{ rhsm_satellite_organization }}"
+    force_register: no
+  register: subscription
+
+- name: debug subscription
+  debug:
+    var: subscription
+    verbosity: 1
+
+- name: fail if subscription failed
+  fail:
+    msg: subscription failed
+  when: subscription.failed | default(True)
+...

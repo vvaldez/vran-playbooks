@@ -1,0 +1,18 @@
+---
+- block:
+    - name: Remove KVM VM
+      virt:
+        command: "{{ action }}"
+        name: "{{ kvm_vm.name }}"
+      loop:
+        - destroy
+        - undefine
+      loop_control:
+        loop_var: action
+    
+    - name: Remove KVM disk
+      file:
+        path: "{{ kvm_vm_dir }}/{{ kvm_vm.disk }}"
+        state: absent
+  when: kvm_vm.name in libvirt_vms.list_vms
+...
