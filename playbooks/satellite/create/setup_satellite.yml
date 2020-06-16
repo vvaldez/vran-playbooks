@@ -27,15 +27,11 @@
       tags:
         - hostname
 
-    - name:
-
-#### todo
-    # - name: Inject forward DNS entry to /etc/hosts
-    #   blockinfile:
-    #     path: /etc/hosts
-    #     block: "172.17.118.6 {{ hostname }} satellite2"
-    #     state: present
-##### todo
+    - name: Inject forward DNS entry to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^{{ ansible_default_ipv4.address }}"
+        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
 
     - name: Set firewall
       vars:
