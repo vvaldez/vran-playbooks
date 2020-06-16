@@ -34,6 +34,8 @@ roles:
     scm: git
     version: '1.1'
 
+  - name: oasis_roles.satellite
+
 collections:
   - oasis_roles.system
   - tripleo.operator

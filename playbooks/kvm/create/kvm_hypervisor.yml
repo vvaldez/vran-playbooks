@@ -1,0 +1,9 @@
+---
+- name: Prepare KVM Hypervisor
+  hosts: kvm_hypervisor
+  gather_facts: False
+  become: yes
+  tasks: 
+  - import_role:
+      name: kvm_hypervisor
+...

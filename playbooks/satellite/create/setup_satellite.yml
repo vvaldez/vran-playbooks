@@ -1,0 +1,64 @@
+---
+- name: Setup prerequisites
+  hosts: satellite
+  tasks:
+    - name: Register to RHSM
+      vars:
+        rhsm_repositories: "{{ rhsm.repositories }}"
+      import_role:
+        name: oasis_roles.system.rhsm
+      tags:
+        - rhsm
+
+    - name: Install packages
+      vars:
+        packages: "{{ rhsm.packages }}"
+      yum:
+        name: "{{ packages }}"
+        state: installed
+      tags:
+        - packages
+
+    - name: Set hostname
+      vars:
+        hostname_inject_hosts_files: false
+      import_role:
+        name: oasis_roles.system.hostname
+      tags:
+        - hostname
+
+    - name:
+
+#### todo
+    # - name: Inject forward DNS entry to /etc/hosts
+    #   blockinfile:
+    #     path: /etc/hosts
+    #     block: "172.17.118.6 {{ hostname }} satellite2"
+    #     state: present
+##### todo
+
+    - name: Set firewall
+      vars:
+        firewalld_zone: "{{ firewalld.firewalld_zone }}"
+        firewalld_ports_open: "{{ firewalld.firewalld_ports_open }}"
+      import_role:
+        name: oasis_roles.system.firewalld
+
+  tags:
+    - prereq
+
+
+
+- name: Setup Satellite
+  hosts: satellite
+  tasks:
+    - vars:
+        satellite_admin_username: "{{ satellite.admin_username }}"
+        satellite_admin_password: "{{ satellite.admin_password }}"
+        satellite_organization: "{{ satellite.organization }}"
+        satellite_location: "{{ satellite.location }}"
+      import_role:
+        name: oasis_roles.satellite
+  tags:
+    - setup
+...

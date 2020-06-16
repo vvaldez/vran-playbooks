@@ -1,0 +1,24 @@
+---
+- name: Deploy Tower Server
+  hosts: tower
+  gather_facts: False
+  tasks:
+  - import_role:
+      name: rhsm_register
+    vars:
+      rhsm_repos: "{{ tower_setup_repos }}"
+    tags:
+      - rhsm_register
+
+  - import_role:
+      name: tower_setup
+    tags:
+      - setup
+
+  - import_role:
+      name: tower_config
+    vars:
+      tower_config_type: 'Minimal'
+    tags:
+      - config
+...
