@@ -1,0 +1,44 @@
+---
+- name: Configure Tower inventory for admin password
+  ini_file:
+    path: "{{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_dir }}/inventory"
+    section: all:vars
+    option: admin_password
+    value: "'{{ tower_password }}'"
+
+- name: Configure Tower inventory for postgresql password
+  ini_file:
+    path: "{{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_dir }}/inventory"
+    section: all:vars
+    option: pg_password
+    value: "'{{ tower_pg_password }}'"
+
+- name: Configure Tower inventory for rabbitmq password
+  ini_file:
+    path: "{{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_dir }}/inventory"
+    section: all:vars
+    option: rabbitmq_password
+    value: "'{{ tower_rabbitmq_password }}'"
+
+- name: Show Tower setup command that will run
+  debug:
+    msg: "INFO: Running command: {{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_dir }}/setup.sh"
+    verbosity: 1
+
+- name: Run Tower setup
+  command: "{{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_dir }}/setup.sh"
+
+- name: Post Tower license
+  uri:
+    url: https://{{ hostvars[inventory_hostname].ansible_host }}/api/v2/config/
+    method: POST
+    validate_certs: no
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    force_basic_auth: yes
+    user: "{{ tower_username }}"
+    password: "{{ tower_password }}"
+    body: '{{ tower_license | to_json }}'
+    body_format: json
+...

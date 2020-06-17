@@ -1,0 +1,129 @@
+---
+# Tower general config
+tower_host: "{{ hostvars[groups['tower'].0].ansible_host }}"
+tower_username: "{{ tower_username | default('admin') }}"
+tower_password: "{{ tower_password }}"
+
+# Tower CLI config
+tower_config_repos_rhel7:
+  - rhel-7-server-rpms
+  - rhel-7-server-ansible-2-rpms
+  - rhel-7-server-extras-rpms
+tower_config_repos_rhel8:
+  - rhel-8-for-x86_64-appstream-rpms
+  - rhel-8-for-x86_64-baseos-rpms
+  - ansible-2-for-rhel-8-x86_64-rpms
+tower_config_repos: "{{ tower_config_repos_rhel8 }}"
+
+tower_config_packages_rhel7:
+  - ansible
+  - python-cffi
+  - python-enum34
+  - python-idna
+  - python-paramiko
+  - python-ply
+  - python-pycparser
+  - python2-cryptography
+  - python2-pyasn1
+  - sshpass
+tower_config_packages_rhel8:
+  - ansible
+  - python3-cffi
+  - python3-idna
+  - python3-ply
+  - python3-pycparser
+  - python3-cryptography
+  - python3-pyasn1
+  - sshpass
+  - python2-pip
+  - python3-pip
+tower_config_packages: "{{ tower_config_packages_rhel8 }}"
+
+tower_config_pip:
+  - ansible-tower-cli
+
+# Tower Organization
+tower_org: "Default"
+
+# Tower SSH credential
+tower_credential_ssh:
+  name: "SSH"
+  description: "Private SSH Key"
+  kind: "ssh"
+  key_data_file: "my_private_key.pem"
+  username: "root"
+
+# Tower SCM credential
+tower_credential_scm:
+  name: "SCM"
+  description: "SCM credentials"
+  kind: "scm"
+  username: "my_user"
+  key_data_file: "my_private_key.pem"
+
+# Tower project for inventory
+tower_project_inventory:
+  name: "Inventory"
+  description: "Inventory project added by Ansible via tower_config role"
+  type: "git"
+  url: "ssh://git@github.com/example/inventory.git"
+  branch: "master"
+  clean: yes
+  update_on_launch: "no"
+  delete_on_update: "no"
+
+# Tower project for playbooks and roles
+tower_project_code:
+  name: "Code"
+  description: "Code project added by Ansible via tower_config role"
+  type: "git"
+  url: "ssh://git@github.com/example/code.git"
+  branch: "master"
+  clean: yes
+  update_on_launch: "no"
+  delete_on_update: "no"
+
+# Tower inventory
+tower_inventory:
+  name: "Inventory"
+  description: "Inventory added by Ansible via tower_config role"
+
+# Tower inventory source
+tower_inventory_source:
+  name: "Example inventory source"
+  description: "Inventory source added by Ansible via tower_config role"
+  inventory: "{{ tower_inventory.name }}"
+  source: scm
+  source_project: "{{ tower_project_inventory.name }}"
+  update_on_launch: true
+  update_on_project_update: true
+  overwrite: true
+
+# Tower Config job template
+tower_job_template:
+  job_type: "run"
+  inventory: "{{ tower_inventory.name }}"
+  project: "{{ tower_project_code.name }}"
+  credential: "{{ tower_credential_ssh.name }}"
+  verbosity: 0
+
+# List of job templates to create
+tower_config_job_templates:
+  - name: "Deploy Director"
+    playbook: deploy_undercloud.yml
+  - name: "Deploy OpenStack"
+    playbook: deploy_openstack.yml
+  - name: "Deploy KVM Hypervisor"
+    playbook: deploy_kvm_hypervisor.yml
+  - name: "Deploy Tower"
+    playbook: deploy_tower.yml
+  - name: "Deploy Container Registry"
+    playbook: deploy_container_registry.yml
+  - name: "Teardown All"
+    playbook: teardown.yml
+
+# Deployment Workflow
+tower_config_workflow_template_deploy:
+  name: "Deploy All"
+  description: "Deploy all components"
+...

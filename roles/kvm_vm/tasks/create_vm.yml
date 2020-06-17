@@ -1,0 +1,102 @@
+---
+- block:
+    - name: Check for KVM VM template "{{ kvm_vm_base_image_disk }}" remotely
+      stat:
+        path: "{{ kvm_vm_base_image_disk }}"
+      register: kvm_vm_base_image_exists
+
+    - name: Check for KVM VM template "{{ kvm_vm_base_image_local }}" locally
+      stat:
+        path: "{{ kvm_vm_base_image_local }}"
+      delegate_to: localhost
+      register: kvm_vm_base_image_local_exists
+      become: no
+      when: not kvm_vm_base_image_exists.stat.exists
+
+    - name: Fail if template does not exist on host and not found locally
+      fail:
+        msg:
+          - "ERROR: Template was not found on the host: '{{ kvm_vm_base_image_disk }}'"
+          - "Template also not found locally at: '{{ kvm_vm_base_image_local }}'"
+          - "Download template from: '{{ kvm_vm_base_image_url }}'"
+      when:
+        - not kvm_vm_base_image_exists.stat.exists
+        - not kvm_vm_base_image_local_exists.stat.exists
+
+    - name: Copy KVM VM template
+      copy:
+        src: "{{ kvm_vm_base_image_local }}"
+        dest: "{{ kvm_vm_base_image_disk }}"
+      when: not kvm_vm_base_image_exists.stat.exists
+
+    - name: Create KVM VM placeholder disk image at requested size
+      command: qemu-img create -f qcow2 {{ kvm_vm_dir }}/{{ kvm_vm.disk }} {{ kvm_vm.size }}
+
+    - name: List partitions on base image
+      command:  virt-filesystems --partitions --human-readable --long --add {{ kvm_vm_base_image_disk }}
+      register: kvm_disk_partitions_results
+
+    - debug:
+        var: kvm_disk_partitions_results.stdout
+        verbosity: 1
+
+    - name: Expand {{ kvm_vm.root_partition }} to {{ kvm_vm.size }} on kvm disk image
+      command:  virt-resize --expand {{ kvm_vm.root_partition }} {{ kvm_vm_base_image_disk }} {{ kvm_vm_dir }}/{{ kvm_vm.disk }}
+
+    - name: List partitions on new image
+      command:  virt-filesystems --partitions --human-readable --long --add {{ kvm_vm_dir }}/{{ kvm_vm.disk }}
+      register: kvm_disk_partitions_resize_results
+    
+    - debug:
+        var: kvm_disk_partitions_resize_results.stdout
+        verbosity: 1
+
+    - name: Copy interface configuration files
+      template:
+        src: ifcfg-{{ interface }}.j2
+        dest: /tmp/ifcfg-{{ interface }}
+      loop:
+        - "{{ kvm_vm.networks.management.vm_interface }}"
+      loop_control:
+        loop_var: interface
+    
+    - name: Copy resolv.conf files
+      template:
+        src: resolv.conf.j2
+        dest: /tmp/resolv.conf
+
+    - name: Customize image
+      command: >
+        virt-customize
+          --add {{ kvm_vm_dir }}/{{ kvm_vm.disk }}
+          --hostname {{ kvm_vm.hostname }}.{{ kvm_vm.domain }}
+          --root-password password:{{ kvm_vm_root_password }}
+          --uninstall cloud-init
+          --ssh-inject root:string:"{{ ssh_key }}"
+          --copy-in /tmp/resolv.conf:/etc/
+          --copy-in /tmp/ifcfg-{{ kvm_vm.networks.management.vm_interface }}:/etc/sysconfig/network-scripts/
+          --run-command "restorecon -Rv /root/.ssh/"
+          --selinux-relabel
+
+    - name: Create KVM VM
+      command: >
+        virt-install
+          --import
+          --autostart
+          --ram {{ kvm_vm.ram }}
+          --vcpus {{ kvm_vm.vcpus }}
+          --os-variant {{ kvm_vm.os_variant }}
+          --disk path={{ kvm_vm_dir }}/{{ kvm_vm.disk }},device=disk,bus=virtio,format=qcow2
+          --noautoconsole
+          --hvm
+          --vnc
+          --network network={{ kvm_vm.networks.management.libvirt }}
+          --name {{ kvm_vm.name }}
+
+    - name: Wait for target KVM VM to be reachable over SSH
+      wait_for:
+        port: 22
+        host: "{{ kvm_vm.networks.management.ipaddr }}"
+        delay: '{{ wait_delay }}'
+        timeout: '{{ wait_timeout }}'
+...

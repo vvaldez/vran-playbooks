@@ -1,0 +1,33 @@
+---
+- name: List libvirt networks
+  virt_net:
+    command: list_nets
+  register: libvirt_networks
+
+- name: Debug libvirt_networks
+  debug:
+    var: libvirt_networks
+    verbosity: 2
+
+- block:
+    - name: Set libvirt mgmt bridge to not autostart
+      virt_net:
+        autostart: no
+        name: "{{ kvm_bridges.management }}"
+
+    - name: Set libvirt mgmt bridge to inactive
+      virt_net:
+        state: inactive
+        name: "{{ kvm_bridges.management }}"
+      
+    - name: Destroy libvirt mgmt bridge
+      virt_net:
+        command: destroy
+        name: "{{ kvm_bridges.management }}"
+
+    - name: Undefine libvirt mgmt bridge
+      virt_net:
+        command: undefine
+        name: "{{ kvm_bridges.management }}"
+  when: kvm_bridges.management in libvirt_networks.list_nets
+...

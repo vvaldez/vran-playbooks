@@ -1,0 +1,27 @@
+---
+- name: Add Tower inventory
+  tower_inventory:
+    name: "{{ tower_inventory.name }}"
+    description: "{{ tower_inventory.description }}"
+    organization: "{{ tower_org }}"
+    state: present
+    tower_username: "{{ tower_username }}"
+    tower_password: "{{ tower_password }}"
+    tower_host: "{{ tower_host }}"
+    validate_certs: False
+
+- name: Add Tower inventory source
+  tower_inventory_source:
+    name: "{{ tower_inventory_source.name }}"
+    description: "{{ tower_inventory_source.description }}"
+    inventory: "{{ tower_inventory_source.inventory }}"
+    source: "{{ tower_inventory_source.source }}"
+    source_project: "{{ tower_inventory_source.source_project }}"
+    update_on_launch: "{{ tower_inventory_source.update_on_launch }}"
+    overwrite: "{{ tower_inventory_source.overwrite }}"
+    state: present
+    tower_username: "{{ tower_username }}"
+    tower_password: "{{ tower_password }}"
+    tower_host: "{{ tower_host }}"
+    validate_certs: False
+...

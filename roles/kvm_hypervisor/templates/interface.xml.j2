@@ -1,0 +1,10 @@
+<interface type='bridge' name='br-{{ kvm_bridges.management.name }}'>
+  <start mode='onboot'/>
+  <bridge>
+    <interface type='vlan' name='{{ kvm_bridges.management.interface }}'>
+      <vlan tag='{{ kvm_bridges.management.vlan }}'>
+        <interface name='{{ kvm_bridges.management.bond }}'/>
+      </vlan>
+    </interface>
+  </bridge>
+</interface>

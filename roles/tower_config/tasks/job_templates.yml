@@ -1,0 +1,57 @@
+---
+- block:
+    - name: Copy extra vars file
+      copy:
+          src: 'tower_config_extra_vars.yaml'
+          dest: /tmp/
+          force: yes
+
+    - name: Create Tower Configuration Job Template
+      tower_job_template:
+        name: "Configure Tower"
+        description: "Job template to configure Tower with the remaining job and workflow templates"
+        job_type: "{{ tower_job_template.job_type }}"
+        inventory: "{{ tower_job_template.inventory }}"
+        project: "{{ tower_job_template.project }}"
+        playbook: "deploy_tower.yml"
+        verbosity: "{{ tower_job_template.verbosity | int }}"
+        survey_enabled: true
+        survey_spec: "{{ lookup('file', 'tower_config_type_survey.json') }}"
+        state: "present"
+        ask_extra_vars: true
+        extra_vars_path: '/tmp/tower_config_extra_vars.yaml'
+        ask_credential: true
+        tower_username: "{{ tower_username }}"
+        tower_password: "{{ tower_password }}"
+        tower_host: "{{ tower_host }}"
+        validate_certs: False
+
+    - name: Remove extra vars file
+      file:
+        path: '/tmp/tower_config_extra_vars.yaml'
+        state: absent
+
+  when: tower_config_type is match('Minimal')
+
+- block: 
+    - name: Create Job Templates
+      tower_job_template:
+        name: "{{ job_template.name }}"
+        description: "{{ job_template.name }} job template added by Ansible via tower_config role"
+        job_type: "{{ tower_job_template.job_type }}"
+        inventory: "{{ tower_job_template.inventory }}"
+        project: "{{ tower_job_template.project }}"
+        playbook: "{{ job_template.playbook }}"
+        credential: "{{ tower_job_template.credential }}"
+        verbosity: "{{ tower_job_template.verbosity | int }}"
+        state: "present"
+        tower_username: "{{ tower_username }}"
+        tower_password: "{{ tower_password }}"
+        tower_host: "{{ tower_host }}"
+        validate_certs: False
+      loop: "{{ tower_config_job_templates }}"
+      loop_control:
+        loop_var: job_template
+
+  when: tower_config_type is match('Full')
+...

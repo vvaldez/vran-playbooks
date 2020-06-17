@@ -1,0 +1,12 @@
+---
+- name: Add Deploy All workflow template
+  tower_workflow_template:
+    name: "{{ tower_config_workflow_template_deploy.name }}"
+    description: "{{ tower_config_workflow_template_deploy.description }}"
+    schema: "{{ lookup('file', 'deploy_all_workflow_schema.yaml') }}"
+    organization: "{{ tower_org }}"
+    tower_username: "{{ tower_username }}"
+    tower_password: "{{ tower_password }}"
+    tower_host: "{{ tower_host }}"
+    validate_certs: False
+...

@@ -1,0 +1,27 @@
+---
+- name: RHSM unregister
+  redhat_subscription:
+    state: absent
+
+- name: RHSM clean
+  command: subscription-manager clean
+
+- name: RHSM  yum clean
+  command: yum clean all
+
+- name: Clean yum cache
+  file:
+    path: /var/cache/yum/*
+    state: absent
+
+- block:
+    - name: Remove katello-ca
+      command: rpm -e katello-ca-consumer-{{ rhsm_satellite_server }}
+      ignore_errors: True
+
+    - name: Move original file for rhsm.conf
+      command: mv -f /etc/rhsm/rhsm.conf.kat-backup /etc/rhsm/rhsm.conf
+      ignore_errors: True
+  when:
+    - rhsm_satellite_clean | default(False)
+...
