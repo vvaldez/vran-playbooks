@@ -1,6 +1,12 @@
 - hosts: satellite
   gather_facts: yes
+  vars:
+    sync: no
   tasks:
+    #########################
+    # Import manifest
+    #########################
+
     - name: Import manifest
       theforeman.foreman.katello_manifest:
         username: "{{ satellite.admin_username }}"
@@ -13,6 +19,10 @@
       delegate_to: localhost
       tags:
         - manifest
+
+    #########################
+    # Create osp16_containers product
+    #########################
 
     - name: Create product for OpenStack containers
       theforeman.foreman.katello_product:
@@ -27,6 +37,10 @@
       tags:
         - products
 
+    #########################
+    # Create container repositories defined in each content view
+    #########################
+
     - name: Create repositories for container images
       theforeman.foreman.katello_repository:
         username: "{{ satellite.admin_username }}"
@@ -34,20 +48,25 @@
         server_url: "{{ satellite.server_url }}"
         validate_certs: no
         organization: "{{ satellite.organization }}"
-        name: "{{ item.split('/') | last | replace('openstack-', '') }}"
+        name: "{{ item.name.split('/') | last | replace('openstack-', '') }}"
         product: osp16_containers
         content_type: docker
-        url: "{{ satellite.containers.url }}"
-        docker_upstream_name: "{{ item }}"
-        upstream_username: "{{ satellite.containers.upstream_username }}"
-        upstream_password: "{{ satellite.containers.upstream_password }}"
+        url: "{{ satellite.container_registry_url }}"
+        docker_upstream_name: "{{ item.name }}"
+        upstream_username: "{{ satellite.container_registry_upstream_username }}"
+        upstream_password: "{{ satellite.container_registry_upstream_password }}"
         state: present_with_defaults
-      loop: "{{ satellite.containers.images }}"
+      loop: "{{ satellite.content_views | map(attribute='repositories') | flatten | list }}"
+      when: item.type == 'container'
       delegate_to: localhost
       tags:
         - containers
 
-    - name: "Create repository sets with releasevers"
+    #########################
+    # Create repository sets
+    #########################
+
+    - name: Create repository sets with releasevers
       theforeman.foreman.katello_repository_set:
         username: "{{ satellite.admin_username }}"
         password: "{{ satellite.admin_password }}"
@@ -63,7 +82,7 @@
       tags:
         - repository-sets
 
-    - name: "Create repository sets without releasevers"
+    - name: Create repository sets without releasevers
       theforeman.foreman.katello_repository_set:
         username: "{{ satellite.admin_username }}"
         password: "{{ satellite.admin_password }}"
@@ -78,6 +97,10 @@
       tags:
         - repository-sets
 
+    #########################
+    # Create sync plan and assign the created repository sets above to it
+    #########################
+
     - name: Get all products
       theforeman.foreman.foreman_search_facts:
         username: "{{ satellite.admin_username }}"
@@ -91,7 +114,7 @@
       tags:
         - sync-plan
 
-    - name: "Create or update weekly RHEL sync plan for all products containing a repository"
+    - name: Create or update weekly RHEL sync plan for all products containing a repository
       theforeman.foreman.katello_sync_plan:
         username: "{{ satellite.admin_username }}"
         password: "{{ satellite.admin_password }}"
@@ -111,48 +134,138 @@
       tags:
         - sync-plan
 
-    - name: Get all repositories
-      theforeman.foreman.foreman_search_facts:
-        username: "{{ satellite.admin_username }}"
-        password: "{{ satellite.admin_password }}"
-        server_url: "{{ satellite.server_url }}"
-        validate_certs: no
-        resource: repositories
-      register: repositories
-      delegate_to: localhost
-      tags:
-        - sync
+    #########################
+    # Sync all repositories
+    #########################
 
-    - name: Kick off repository Sync tasks
-      theforeman.foreman.katello_sync:
+    - block:
+        - name: Get all repositories for sync. Set `-e sync=yes` to run these tasks.
+          theforeman.foreman.foreman_search_facts:
+            username: "{{ satellite.admin_username }}"
+            password: "{{ satellite.admin_password }}"
+            server_url: "{{ satellite.server_url }}"
+            validate_certs: no
+            resource: repositories
+          register: repositories
+          delegate_to: localhost
+          tags:
+            - sync
+
+        - name: Kick off repository sync tasks
+          theforeman.foreman.katello_sync:
+            username: "{{ satellite.admin_username }}"
+            password: "{{ satellite.admin_password }}"
+            server_url: "{{ satellite.server_url }}"
+            validate_certs: no
+            verify_ssl: no
+            organization: "{{ satellite.organization }}"
+            product: "{{ item.product.name }}"
+            repository:  "{{ item.name }}"
+          loop: "{{ repositories.resources }}"
+          when: item.url  # Not all repositories have a URL
+          async: 999999
+          poll: 0
+          register: repo_sync_sleeper
+          delegate_to: localhost
+          tags:
+            - sync
+
+        - name: Wait until all syncs have finished
+          async_status:
+            jid: "{{ repo_sync_sleeper_item.ansible_job_id }}"
+          loop: "{{ repo_sync_sleeper.results }}"
+          loop_control:
+            loop_var: repo_sync_sleeper_item
+          when: repo_sync_sleeper_item.ansible_job_id is defined  # Skip items that were skipped in the previous task
+          register: async_job_result
+          until: async_job_result.finished
+          retries: 999
+          delay: 10
+          delegate_to: localhost
+          tags:
+            - sync
+      when: sync
+
+    #########################
+    # Create all content views and add their repositories
+    #########################
+
+    - name: Create content views
+      theforeman.foreman.katello_content_view:
         username: "{{ satellite.admin_username }}"
         password: "{{ satellite.admin_password }}"
         server_url: "{{ satellite.server_url }}"
         validate_certs: no
-        verify_ssl: no
         organization: "{{ satellite.organization }}"
-        product: "{{ item.product.name }}"
-        repository:  "{{ item.name }}"
-      loop: "{{ repositories.resources }}"
-      when: item.url  # Not all repositories have a URL
-      async: 999999
-      poll: 0
-      register: repo_sync_sleeper
+        name: "{{ item.name }}"
+      loop: "{{ satellite.content_views }}"
       delegate_to: localhost
       tags:
-        - sync
+        - content-views
 
-    - name: Wait until all Syncs have finished
-      async_status:
-        jid: "{{ repo_sync_sleeper_item.ansible_job_id }}"
-      loop: "{{ repo_sync_sleeper.results }}"
-      loop_control:
-        loop_var: repo_sync_sleeper_item
-      when: repo_sync_sleeper_item.ansible_job_id is defined  # Skip items that were skipped in the previous task
-      register: async_job_result
-      until: async_job_result.finished
-      retries: 999
-      delay: 10
+    # We have to use hammer cli to add all the repositories to the content view.
+    # The above theforeman.foreman.katello_content_view module seems to break
+    # when passing in a large amount of respositories.
+    - name: Add all the repositories to the content view
+      shell: |
+        {% for repo in item.repositories %}
+        hammer content-view add-repository --organization "{{ satellite.organization }}" \
+          --name '{{ item.name }}' \
+          --product '{{ repo.product }}' \
+          --repository '{{ repo.name.split('/') | last | replace('openstack-', '') }}'
+        {% endfor %}
+      loop: "{{ satellite.content_views }}"
+      tags:
+        - content-views
+
+    #########################
+    # Create lifecycle environments
+    #########################
+
+    - name: "Add a dev lifecycle environment"
+      theforeman.foreman.katello_lifecycle_environment:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "dev"
+        label: "dev"
+        prior: "Library"
+        description: "The development environment"
+        state: "present"
       delegate_to: localhost
       tags:
-        - sync
+        - lifecycle-envs
+
+    - name: "Add a staging lifecycle environment"
+      theforeman.foreman.katello_lifecycle_environment:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "stage"
+        label: "stage"
+        prior: "dev"
+        description: "The staging environment"
+        state: "present"
+      delegate_to: localhost
+      tags:
+        - lifecycle-envs
+
+    - name: "Add a prod lifecycle environment"
+      theforeman.foreman.katello_lifecycle_environment:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "prod"
+        label: "prod"
+        prior: "stage"
+        description: "The production environment"
+        state: "present"
+      delegate_to: localhost
+      tags:
+        - lifecycle-envs
