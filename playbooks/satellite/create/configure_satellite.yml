@@ -1,4 +1,5 @@
-- hosts: satellite
+- name: Configure Satellite
+  hosts: satellite
   gather_facts: yes
   vars:
     sync: no
