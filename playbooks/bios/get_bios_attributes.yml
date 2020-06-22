@@ -6,6 +6,7 @@
 
   vars:
     datatype: BiosAttributes
+    baseuri: "{{ inventory_hostname }}"
 
   tasks:
   - name: Define output file
