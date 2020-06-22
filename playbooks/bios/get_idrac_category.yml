@@ -1,0 +1,31 @@
+---
+- hosts: all
+  connection: local
+  name: Get all
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - name: Define output file
+    include_tasks: create_output_file.yml
+
+  - block:
+      - name: Get all iDrac information available in all categories
+        idrac_redfish_info:
+          category: Manager
+          command:
+            - GetManagerAttributes
+          baseuri: "{{ oob.ipaddr }}"
+          username: "{{ oob.username }}"
+          password: "{{ oob.password }}"
+        register: result_all_idrac
+
+      - debug:
+          msg: "{{ result_all_idrac | to_nice_yaml }}"
+
+      - name: Copy results to output file
+        copy:
+          content: "{{ result_all_idrac | to_nice_yaml }}"
+          dest: "{{ template }}-all_idrac.yml"
+...

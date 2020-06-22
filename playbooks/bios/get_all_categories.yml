@@ -1,0 +1,30 @@
+---
+- hosts: test
+  connection: local
+  name: Get all
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - name: Define output file
+    include_tasks: create_output_file.yml
+
+  - block:
+      - name: Get all information available in all categories
+        redfish_info:
+          category: all
+          command: all
+          baseuri: "{{ inventory_hostname }}"
+          username: "{{ username }}"
+          password: "{{ password }}"
+        register: result_all
+
+      - debug:
+          msg: "{{ result_all | to_nice_yaml }}"
+
+      - name: Copy results to output file
+        copy:
+          content: "{{ result_all | to_nice_yaml }}"
+          dest: "{{ template }}-all.yml"
+...
