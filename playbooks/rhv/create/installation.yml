@@ -1,0 +1,21 @@
+---
+- name: Subscribe
+  hosts: rhv
+  tasks:
+    - name: Install katello package
+      yum:
+        name: "https://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+        state: installed
+        validate_certs: no
+
+    - name: Register to Satellite
+      vars:
+        rhsm_org_id: "{{ rhsm.rhsm_org_id }}"
+        rhsm_activationkey: "{{ rhsm.rhsm_activationkey }}"
+        rhsm_server_hostname: "{{ rhsm.rhsm_server_hostname }}"
+        rhsm_respositories: "{{ rhsm.rhsm_respositories }}"
+      import_role:
+        name: oasis_roles.system.rhsm
+      tags:
+        - rhsm
+...
