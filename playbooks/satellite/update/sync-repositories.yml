@@ -1,0 +1,49 @@
+- hosts: satellite
+  tasks:
+    #########################
+    # Sync all repositories
+    #########################
+    - name: Get all repositories for sync.
+      theforeman.foreman.resource_info:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        resource: repositories
+      register: repositories
+      delegate_to: localhost
+      tags:
+        - sync
+
+    - name: Kick off repository sync tasks
+      theforeman.foreman.repository_sync:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        product: "{{ item.product.name }}"
+        repository:  "{{ item.name }}"
+      loop: "{{ repositories.resources }}"
+      when: item.url  # Not all repositories have a URL
+      async: 999999
+      poll: 0
+      register: repo_sync_sleeper
+      delegate_to: localhost
+      tags:
+        - sync
+
+    - name: Wait until all syncs have finished
+      async_status:
+        jid: "{{ repo_sync_sleeper_item.ansible_job_id }}"
+      loop: "{{ repo_sync_sleeper.results }}"
+      loop_control:
+        loop_var: repo_sync_sleeper_item
+      when: repo_sync_sleeper_item.ansible_job_id is defined  # Skip items that were skipped in the previous task
+      register: async_job_result
+      until: async_job_result.finished
+      retries: 999
+      delay: 10
+      delegate_to: localhost
+      tags:
+        - sync
