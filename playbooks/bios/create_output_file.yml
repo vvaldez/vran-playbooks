@@ -10,4 +10,4 @@
     file:
       path: "{{ rootdir }}/{{ host }}"
       state: directory
-    delegate_to: localhost---
+    delegate_to: localhost...
