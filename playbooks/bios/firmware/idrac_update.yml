@@ -1,0 +1,30 @@
+---
+#vars:
+#  update_version: "{{ oob.firmware.version }}"
+
+- block:
+    - name: Dell racadm update
+      raw: racadm update -f {{ oob.firmware.filename }} -l {{ oob.firmware.nfs_uri }}/{{ update_version }}/ --reboot 
+      register: update_result
+      failed_when: "'Firmware update job for ' + oob.firmware.filename + ' is initiated' not in update_result.stdout"
+      when: "'Dell' in oob.SystemManufacturer"
+      delegate_to: "{{ oob.username }}@{{ oob.ipaddr }}"
+      vars:
+        ansible_ssh_pass: "{{ oob.password }}"
+
+    - debug:
+        var: update_result
+    
+    - pause:
+        prompt: "Continue when update done"
+
+#    - name: Wait until iDRAC is available
+#      wait_for_connection:
+#        delay: 120
+#        timeout: 600
+#      delegate_to: "{{ oob.username }}@{{ oob.ipaddr }}"
+
+  when: 
+    - "'Dell' in oob.SystemManufacturer"
+#EndBlock
+...
