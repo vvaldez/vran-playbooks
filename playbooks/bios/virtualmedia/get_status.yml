@@ -1,0 +1,22 @@
+---
+- hosts: all
+  connection: local
+  name: Eject VirtualMedia
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - name: Get VirtualMedia status
+    redfish_info:
+      category: Manager
+      command: GetVirtualMedia
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob.username }}"
+      password: "{{ oob.password }}"
+    register: result
+    
+  - debug:
+      var: result
+      verbosity: 1
+...

@@ -1,0 +1,36 @@
+---
+- hosts: all
+  connection: local
+  name: Get all
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - block:
+      - name: Get FirmwawreInventory
+        redfish_info:
+          category: Update
+          command: GetFirmwareInventory
+          baseuri: "{{ oob.ipaddr }}"
+          username: "{{ oob.username }}"
+          password: "{{ oob.password }}"
+        register: results
+
+      - name: Get FirmwawreCapabilities
+        redfish_info:
+          category: Update
+          command: GetFirmwareUpdateCapabilities
+          baseuri: "{{ oob.ipaddr }}"
+          username: "{{ oob.username }}"
+          password: "{{ oob.password }}"
+        register: results_capabilities
+
+      - debug:
+          msg: "Firmware for Manager version: {{ item.Version }}"
+        loop: "{{ results.redfish_facts.firmware.entries }}"
+        when: item.Name is match(oob.firmware.manager_name)
+
+      - debug:
+          msg: "Firmwawwre update supports the following method: {{ results_capabilities.redfish_facts.firmware_update_capabilities.entries['#UpdateService.SimpleUpdate'] }}"
+...
