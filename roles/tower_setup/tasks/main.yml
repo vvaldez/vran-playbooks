@@ -1,0 +1,7 @@
+---
+- name: Prepare for Tower installation
+  import_tasks: setup.yml
+
+- name: Install tower
+  import_tasks: install.yml
+...

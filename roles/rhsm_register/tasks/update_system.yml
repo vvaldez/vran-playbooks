@@ -1,0 +1,24 @@
+---
+- name: Update system
+  package:
+    name: '*'
+    state: latest
+
+- name: Check if reboot needed
+  command: needs-restarting --reboothint
+  register: needs_restarting
+  failed_when: needs_restarting.rc not in [0,1]
+  changed_when: needs_restarting.rc == 1
+
+- block:
+  - name: Inform if reboot needed
+    pause:
+      prompt: "This system requires a reboot which will commence after this timeout."
+      seconds: "{{ wait_timeout }}"
+
+  - name: Reboot if needed
+    reboot:
+  when:
+    - needs_restarting.rc == 1 | default(False)
+    - not skip_reboot | default(False)
+...

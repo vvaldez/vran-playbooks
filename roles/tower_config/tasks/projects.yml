@@ -1,0 +1,39 @@
+---
+- block:
+    - name: Add Tower Project for playbooks and roles
+      tower_project:
+        name: "{{ tower_project_inventory.name }}"
+        description: "{{ tower_project_inventory.description }}"
+        organization: "{{ tower_org }}"
+        scm_type: "{{ tower_project_inventory.type }}"
+        scm_url: "{{ tower_project_inventory.url }}"
+        scm_branch: "{{ tower_project_inventory.branch }}"
+        scm_clean: "{{ tower_project_inventory.clean }}"
+        scm_update_on_launch: "{{ tower_project_inventory.update_on_launch }}"
+        scm_delete_on_update: "{{ tower_project_inventory.delete_on_update }}"
+        scm_credential: "{{ tower_credential_scm.name }}"
+        state: present
+        tower_username: "{{ tower_username }}"
+        tower_password: "{{ tower_password }}"
+        tower_host: "{{ tower_host }}"
+        validate_certs: False
+
+    - name: Add Tower Project for inventory
+      tower_project:
+        name: "{{ tower_project_code.name }}"
+        description: "{{ tower_project_code.description }}"
+        organization: "{{ tower_org }}"
+        scm_type: "{{ tower_project_code.type }}"
+        scm_url: "{{ tower_project_code.url }}"
+        scm_branch: "{{ tower_project_code.branch }}"
+        scm_clean: "{{ tower_project_code.clean }}"
+        scm_update_on_launch: "{{ tower_project_code.update_on_launch }}"
+        scm_delete_on_update: "{{ tower_project_code.delete_on_update }}"
+        scm_credential: "{{ tower_credential_scm.name }}"
+        state: present
+        tower_username: "{{ tower_username }}"
+        tower_password: "{{ tower_password }}"
+        tower_host: "{{ tower_host }}"
+        validate_certs: False
+  when: tower_config_type is match('Minimal')
+...

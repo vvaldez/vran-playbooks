@@ -1,0 +1,13 @@
+---
+- job_template: Deploy KVM Hypervisor
+  success:
+  - job_template: Deploy Container Registry
+    success:
+    - job_template: Deploy Tower
+      success:
+      - job_template: Configure Tower
+        success:
+        - job_template: Deploy Director
+          success:
+          - job_template: Deploy OpenStack
+...

@@ -1,0 +1,49 @@
+---
+- block:
+    - name: Check for KVM VM template remotely
+      stat:
+        path: "{{ kvm_vm_base_image_disk }}"
+      register: kvm_vm_base_image_exists
+
+    - name: Check for KVM VM template locally
+      stat:
+        path: "{{ kvm_vm_base_image_local }}"
+      delegate_to: localhost
+      register: kvm_vm_base_image_local_exists
+      become: no
+
+    - name: Fail if template does not exist on host and not found locally
+      fail:
+        msg:
+          - "ERROR: Template was not found on the host: '{{ kvm_vm_base_image_disk }}'"
+          - "Template also not found locally at: '{{ kvm_vm_base_image_local }}'"
+          - "Download template from: '{{ kvm_vm_base_image_url }}'"
+      when:
+        - not kvm_vm_base_image_exists.stat.exists
+        - not kvm_vm_base_image_local_exists.stat.exists
+
+    - name: Copy KVM VM template
+      copy:
+        src: "{{ kvm_vm_base_image_local }}"
+        dest: "{{ kvm_vm_base_image_disk }}"
+      when: not kvm_vm_base_image_exists.stat.exists
+
+    - name: Create KVM VM placeholder disk image at requested size
+      command: qemu-img create -f qcow2 {{ kvm_vm_dir }}/{{ kvm_vm.disk }} {{ kvm_vm.size }}
+
+    - name: Create KVM VM
+      command: >
+        virt-install
+          --import
+          --ram {{ kvm_vm.ram }}
+          --vcpus {{ kvm_vm.vcpus }}
+          --os-variant {{ kvm_vm.os_variant }}
+          --disk path={{ kvm_vm_dir }}/{{ kvm_vm.disk }},device=disk,bus=virtio,format=qcow2
+          --noautoconsole
+          --hvm
+          --vnc
+          --network network={{ kvm_vm.networks.management.libvirt }}
+          --name {{ kvm_vm.name }}
+
+  when: not kvm_vm.name in libvirt_vms.list_vms
+...

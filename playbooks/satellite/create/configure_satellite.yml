@@ -1,0 +1,267 @@
+- name: Configure Satellite
+  hosts: satellite
+  gather_facts: yes
+  vars:
+    sync: no
+  tasks:
+    #########################
+    # Import manifest
+    #########################
+
+    - name: Import manifest
+      theforeman.foreman.subscription_manifest:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        manifest_path: "../files/{{ satellite.manifest_filename }}"
+        state: refreshed
+      delegate_to: localhost
+      tags:
+        - manifest
+
+    #########################
+    # Create osp16_containers product
+    #########################
+
+    - name: Create product for OpenStack containers
+      theforeman.foreman.product:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: osp16_containers
+        state: present
+      delegate_to: localhost
+      tags:
+        - products
+
+    #########################
+    # Create container repositories defined in each content view
+    #########################
+
+    - name: Create repositories for container images
+      theforeman.foreman.repository:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "{{ item.name.split('/') | last | replace('openstack-', '') }}"
+        product: osp16_containers
+        content_type: docker
+        url: "{{ satellite.container_registry_url }}"
+        docker_upstream_name: "{{ item.name }}"
+        upstream_username: "{{ satellite.container_registry_upstream_username }}"
+        upstream_password: "{{ satellite.container_registry_upstream_password }}"
+        state: present_with_defaults
+      loop: "{{ satellite.content_views | map(attribute='repositories') | flatten | list }}"
+      when: item.type == 'container'
+      delegate_to: localhost
+      tags:
+        - containers
+
+    #########################
+    # Create repository sets
+    #########################
+
+    - name: Create repository sets with releasevers
+      theforeman.foreman.repository_set:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "{{ item.name }}"
+        repositories:
+        - releasever: "{{ item.releasever }}"
+      loop: "{{ satellite.repository_sets }}"
+      when: '"releasever" in item'
+      delegate_to: localhost
+      tags:
+        - repository-sets
+
+    - name: Create repository sets without releasevers
+      theforeman.foreman.repository_set:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "{{ item.name }}"
+        all_repositories: yes
+      loop: "{{ satellite.repository_sets }}"
+      when: '"releasever" not in item'
+      delegate_to: localhost
+      tags:
+        - repository-sets
+
+    #########################
+    # Create sync plan and assign the created repository sets above to it
+    #########################
+
+    - name: Get all products
+      theforeman.foreman.resource_info:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        resource: products
+        organization: "{{ satellite.organization }}"
+      register: products
+      delegate_to: localhost
+      tags:
+        - sync-plan
+
+    - name: Create or update weekly RHEL sync plan for all products containing a repository
+      theforeman.foreman.sync_plan:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: Nightly
+        description: Nightly
+        interval: daily
+        enabled: true
+        sync_date: "{{ ansible_date_time.date }} 23:00:00"
+        products: "{{ item.name }}"
+        state: present
+      loop: "{{ products.resources }}"
+      when: item.repository_count > 0
+      delegate_to: localhost
+      tags:
+        - sync-plan
+
+    #########################
+    # Create all content views and add their repositories
+    #########################
+
+    - name: Create content views
+      theforeman.foreman.content_view:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "{{ item.name }}"
+      loop: "{{ satellite.content_views }}"
+      delegate_to: localhost
+      tags:
+        - content-views
+      when: "'content_views' in satellite"
+      register: create_content_views
+      notify: Update content view
+
+    # TODO: Try to use foreman module again, instead of shell module below
+    # - name: Create content views
+    #   theforeman.foreman.katello_content_view:
+    #     username: "{{ satellite.admin_username }}"
+    #     password: "{{ satellite.admin_password }}"
+    #     server_url: "{{ satellite.server_url }}"
+    #     validate_certs: no
+    #     organization: "{{ satellite.organization }}"
+    #     name: "{{ item.name }}"
+    #     repositories: "{{  }}"
+    #   loop: "{{ satellite.content_views }}"
+    #   delegate_to: localhost
+    #   tags:
+    #     - content-views
+
+    - name: Force all notified handlers at this point, to publish content views if necessary
+      meta: flush_handlers
+      tags:
+        - content-views
+
+    #########################
+    # Create lifecycle environments
+    #########################
+
+    - name: Add lifecycle environment
+      theforeman.foreman.lifecycle_environment:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "{{ item.name }}"
+        label: "{{ item.name }}"
+        prior: "{{ item.prior }}"
+        description: "{{ item.description }}"
+        state: "present"
+      loop: "{{ satellite.lifecycle_environments }}"
+      delegate_to: localhost
+      tags:
+        - lifecycle-environments
+      when: "'lifecycle_environments' in satellite"
+
+    #########################
+    # Default content view publish??
+    #########################
+
+    # - name: "Publish a content view, not idempotent"
+    #   theforeman.foreman.content_view_version:
+    #     username: "{{ satellite.admin_username }}"
+    #     password: "{{ satellite.admin_password }}"
+    #     server_url: "{{ satellite.server_url }}"
+    #     validate_certs: no
+    #     organization: "{{ satellite.organization }}"
+    #     content_view: "{{ item.name }}"
+    #   loop:
+
+
+
+    #########################
+    # Create activation keys
+    #########################
+
+    - name: Create client activation key
+      theforeman.foreman.activation_key:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "{{ item.name }}"
+        lifecycle_environment: "Library"
+        content_view: "{{ item.content_view }}"
+        subscriptions: "{{ item.subscriptions }}"
+        content_overrides: "{{ item.content_overrides }}"
+        auto_attach: False
+      delegate_to: localhost
+      tags:
+        - activation-keys
+      loop: "{{ satellite.activation_keys }}"
+      when: "'activation_keys' in satellite"
+
+  handlers:
+    # We have to use hammer cli to add all the repositories to the content view.
+    # The above theforeman.foreman.katello_content_view module seems to break
+    # when passing in a large amount of respositories.
+    - name: Add all the repositories to the content view
+      shell: |
+        {% for repo in item.item.repositories %}
+        hammer content-view add-repository --organization "{{ satellite.organization }}" \
+          --name '{{ item.item.name }}' \
+          --product '{{ repo.product }}' \
+          --repository '{{ repo.name.split('/') | last | replace('openstack-', '') }}'
+        {% endfor %}
+      loop: "{{ create_content_views.results }}"
+      when: item.changed
+      listen: Update content view
+
+    - name: Publish content view
+      theforeman.foreman.content_view_version:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        content_view: "{{ item.item.name }}"
+        lifecycle_environments: "{{ satellite.lifecycle_environments | map(attribute='name') | list }}"
+      delegate_to: localhost
+      loop: "{{ create_content_views.results }}"
+      when: item.changed and initialize | bool
+      listen: Update content view

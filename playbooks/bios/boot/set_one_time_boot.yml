@@ -1,0 +1,36 @@
+---
+- block:
+    - name: Set OneTime VirtualMedia boot
+      redfish_config:
+        category: Systems
+        command: SetBiosAttributes
+        resource_id: "{{ oob.resource_ids.system }}"
+        bios_attributes:
+          OneTimeBootMode: "{{ oob.one_time_boot_enable }}"
+          OneTimeBootSeqDev: "{{ oob.virtual_cd_device }}"
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob.username }}"
+        password: "{{ oob.password }}"
+      register: onetimeboot_result
+
+    - debug:
+        var: onetimeboot_result
+        verbosity: 2
+
+    - name: Create BIOS configuration job for iDRAC (schedule BIOS setting update)
+      idrac_redfish_command:
+        category: Systems
+        command: CreateBiosConfigJob
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob.username }}"
+        password: "{{ oob.password }}"
+      tags:
+        - configjob
+      when:
+        - "'Dell' in oob.SystemManufacturer"
+  tags:
+    - bootorder
+  # Need to add a check to see if this is an iDRAC redfish device
+  #EndBlock
+
+...

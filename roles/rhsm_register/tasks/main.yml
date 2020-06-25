@@ -1,0 +1,18 @@
+---
+- import_tasks: unregister.yml
+  when: rhsm_clean_subscription | default(False)
+
+- block:
+  - import_tasks: rhsm_register.yml
+  - import_tasks: enable_repos.yml
+  when: not (rhsm_register_with_satellite | default(False))
+
+- import_tasks: satellite_register.yml
+  when: rhsm_register_with_satellite | default(False)
+
+- import_tasks: install_packages.yml
+  when: rhsm_packages is defined
+
+- import_tasks: update_system.yml
+  when: rhsm_yum_update | default(True)
+...
