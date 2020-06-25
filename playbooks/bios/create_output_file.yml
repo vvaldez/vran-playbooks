@@ -4,10 +4,12 @@
     run_once: true
 
   - name: Define file to place results
-    set_fact: template={{rootdir}}/{{host}}/{{host}}_{{datatype}}_{{timestamp}}
+    set_fact:
+      template: "{{ playbook_dir }}/playbook-output/{{ inventory_hostname }}/{{ timestamp }}"
 
   - name: Create dropoff directory for host
     file:
-      path: "{{ rootdir }}/{{ host }}"
+      path: "{{ playbook_dir }}/playbook-output/{{ inventory_hostname }}"
       state: directory
-    delegate_to: localhost...
+    delegate_to: localhost
+...

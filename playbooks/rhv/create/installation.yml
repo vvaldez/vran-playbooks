@@ -1,0 +1,88 @@
+---
+- name: Subscribe
+  hosts: rhv
+  tasks:
+    - name: Configure networking
+      vars:
+        # The network-scripts portion of the role is considered a provisioning
+        # step. By default, it is not ran unless this is override to yes. When
+        # re-running this role, it is probably not ideal to re-setup and restart
+        # networking. Which will happen when setup_nics=yes.
+        base_setup_nics: "{{ setup_nics | default('no') }}"
+      block:
+        - name: "Include network-scripts role to template /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
+          vars:
+            network_scripts_dest_path: /etc/sysconfig/network-scripts
+            network_scripts_nics: "{{ nics | mandatory }}"
+            network_scripts_clear_existing: yes
+            network_scripts_restart: yes
+          include_role:
+            name: network-scripts
+      when: base_setup_nics | bool
+      tags:
+        - network
+
+    - name: Install katello package
+      yum:
+        name: "https://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+        state: installed
+        validate_certs: no
+      tags:
+        - rhsm
+
+    - name: Register to Satellite
+      vars:
+        rhsm_org_id: "{{ rhsm.rhsm_org_id }}"
+        rhsm_activationkey: "{{ rhsm.rhsm_activationkey }}"
+        rhsm_server_hostname: "{{ rhsm.rhsm_server_hostname }}"
+        rhsm_respositories: "{{ rhsm.rhsm_respositories }}"
+      import_role:
+        name: oasis_roles.system.rhsm
+      tags:
+        - rhsm
+
+    - name: Set hostname
+      vars:
+        hostname_inject_hosts_files: false
+      import_role:
+        name: oasis_roles.system.hostname
+      tags:
+        - hostname
+
+    - name: Inject forward DNS entry to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^{{ ansible_default_ipv4.address }}"
+        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+
+    - name: Ensure Cockpit is an active service in the firewall
+      vars:
+        firewalld_services: "{{ firewalld.firewalld_services }}"
+        firewalld_zone: "{{ firewalld.firewalld_zone }}"
+      import_role:
+        name: oasis_roles.system.firewalld
+
+    - name: Yum update
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install Cockpit
+      vars:
+        packages:
+          - cockpit-ovirt-dashboard
+      yum:
+        name: "{{ packages }}"
+        state: installed
+
+    - name: Enable and start cockpit service
+      systemd:
+        name: cockpit.socket
+        state: started
+        enabled: yes
+
+    - name: Install RHV-M Appliance
+      yum:
+        name: rhvm-appliance
+        state: installed
+...
