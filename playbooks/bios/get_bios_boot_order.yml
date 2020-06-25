@@ -25,4 +25,4 @@
     copy:
       content: "{{ result | to_nice_json }}"
       dest: "{{ template }}.json"
----
+...
