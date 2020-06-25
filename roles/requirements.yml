@@ -36,6 +36,9 @@ roles:
 
   - name: oasis_roles.satellite
   - name: ovirt.hosted_engine_setup
+    src: git@github.com:oVirt/ovirt-ansible-hosted-engine-setup.git
+    scm: git
+    version: 1.0.35
   - name: ovirt.engine-setup
 
 collections:

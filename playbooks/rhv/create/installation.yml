@@ -1,6 +1,5 @@
 ---
-- name: Subscribe
-  hosts: rhv
+- hosts: rhv
   tasks:
     - name: Configure networking
       vars:
@@ -85,4 +84,8 @@
       yum:
         name: rhvm-appliance
         state: installed
+
+    - name: Run hosted-engine-setup
+      import_role:
+        name: ovirt.hosted_engine_setup
 ...
