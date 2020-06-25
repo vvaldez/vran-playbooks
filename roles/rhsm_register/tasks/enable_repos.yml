@@ -1,0 +1,24 @@
+---
+- name: Enable requested RHSM repositories
+  rhsm_repository:
+    name: "{{ rhsm_repos }}"
+    state: enabled
+    purge: True
+  register: repos_enable
+
+- name: debug repos enable
+  debug:
+    var: repos_enable
+    verbosity: 1
+
+- name: show repos
+  command: yum repolist
+  register: yum_repolist
+  args:
+    warn: false
+
+- name: debug yum repolist
+  debug:
+    var: yum_repolist
+    verbosity: 1
+...

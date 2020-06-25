@@ -1,0 +1,5 @@
+<network>
+  <name>{{ kvm_bridges.management.name }}</name>
+ <forward mode='bridge'/>
+  <bridge name="br-{{ kvm_bridges.management.name }}" />
+</network>

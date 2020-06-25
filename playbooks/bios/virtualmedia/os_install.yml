@@ -1,0 +1,36 @@
+---
+- hosts: all
+  connection: local
+  name: Insert and Attach VirtualMedia and set OneTimeBoot to Virtual CD
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - name: Insert Virtual Media
+    redfish_command:
+      category: Manager
+      command: VirtualMediaInsert
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob.username }}"
+      password: "{{ oob.password }}"
+      virtual_media:
+        image_url: "{{ oob.iso_url }}"
+        media_types:
+          - CD
+          - DVD
+      resource_id: "{{ oob.resource_ids.manager }}"
+    register: virtualmedia_attach_result
+
+  - debug:
+      var: virtualmedia_attach_result
+      verbosity: 1
+
+  - import_tasks: ../boot/set_one_time_boot.yml
+    vars:
+      one_time_boot_device: VCD-DVD
+
+  - import_tasks: ../actions/reboot_server.yml
+    tags:
+      - reboot
+...

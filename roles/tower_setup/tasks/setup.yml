@@ -1,0 +1,54 @@
+---
+- name: Check for Tower setup remotely
+  stat:
+    path: "/tmp/{{ tower_setup_archive_remote_file }}"
+  register: tower_setup_archive_remote_file_exists
+
+- name: Check for Tower setup locally
+  stat:
+    path: "{{ tower_setup_archive_local_file }}"
+  delegate_to: localhost
+  register: tower_setup_archive_local_file_exists
+  when: not tower_setup_archive_remote_file_exists.stat.exists
+
+- name: Copy Tower setup file from local system
+  copy:
+    src: "{{ tower_setup_archive_local_file }}"
+    dest: "{{ tower_setup_archive_remote_file }}"
+  when:
+    - not tower_setup_archive_remote_file_exists.stat.exists
+    - tower_setup_archive_local_file_exists.stat.exists
+
+- name: Download Tower setup archive file
+  get_url:
+    url: "{{ tower_setup_archive_url }}"
+    dest: "{{ tower_setup_archive_remote_file }}"
+  when:
+    - not tower_setup_archive_remote_file_exists.stat.exists
+    - not tower_setup_archive_local_file_exists.stat.exists
+  register: tower_setup_archive_remote_file_download
+
+- name: Fail if template does not exist on host and not found locally
+  fail:
+    msg:
+      - "ERROR: Tower setup archive was not found on the host: '{{ tower_setup_archive_remote_file }}'"
+      - "Tower setup archive also not found locally at: '{{ tower_setup_archive_local_file }}'"
+      - "Unable to download Tower setup archive from: '{{ tower_setup_archive_url }}'"
+      - "FIX: Download from: '{{ tower_setup_archive_remote_file_url }}' and place it locally at '{{ tower_setup_archive_local_file }}'"
+  when:
+    - not tower_setup_archive_remote_file_exists.stat.exists
+    - not tower_setup_archive_local_file_exists.stat.exists
+    - not tower_setup_archive_remote_file_download is success
+
+- name: Extract Tower setup archive
+  unarchive:
+    src: "{{ tower_setup_archive_remote_file }}"
+    dest: "{{ tower_setup_archive_remote_dir }}"
+    remote_src: yes
+
+- name: Install packages for Tower
+  package:
+    name: "{{ tower_setup_packages }}"
+    state: installed
+
+...

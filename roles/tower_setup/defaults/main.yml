@@ -1,0 +1,61 @@
+---
+# Tower general config
+tower_host: localhost
+tower_username: admin
+tower_password: "{{ tower_password }}"
+tower_cli_verbosity: "--verbose"
+
+# Passwords for installation
+tower_pg_password: "{{ tower_password }}"
+tower_rabbitmq_password: "{{ tower_password }}"
+
+# Tower Organization
+tower_org: "Default"
+
+# Tower version 
+tower_version: "3.6.1-1"
+tower_rhel_version: "8"
+
+# Tower setup archive variables
+tower_setup_archive_file: "ansible-tower-setup-bundle-{{ tower_version }}.el{{ tower_rhel_version }}.tar.gz"
+tower_setup_archive_dir: "{{ tower_setup_archive_file.split('.tar.gz').0 }}"
+tower_setup_archive_url: "https://releases.ansible.com/ansible-tower/setup-bundle/{{ tower_setup_archive_file }}"
+tower_setup_archive_remote_dir: "/tmp"
+tower_setup_archive_remote_file: "{{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_file }}"
+tower_setup_archive_local_file: "{{ tower_setup_archive_remote_dir }}/{{ tower_setup_archive_file }}"
+
+tower_setup_repos_rhel7:
+  - rhel-7-server-rpms
+  - rhel-7-server-ansible-2-rpms
+  - rhel-7-server-extras-rpms
+tower_setup_repos_rhel8:
+  - rhel-8-for-x86_64-appstream-rpms
+  - rhel-8-for-x86_64-baseos-rpms
+  - ansible-2-for-rhel-8-x86_64-rpms
+tower_setup_repos: "{{ tower_setup_repos_rhel8 }}"
+
+# Tower yum packages
+tower_setup_packages_rhel7:
+  - ansible
+  - python-cffi
+  - python-enum34
+  - python-idna
+  - python-paramiko
+  - python-ply
+  - python-pycparser
+  - python2-cryptography
+  - python2-pyasn1
+  - sshpass
+tower_setup_packages_rhel8:
+  - ansible
+  - python3-cffi
+  - python3-idna
+  - python3-ply
+  - python3-pycparser
+  - python3-cryptography
+  - python3-pyasn1
+  - sshpass
+  - python2-pip
+  - python3-pip
+tower_setup_packages: "{{ tower_setup_packages_rhel8 }}"
+...

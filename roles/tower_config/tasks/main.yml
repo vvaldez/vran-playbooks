@@ -1,0 +1,14 @@
+---
+- import_tasks: tower_cli.yml
+
+- import_tasks: credentials.yml
+
+- import_tasks: projects.yml
+
+- import_tasks: inventories.yml
+
+- import_tasks: job_templates.yml
+
+- import_tasks: workflows.yml
+  when: tower_config_type is match('Full')
+...

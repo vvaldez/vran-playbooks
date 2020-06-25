@@ -1,0 +1,6 @@
+---
+- name: Install packages
+  yum:
+    name: "{{ rhsm_packages }}"
+    state: present
+...

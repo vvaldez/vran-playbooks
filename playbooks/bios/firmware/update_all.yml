@@ -1,0 +1,16 @@
+---
+- hosts: all
+  connection: local
+  name: Update firmware
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - include_tasks: idrac_update.yml
+    vars:
+      update_version: "{{ version }}"
+    loop: "{{ oob.firmware.versions }}"
+    loop_control:
+      loop_var: version
+...

@@ -1,0 +1,95 @@
+---
+- block:
+    - name: Register to RHSM CDN with auto attach and release
+      redhat_subscription:
+        state: present
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        auto_attach: True
+        release: "{{ rhsm_rhel_release }}"
+      register: subscription
+      ignore_errors: True
+
+    - name: Debug subscription results
+      debug:
+        var: subscription
+        verbosity: 1
+    
+  when: 
+    - rhsm_pool_ids is not defined or rhsm_pool_ids == None or rhsm_pool_ids | trim == ''
+    - rhsm_release is defined
+    - rhsm_release != None
+    - rhsm_release | trim != ''
+    
+- block:
+    - name: Register to RHSM CDN with auto attach without release
+      redhat_subscription:
+        state: present
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        auto_attach: True
+      register: subscription
+      ignore_errors: True
+
+    - name: Debug subscription results
+      debug:
+        var: subscription
+        verbosity: 1
+    
+    - name: Unset any release versions
+      command: subscription-manager release --unset
+      when: subscription is changed
+
+  when:
+    - rhsm_pool_ids is not defined or rhsm_pool_ids == None or rhsm_pool_ids | trim == ''
+    - rhsm_release is not defined or rhsm_release == None or rhsm_release | trim == ''
+    
+- block:
+    - name: Register to RHSM CDN with pool id with release
+      redhat_subscription:
+        state: present
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        pool_ids: "{{ rhsm_pool_ids }}"
+        release: "{{ rhsm_rhel_release }}"
+      register: subscription
+      ignore_errors: True
+    
+    - name: debug subscription
+      debug:
+        var: subscription
+        verbosity: 1
+    
+  when:
+    - rhsm_pool_ids is defined
+    - rhsm_pool_ids != None
+    - rhsm_pool_ids | trim != ''
+    - rhsm_release is defined
+    - rhsm_release != None
+    - rhsm_release | trim != ''
+    
+- block:
+    - name: Register to RHSM CDN with pool id witout release
+      redhat_subscription:
+        state: present
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        pool_ids: "{{ rhsm_pool_ids }}"
+      register: subscription
+      ignore_errors: True
+    
+    - name: debug subscription
+      debug:
+        var: subscription
+        verbosity: 1
+    
+    - name: Unset any release versions
+      command: subscription-manager release --unset
+      when: subscription is changed
+
+  when:
+    - rhsm_pool_ids is defined
+    - rhsm_pool_ids != None
+    - rhsm_pool_ids | trim != ''
+    - rhsm_release is not defined or rhsm_release == None or rhsm_release | trim == ''
+...

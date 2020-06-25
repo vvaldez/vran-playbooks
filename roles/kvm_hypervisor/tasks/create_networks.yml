@@ -1,0 +1,46 @@
+---
+- debug:
+    var: kvm_bridges
+    verbosity: 2
+
+- name: List libvirt interfaces
+  command: virsh iface-list --all
+  register: libvirt_interfaces
+
+- debug:
+    var: libvirt_interfaces
+    verbosity: 2
+
+- name: List libvirt networks
+  virt_net:
+    command: list_nets
+  register: libvirt_networks
+
+- name: Debug libvirt_networks
+  debug:
+    var: libvirt_networks
+    verbosity: 2
+
+- block:
+    - name: Define libvirt management bridge
+      virt_net:
+        command: define
+        name: "{{ kvm_bridges.management.name }}"
+        xml: '{{ lookup("template", "bridge.xml.j2") }}'
+
+    - name: Start libvirt management bridge
+      virt_net:
+        command: create
+        name: "{{ kvm_bridges.management.name }}"
+      
+    - name: Set libvirt management bridge to active
+      virt_net:
+        state: active
+        name: "{{ kvm_bridges.management.name }}"
+      
+    - name: Set libvirt management bridge to autostart
+      virt_net:
+        autostart: yes
+        name: "{{ kvm_bridges.management.name }}"
+  when: not kvm_bridges.management.name in libvirt_networks.list_nets
+...

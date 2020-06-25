@@ -1,0 +1,21 @@
+---
+rhsm_username: 'rhsm_username'
+rhsm_password: 'rhsm_password'
+rhsm_clean_subscription: False
+rhsm_register_with_satellite: False
+rhsm_update_system: False
+#rhsm_pool_ids: ''
+#rhsm_rhel_release: ''
+rhsm_repos_rhel7:
+  - rhel-7-server-rpms
+rhsm_repos_rhel8:
+  - rhel-8-for-x86_64-appstream-rpms
+  - rhel-8-for-x86_64-baseos-rpms
+rhsm_repos: "{{ rhsm_repos_rhel8 }}"
+rhsm_packages:
+  - yum-utils
+rhsm_satellite_server: ''
+rhsm_satellite_activationkey: ''
+rhsm_satellite_organization: ''
+rhsm_satellite_clean: False
+...
