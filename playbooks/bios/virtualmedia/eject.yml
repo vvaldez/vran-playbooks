@@ -19,7 +19,7 @@
 
   - debug:
       var: virtual_media_result.redfish_facts
-      verbosity: 2
+      verbosity: 1
 
   - set_fact:
       virtual_media_url: "{{ item.Image }}"
@@ -28,7 +28,7 @@
 
   - debug:
       var: virtual_media_url
-      verbosity: 2
+      verbosity: 1
 
   - block:
       - name: Eject ISO
@@ -46,7 +46,7 @@
 
       - debug:
           var: virtualmedia_eject_result | to_nice_json
-          verbosity: 2
+          verbosity: 1
 
     when:
       - virtual_media_url | trim != ''
