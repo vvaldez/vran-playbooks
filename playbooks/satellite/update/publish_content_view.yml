@@ -3,7 +3,7 @@
   gather_facts: no
   tasks:
     - name: 'Publish a new content view. Mandatory extra-variables: content_view, lifecycle_environment'
-      theforeman.foreman.katello_content_view_version:
+      theforeman.foreman.content_view_version:
         username: "{{ satellite.admin_username }}"
         password: "{{ satellite.admin_password }}"
         server_url: "{{ satellite.server_url }}"
