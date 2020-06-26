@@ -1,7 +1,7 @@
 ---
 - hosts: all
   connection: local
-  name: Update firmware
+  name: Update firmware for "{{ oob.manager_name }}" to specified version "{{ update_version }}"
   gather_facts: False
   collections:
     - community.general
