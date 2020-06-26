@@ -4,7 +4,7 @@
       redfish_command:
         category: Systems
         command: 
-          - PowerReboot
+          - PowerGracefulRestart
         resource_id: "{{ oob.resource_ids.system }}"
         baseuri: "{{ oob.ipaddr }}"
         username: "{{ oob.username }}"
