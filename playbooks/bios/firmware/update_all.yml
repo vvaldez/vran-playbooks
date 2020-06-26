@@ -13,4 +13,14 @@
     loop: "{{ oob.firmware.versions }}"
     loop_control:
       loop_var: version
+    when: 
+      - "'Dell' in oob.SystemManufacturer"
+  - include_tasks: update.yml
+    vars:
+      update_version: "{{ version }}"
+    loop: "{{ oob.firmware.versions }}"
+    loop_control:
+      loop_var: version
+    when: 
+      - "'Dell' not in oob.SystemManufacturer"
 ...

@@ -7,29 +7,12 @@
     - community.general
 
   tasks:
-#    - name: Simple update
-#      redfish_command:
-#        category: Update
-#        command: SimpleUpdate
-#        baseuri: "{{ oob.ipaddr }}"
-#        username: "{{ oob.username }}"
-#        password: "{{ oob.password }}"
-#        update_image_uri: "{{ oob.firmware.http_url }}/{{ oob.firmware.version }}/{{ oob.firmware.filename }}"
-
-    - block:
-        # TODO: check for existing firmware and  skip update if it is the same
-        - name: Dell racadm update
-          raw: racadm  update -f {{ oob.firmware.filename }} -l {{ oob.firmware.nfs_uri }}/{{ oob.firmware.version }}/ --reboot 
-          register: update_result
-          failed_when: "'Firmware update job for ' + oob.firmware.filename + ' is initiated' not in update_result.stdout"
-          when: "'Dell' in oob.SystemManufacturer"
-          delegate_to: "{{ oob.username }}@{{ oob.ipaddr }}"
-          vars:
-            ansible_ssh_pass: "{{ oob.password }}"
-
-        - debug:
-            var: update_result
-      when: 
-        - "'Dell' in oob.SystemManufacturer"
-    #EndBlock
+    - name: Simple update
+      redfish_command:
+        category: Update
+        command: SimpleUpdate
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob.username }}"
+        password: "{{ oob.password }}"
+        update_image_uri: "{{ oob.firmware.http_url }}/{{ oob.firmware.version }}/{{ oob.firmware.filename }}"
 ...
