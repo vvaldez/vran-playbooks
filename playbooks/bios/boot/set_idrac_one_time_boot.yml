@@ -21,22 +21,6 @@
 
     - debug:
         var: onetimeboot_result
-        verbosity: 2
-
-    - name: Create BIOS configuration job (schedule BIOS setting update)
-      idrac_redfish_command:
-        category: Systems
-        command: CreateBiosConfigJob
-        baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
-      tags:
-        - configjob
-      when: False
-  tags:
-    - bootorder
-  when:
-    - "'Dell' in oob.SystemManufacturer"
-  # Need to add a check to see if this is an iDRAC redfish device
+        verbosity: 1
   #EndBlock
 ...
