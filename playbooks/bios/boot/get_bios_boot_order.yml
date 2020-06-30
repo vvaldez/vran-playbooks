@@ -1,22 +1,28 @@
 ---
-- hosts: test
+- hosts: myhosts
   connection: local
   name: Get BIOS boot order
   gather_facts: False
-  collections:
-    - community.general
 
   vars:
     datatype: BiosBootOrder
-    baseuri: "{{ inventory_hostname }}"
 
   tasks:
+
+  - name: Define output file
+    include_tasks: create_output_file.yml
+
   - name: Get device boot order
     redfish_info:
       category: Systems
-      command: GetBiosAttributes
+      command: GetBiosBootOrder
       baseuri: "{{ baseuri }}"
       username: "{{ username }}"
       password: "{{ password }}"
     register: result
+
+  - name: Copy results to output file
+    copy:
+      content: "{{ result | to_nice_json }}"
+      dest: "{{ template }}.json"
 ...
