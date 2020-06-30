@@ -1,17 +1,16 @@
 ---
-- block:
-    - name: Reboot server
-      redfish_command:
-        category: Systems
-        command: 
-          - PowerGracefulRestart
-        resource_id: "{{ oob.resource_ids.system }}"
-        baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
-      register: reboot_result
+- name: Reboot server
+  redfish_command:
+    category: Systems
+    command: 
+      - PowerGracefulRestart
+    resource_id: "{{ oob.resource_ids.system }}"
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob.username }}"
+    password: "{{ oob.password }}"
+  register: reboot_result
 
-    - debug:
-        var: reboot_result
-        verbosity: 2
+- debug:
+    var: reboot_result
+    verbosity: 1
 ...

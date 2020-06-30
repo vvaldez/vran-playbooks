@@ -16,12 +16,24 @@
     var: update_result
     verbosity: 1
 
-- import_tasks: ../actions/reboot_server.yml
 
-- name: Wait until iDRAC is available
-  wait_for:
-    host: "{{ oob.ipaddr }}"
-    port: 22
-    delay: 300
-    timeout: 900
+- name: Reboot via OS 
+  reboot:
+    post_reboot_delay: 300
+    reboot_timeout: 900
+  delegate_to: "{{ inventory_hostname }}"
+  when: not no_os | default(False)
+
+- block:
+    - import_tasks: ../actions/reboot_server.yml
+
+    - name: Wait until iDRAC is available
+      wait_for:
+        host: "{{ oob.ipaddr }}"
+        port: 22
+        delay: 300
+        timeout: 900
+  when: no_os | default(False)
+
+- import_tasks: ../actions/wait_for_redfish_api.yml
 ...
