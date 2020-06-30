@@ -5,6 +5,7 @@
   connection: local
   name: Update firmware for "{{ oob.manager_name }}" 
   gather_facts: False
+  serial: 1
   collections:
     - community.general
 
