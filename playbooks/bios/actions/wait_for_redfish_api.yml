@@ -1,0 +1,23 @@
+---
+- name: Wait until redfish is available
+  uri:
+    url: http://{{ oob.ipaddr }}/redfish/v1
+    url_username: "{{ oob.username }}"
+    url_password: "{{ oob.password }}"
+    status_code:
+      - -1
+      - 200
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: yes
+  register: redfish_result
+  ignore_errors: true
+  until: redfish_result.status is match('200')
+  delay: 15
+  retries: 20
+
+- debug:
+    var: redfish_result
+    verbosity: 1
+...

@@ -24,4 +24,6 @@
     port: 22
     delay: 300
     timeout: 900
+
+- import_tasks: ../actions/wait_for_redfish_api.yml
 ...
