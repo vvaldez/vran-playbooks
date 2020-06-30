@@ -6,7 +6,6 @@
 
   vars:
     datatype: BiosAttributes
-    baseuri: "{{ inventory_hostname }}"
 
   tasks:
   - name: Define output file
@@ -38,4 +37,4 @@
     copy:
       content: "{{ result | to_nice_yaml }}"
       dest: "{{ template }}.yml"
----
+...
