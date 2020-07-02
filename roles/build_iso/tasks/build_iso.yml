@@ -1,13 +1,13 @@
 ---
 #vars:
-#  iso_source: "{{ infra.iso.source.rhel7 }}"
+#  iso_source: "{{ install.iso.source.rhel7 }}"
 #  iso_hostname: "{{ groups['ceph'][0] }}"
 
 - debug:
     var: "{{ item }}"
     verbosity: 1
   loop:
-    - infra
+    - install
     - iso_hostname
     - iso_source
 
@@ -64,18 +64,18 @@
 
 - name: Check if previous build directory exists
   stat:
-    path: "{{ infra.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
   register: build_path
 
 - name: Remove any previous build directory
   file:
     state: absent
-    path: "{{ infra.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
   when: build_path.stat.exists
 
 - name: Create directory for custom ISO build for {{ iso_hostname }}
   file:
-    path: "{{ infra.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
     state: directory
 
 - name: Mount ISO
@@ -89,7 +89,7 @@
 - name: Copy ISO contents
   copy:
     src: "{{ iso_tempdir.path }}/"
-    dest: "{{ infra.iso.dir }}/{{ iso_hostname }}/build/"
+    dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
     remote_src: yes
 
 - debug:
@@ -98,18 +98,18 @@
 - name: Modify legacacy BIOS menu
   template:
     src: "{{ 'rhel' + os_major_version }}/isolinux.cfg.j2"
-    dest: "{{ infra.iso.dir }}/{{ iso_hostname }}/build/isolinux/isolinux.cfg"
+    dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/isolinux/isolinux.cfg"
 
 - name: Modify EFI menu
   template:
     src: "{{ 'rhel' + os_major_version }}/grub.cfg.j2"
-    dest: "{{ infra.iso.dir }}/{{ iso_hostname }}/build/EFI/BOOT/grub.cfg"
+    dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/EFI/BOOT/grub.cfg"
 
 - block:
     - name: Create custom ISO for RHEL 8
       command: >
         genisoimage 
-          -o {{ infra.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
+          -o {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
           -J
           -full-iso9660-filenames
           -rock
@@ -121,10 +121,10 @@
           -boot-info-table
           -eltorito-alt-boot
           -efi-boot images/efiboot.img -no-emul-boot
-          "{{ infra.iso.dir }}/{{ iso_hostname }}/build/"
+          "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
 
     - name: Modify ISO for UEFI
-      command: isohybrid --uefi {{ infra.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
+      command: isohybrid --uefi {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
 
   #EndBlock
   when: os_major_version|string is match('8')
@@ -132,7 +132,7 @@
 - name: Create custom ISO for RHEL 7
   command: >
     genisoimage 
-      -o {{ infra.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
+      -o {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
       -untranslated-filenames
       -rational-rock
       -translation-table
@@ -147,7 +147,7 @@
       -boot-info-table
       -eltorito-alt-boot
       -efi-boot images/efiboot.img -no-emul-boot
-      "{{ infra.iso.dir }}/{{ iso_hostname }}/build/"
+      "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
   tags: build
   when: os_major_version|string is match('7')
 
@@ -164,7 +164,7 @@
 
 - debug:
     msg:
-      - "Custom ISO created: {{ infra.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso"
-      - "Custom ISO available: {{ infra.iso.url }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso"
+      - "Custom ISO created: {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso"
+      - "Custom ISO available: {{ install.iso.url }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso"
 
 ...

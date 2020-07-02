@@ -4,7 +4,7 @@
 - include_tasks: build_iso.yml
   vars:
     iso_hostname:  "{{ host }}"
-  loop: "{{ groups['test'] }}"
+  loop: "{{ build_iso_hosts }}"
   loop_control:
     loop_var: host
 ...

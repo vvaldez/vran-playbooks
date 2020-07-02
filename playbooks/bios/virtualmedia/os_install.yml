@@ -11,7 +11,7 @@
   collections:
     - community.general
   vars:
-    iso_image_url: "{{ infra.iso.url }}/{{ inventory_hostname }}/rhel{{ os.version.major }}.iso"
+    iso_image_url: "{{ install.iso.url }}/{{ inventory_hostname }}/rhel{{ os.version.major }}.iso"
     #iso_image_url: http://172.17.118.15/rhel7/isos/rhel-server-7.8-x86_64-boot.iso
 
   tasks:
@@ -62,7 +62,7 @@
     - name: Wait until OS is installed and available
       wait_for_connection:
         sleep: 30
-        delay: 900
+        delay: 600
         timeout: 1200
       tags:
         - wait
