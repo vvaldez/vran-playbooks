@@ -1,0 +1,36 @@
+set default="0"
+
+function load_video {
+  insmod efi_gop
+  insmod efi_uga
+  insmod video_bochs
+  insmod video_cirrus
+  insmod all_video
+}
+
+load_video
+set gfxpayload=keep
+insmod gzio
+insmod part_gpt
+insmod ext2
+
+set timeout=10
+### END /etc/grub.d/00_header ###
+
+search --no-floppy --set=root -l 'RHEL-7.8 Server.x86_64'
+
+### BEGIN /etc/grub.d/10_linux ###
+menuentry 'Install RHEL 7.8 for {{ iso_hostname }} for vran' --class fedora --class gnu-linux --class gnu --class os {
+	linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL={{ iso_volume_id_bootloader_safe }} {{ infra.boot_options }} bond={{ hostvars[iso_hostname].networks.mgmt.bond.name }}:{{ hostvars[iso_hostname].networks.mgmt.bond.members|join(',') }}:{{ hostvars[iso_hostname].networks.mgmt.bond.opts }} vlan={{ hostvars[iso_hostname].networks.mgmt.vlan.name }}:{{ hostvars[iso_hostname].networks.mgmt.bond.name }} ip={{ hostvars[iso_hostname].ansible_host }}::{{ hostvars[iso_hostname].networks.mgmt.interface.gateway }}:{{ hostvars[iso_hostname].networks.mgmt.interface.netmask }}:{{ iso_hostname }}:{{ hostvars[iso_hostname].networks.mgmt.interface.name }}:none nameserver={{ nameservers.0 }} inst.ks={{ infra.ks.rhel7 }}
+	initrdefi /images/pxeboot/initrd.img
+}
+submenu 'Troubleshooting -->' {
+	menuentry 'Install Red Hat Enterprise Linux 7.8 in basic graphics mode' --class fedora --class gnu-linux --class gnu --class os {
+		linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL={{ iso_volume_id_bootloader_safe }} xdriver=vesa nomodeset quiet
+		initrdefi /images/pxeboot/initrd.img
+	}
+	menuentry 'Rescue a Red Hat Enterprise Linux system' --class fedora --class gnu-linux --class gnu --class os {
+		linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL={{ iso_volume_id_bootloader_safe }} rescue quiet
+		initrdefi /images/pxeboot/initrd.img
+	}
+}
