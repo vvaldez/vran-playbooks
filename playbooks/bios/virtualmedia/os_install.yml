@@ -60,10 +60,13 @@
     # Total time: 16:30. Therefore, default delay before trying to access SSH on the OS will be set to 15 minutes with a 20 minute timeout
     # Note that sshd will be disabled during kickstart, so this delay could be reduced as needed and SSH will not be available until OS is up
     - name: Wait until OS is installed and available
-      wait_for_connection:
-        sleep: 30
-        delay: 600
+      wait_for:
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        port: 22
+        sleep: 10
+        delay: 900
         timeout: 1200
+        state: started
       tags:
         - wait
 ...
