@@ -1,0 +1,11 @@
+---
+# Copy kickstart and put it in place for the host. Currently a single kickstart is possible for all servers using this version of RHEL,
+# However, in the case that individual kickstarts are needed per server, this task could generate a kickstart based
+# on a template. For now all of the host specific variables are set at the ISO boot options level
+# TODO: Improve logic and/or inventory definition of variables to help make this task clearer
+- name: Generate kickstart file for RHEL {{ os_major_version }}
+  copy:
+    src: "{{ 'rhel' + os_major_version }}/kickstart.cfg"
+    dest: "{{ install.ks.dir }}/rhel{{ os_major_version }}/ks/{{ install.ks['rhel' + os_major_version].split('/')[-1] }}"
+  run_once: yes
+...

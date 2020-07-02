@@ -1,44 +1,71 @@
 ---
+- import_playbook: get_status.yml
+
+- import_playbook: eject.yml
+  when: virtual_media_connected|default('') is not match('NotConnected')
+
 - hosts: all
   connection: local
   name: Insert and Attach VirtualMedia and set OneTimeBoot to Virtual CD
   gather_facts: False
   collections:
     - community.general
+  vars:
+    iso_image_url: "{{ install.iso.url }}/{{ inventory_hostname }}/rhel{{ os.version.major }}.iso"
 
   tasks:
-  - name: Insert Virtual Media
-    redfish_command:
-      category: Manager
-      command: VirtualMediaInsert
-      baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
-      virtual_media:
-        image_url: "{{ oob.iso_url }}"
-        media_types:
-          - CD
-          - DVD
-      resource_id: "{{ oob.resource_ids.manager }}"
-    register: virtualmedia_attach_result
+    - name: Insert Virtual Media
+      redfish_command:
+        category: Manager
+        command: VirtualMediaInsert
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob.username }}"
+        password: "{{ oob.password }}"
+        virtual_media:
+          image_url: "{{ iso_image_url }}"
+          media_types:
+            - CD
+            - DVD
+        resource_id: "{{ oob.resource_ids.manager }}"
+      register: virtualmedia_attach_result
 
-  - debug:
-      var: virtualmedia_attach_result
-      verbosity: 1
+    - debug:
+        var: virtualmedia_attach_result
+        verbosity: 1
 
-  - import_tasks: ../boot/set_idrac_one_time_boot.yml
-    vars:
-      one_time_boot_device: VCD-DVD
-    when: 
-      - "'Dell' in oob.SystemManufacturer"
+    - import_tasks: ../boot/set_idrac_one_time_boot.yml
+      vars:
+        one_time_boot_device: VCD-DVD
+      when: 
+        - "'Dell' in oob.SystemManufacturer"
 
-  - import_tasks: ../boot/set_one_time_boot.yml
-    vars:
-      one_time_boot_device: "{{ oob.virtual_cd_device }}"
-    when: 
-      - "'Dell' not in oob.SystemManufacturer"
+    - import_tasks: ../boot/set_one_time_boot.yml
+      vars:
+        one_time_boot_device: "{{ oob.virtual_cd_device }}"
+      when: 
+        - "'Dell' not in oob.SystemManufacturer"
 
-  - import_tasks: ../actions/reboot_server.yml
-    tags:
-      - reboot
+    - import_tasks: ../actions/reboot_server.yml
+      tags:
+        - reboot
+
+    # Times observed waiting for an OS to deploy:
+    #  - 0:00 kick off playbook to attach ISO to virtual media
+    #  - 4:43 reboot and BIOS POST after ISO attach
+    #  - 1:07 Boot to ISO and process Anaconda, setup bond, vlan, and kickstart retrieval
+    #  - 4:46 Network kickstart install over bond
+    #  - 4:40 Reboot and BIOS POST after kickstart install
+    #  - 0:30 OS boot
+    # Total time: 16:30. Therefore, default delay before trying to access SSH on the OS will be set to 15 minutes with a 20 minute timeout
+    # Note that sshd will be disabled during kickstart, so this delay could be reduced as needed and SSH will not be available until OS is up
+    - name: Wait until OS is installed and available
+      wait_for:
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        port: 22
+        sleep: 10
+        delay: 900
+        timeout: 1200
+        state: started
+      tags:
+        - wait
 ...
