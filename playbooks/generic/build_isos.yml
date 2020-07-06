@@ -1,0 +1,19 @@
+---
+- name: Build custom ISO pointing to a kickstart
+  hosts: infra
+  gather_facts: False
+  become: True
+  vars:
+    build_iso_hosts: "{{ groups['test'] }}"
+    build_iso_versions:
+      - 7
+      #- 8
+  tasks:
+    - include_role:
+        name: build_iso
+      vars:
+        iso_source: "{{ install.iso.source['rhel' + os_version|string] }}"
+        os_major_version: "{{ os_version|string }}"
+      loop: "{{ build_iso_versions }}"
+      loop_control:
+        loop_var: os_version

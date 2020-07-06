@@ -23,6 +23,7 @@
 
   - set_fact:
       virtual_media_url: "{{ item.Image }}"
+      virtual_media_connected: "{{ item.ConnectedVia }}"
     loop: "{{ virtual_media_result.redfish_facts.virtual_media.entries.0.1 }}"
     when: item.Name is match('Virtual CD')
 
@@ -49,7 +50,7 @@
           verbosity: 1
 
     when:
-      - virtual_media_url | trim != ''
+      - virtual_media_url | length  > 0
       - virtual_media_url is defined
   #End block
 ...

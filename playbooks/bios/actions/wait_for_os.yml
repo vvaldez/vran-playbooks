@@ -1,0 +1,7 @@
+---
+- name: Wait until OS is available
+  wait_for:
+    host: "{{ inventory_hostname }}"
+    port: 22
+    timeout: 600
+...

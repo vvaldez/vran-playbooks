@@ -45,3 +45,4 @@ collections:
   - oasis_roles.system
   - theforeman.foreman
   - tripleo.operator
+  - community.general

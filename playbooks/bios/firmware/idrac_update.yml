@@ -1,30 +1,39 @@
 ---
-#vars:
-#  update_version: "{{ oob.firmware.version }}"
+# Expects a variable to specify what version as such:
+#  vars:
+#    update_version: 3.36.36.36
+
+- name: Dell racadm update firmware for "{{ oob.manager_name }}" to specified version "{{ update_version }}" via iDRAC
+  raw: racadm update -f {{ oob.firmware.filename }} -l {{ oob.firmware.nfs_uri }}/{{ update_version }}/
+  register: update_result
+  failed_when: "'Firmware update job for ' + oob.firmware.filename + ' is initiated' not in update_result.stdout"
+  when: "'Dell' in oob.SystemManufacturer"
+  delegate_to: "{{ oob.username }}@{{ oob.ipaddr }}"
+  vars:
+    ansible_ssh_pass: "{{ oob.password }}"
+
+- debug:
+    var: update_result
+    verbosity: 1
+
+
+- name: Reboot via OS 
+  reboot:
+    post_reboot_delay: 300
+    reboot_timeout: 900
+  delegate_to: "{{ inventory_hostname }}"
+  when: not no_os | default(False)
 
 - block:
-    - name: Dell racadm update
-      raw: racadm update -f {{ oob.firmware.filename }} -l {{ oob.firmware.nfs_uri }}/{{ update_version }}/ --reboot 
-      register: update_result
-      failed_when: "'Firmware update job for ' + oob.firmware.filename + ' is initiated' not in update_result.stdout"
-      when: "'Dell' in oob.SystemManufacturer"
-      delegate_to: "{{ oob.username }}@{{ oob.ipaddr }}"
-      vars:
-        ansible_ssh_pass: "{{ oob.password }}"
+    - import_tasks: ../actions/reboot_server.yml
 
-    - debug:
-        var: update_result
-    
-    - pause:
-        prompt: "Continue when update done"
+    - name: Wait until iDRAC is available
+      wait_for:
+        host: "{{ oob.ipaddr }}"
+        port: 22
+        delay: 300
+        timeout: 900
+  when: no_os | default(False)
 
-#    - name: Wait until iDRAC is available
-#      wait_for_connection:
-#        delay: 120
-#        timeout: 600
-#      delegate_to: "{{ oob.username }}@{{ oob.ipaddr }}"
-
-  when: 
-    - "'Dell' in oob.SystemManufacturer"
-#EndBlock
+- import_tasks: ../actions/wait_for_redfish_api.yml
 ...

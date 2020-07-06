@@ -1,16 +1,31 @@
 ---
+- import_playbook: get_inventory.yml
+
 - hosts: all
   connection: local
-  name: Update firmware
+  name: Update firmware for "{{ oob.manager_name }}" 
   gather_facts: False
+  serial: 1
   collections:
     - community.general
+
 
   tasks:
   - include_tasks: idrac_update.yml
     vars:
       update_version: "{{ version }}"
-    loop: "{{ oob.firmware.versions }}"
+    loop: "{{ oob.firmware.versions | difference(installed_versions) }}"
     loop_control:
       loop_var: version
+    when: 
+      - "'Dell' in oob.SystemManufacturer"
+
+  - include_tasks: update.yml
+    vars:
+      update_version: "{{ version }}"
+    loop: "{{ oob.firmware.versions | difference(installed_versions) }}"
+    loop_control:
+      loop_var: version
+    when: 
+      - "'Dell' not in oob.SystemManufacturer"
 ...
