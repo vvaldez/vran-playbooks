@@ -1,5 +1,5 @@
 ---
-- hosts: rhv
+- hosts: rhv_dev
   tasks:
     - name: Configure networking
       vars:
@@ -85,7 +85,15 @@
         name: rhvm-appliance
         state: installed
 
-    - name: Run hosted-engine-setup
-      import_role:
-        name: ovirt.hosted_engine_setup
+    # he_iscsi_target cannot be reused from an existing installation
+    # he_lun_id needs to be found ahead of time
+    - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
+      shell: |
+        ansible-playbook \
+          -i "localhost," \
+          -c local \
+          {% for k,v in rhv.iteritems() %}
+          -e {{ k }}='{{ v }}' \
+          {% endfor %}
+          /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
 ...
