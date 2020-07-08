@@ -12,6 +12,7 @@
     - community.general
   vars:
     iso_image_url: "{{ install.iso.url }}/{{ inventory_hostname }}/rhel{{ os.version.major }}.iso"
+    # e.g. 
     #iso_image_url: http://172.17.118.15/rhel7/isos/rhel-server-7.8-x86_64-boot.iso
 
   tasks:
