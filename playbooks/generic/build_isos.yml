@@ -4,7 +4,7 @@
   gather_facts: False
   become: True
   vars:
-    build_iso_hosts: "{{ groups['test'] }}"
+    build_iso_hosts: "{{ groups['baremetal'] }}"
     build_iso_versions:
       - 7
       #- 8
