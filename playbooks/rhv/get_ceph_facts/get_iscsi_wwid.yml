@@ -1,6 +1,6 @@
 ---
 - name: Retrieve WWID for given iSCSI LUN
-  hosts: baremetal
+  hosts: iscsi_client
   gather_facts: False
   become: True
   vars:
@@ -53,7 +53,10 @@
       command: >
         iscsiadm
           --mode discoverydb
-          --debug=8
+          {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+          {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+          {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+          {% if ansible_verbosity == 0 %}--debug=0{% endif %}
           --type sendtargets
           --portal {{ iscsi_portal }}
           --op=update
@@ -66,7 +69,10 @@
       command: >
         iscsiadm
           --mode discoverydb
-          --debug=8
+          {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+          {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+          {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+          {% if ansible_verbosity == 0 %}--debug=0{% endif %}
           --type sendtargets
           --portal {{ iscsi_portal }}
           --op=update
@@ -135,7 +141,13 @@
       register: iscsi_wwid
 
     - name: Logout of iscsi target
-      command: iscsiadm --mode node --logoutall=all
+      command: >
+        iscsiadm --mode node
+          {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+          {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+          {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+          {% if ansible_verbosity == 0 %}--debug=0{% endif %}
+          --logoutall=all
 
     - debug:
         msg:
