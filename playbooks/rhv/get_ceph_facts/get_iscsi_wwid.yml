@@ -86,6 +86,10 @@
         var: iscsi_targets
         verbosity: 1
 
+    - fail:
+        msg: "ERROR: Specified iSCSI target: '{{ iscsi_target }}' not found in the list of discovered targets: '{{ iscsi_targets.stdout }}'"
+      when: iscsi_target not in iscsi_targets.stdout
+
     - name: Login to iSCSI target
       open_iscsi:
         auto_node_startup: no
