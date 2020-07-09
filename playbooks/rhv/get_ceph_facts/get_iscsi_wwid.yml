@@ -1,0 +1,142 @@
+---
+- name: Retrieve WWID for given iSCSI LUN
+  hosts: baremetal
+  gather_facts: False
+  become: True
+  vars:
+    iscsi_portal: 192.168.170.7
+    iscsi_target: iqn.2020-06.com.ceph:12345:homero3-rhv-igw
+    iscsi_username: rhv-user
+    iscsi_password: ceph-rhv-user
+    iscsi_size: 200G
+  tasks:
+    - name: Ensure required packages are installed
+      yum:
+        name:
+          - iscsi-initiator-utils
+          - sg3_utils
+        state: installed
+
+    - name: Determine existing block devices
+      command: lsblk --noheadings --nodeps --output NAME,SIZE
+      register: lsblk_output
+
+    - debug:
+        var: lsblk_output
+        verbosity: 1
+
+    - set_fact:
+        current_disks: "{{ current_disks | default({}) | combine( { item.split().0 : item.split().1 } ) }}"
+      loop: "{{ lsblk_output.stdout_lines }}"
+      when: item is search(iscsi_size)
+
+    - debug:
+        var: current_disks
+        verbosity: 1
+
+# Does not work as the module does not pass authentication on discovery
+#    - name: Discover iSCSI targets on given portal
+#      open_iscsi:
+#        auto_node_startup: no
+#        show_nodes: yes
+#        discover: yes
+#        node_user: "{{ iscsi_username }}"
+#        node_pass: "{{ iscsi_password }}"
+#        portal: "{{ iscsi_portal }}"
+#        login: no
+#      register: iscsi_targets
+
+    - name: Update iSCSI discovery authentication for given portal
+      command: >
+        iscsiadm
+          --mode discoverydb
+          --debug=8
+          --type sendtargets
+          --portal {{ iscsi_portal }}
+          --op=update
+          --name=discovery.sendtargets.auth.authmethod --value=CHAP
+          --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
+          --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
+
+    # Same command with added --discover will use updated record 
+    - name: Discover iSCSI targets on given portal
+      command: >
+        iscsiadm
+          --mode discoverydb
+          --debug=8
+          --type sendtargets
+          --portal {{ iscsi_portal }}
+          --op=update
+          --name=discovery.sendtargets.auth.authmethod --value=CHAP
+          --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
+          --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
+          --discover
+      register: iscsi_targets
+
+    - debug:
+        var: iscsi_targets
+        verbosity: 1
+
+    - name: Login to iSCSI target
+      open_iscsi:
+        auto_node_startup: no
+        show_nodes: yes
+        discover: no
+        node_user: "{{ iscsi_username }}"
+        node_pass: "{{ iscsi_password }}"
+        portal: "{{ iscsi_portal }}"
+        target: "{{ iscsi_target }}"
+        login: yes
+      register: iscsi_target_login
+
+    - debug:
+        var: iscsi_target_login
+        verbosity: 1
+
+    - name: Determine any added block devices
+      command: lsblk --noheadings --nodeps --output NAME,SIZE
+      register: lsblk_output
+
+    - set_fact:
+        new_disks: "{{ new_disks | default({}) | combine( { item.split().0 : item.split().1 } ) }}"
+      loop: "{{ lsblk_output.stdout_lines }}"
+      when: item is search(iscsi_size)
+
+    - debug:
+        var: current_disks
+        verbosity: 1
+
+    - debug:
+        var: new_disks
+        verbosity: 1
+
+    - set_fact:
+        iscsi_device_list: "{{ new_disks | default([]) | difference(current_disks) }}"
+
+    - fail:
+        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ new_disks | difference(current_disks) }}"
+      when: iscsi_device_list | length > 1
+
+    - fail:
+        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found none."
+      when: iscsi_device_list | length == 0 
+
+    - set_fact:
+        iscsi_device: "{{ iscsi_device_list.0 }}"
+
+    - name: Gather WWID from {{ iscsi_device }}
+      command: /lib/udev/scsi_id --page=0x83 --whitelisted --device=/dev/{{ iscsi_device }}
+      register: iscsi_wwid
+
+    - name: Logout of iscsi target
+      command: iscsiadm --mode node --logoutall=all
+
+    - debug:
+        msg:
+          - "INFO: iSCSI LUN gathered facts"
+          - "  Target: {{ iscsi_target }}"
+          - "  Portal: {{ iscsi_portal }}"
+          - "  Size: {{ iscsi_size }}"
+          - "  OS Device: {{ iscsi_device }}"
+          - "  OS WWID: {{ iscsi_wwid }}"
+...
