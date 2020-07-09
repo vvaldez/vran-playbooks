@@ -26,12 +26,15 @@
         verbosity: 1
 
     - set_fact:
-        current_disks: "{{ current_disks | default({}) | combine( { item.split().0 : item.split().1 } ) }}"
+        scsi_devices_prelogin: {}
+
+    - set_fact:
+        scsi_devices_prelogin: "{{ scsi_devices_prelogin | combine( { item.split().0 : item.split().1 } ) }}"
       loop: "{{ lsblk_output.stdout_lines }}"
       when: item is search(iscsi_size)
 
     - debug:
-        var: current_disks
+        var: scsi_devices_prelogin
         verbosity: 1
 
 # Does not work as the module does not pass authentication on discovery
@@ -98,23 +101,26 @@
       register: lsblk_output
 
     - set_fact:
-        new_disks: "{{ new_disks | default({}) | combine( { item.split().0 : item.split().1 } ) }}"
+        scsi_devices_postlogin: {}
+
+    - set_fact:
+        scsi_devices_postlogin: "{{ scsi_devices_postlogin | default({}) | combine( { item.split().0 : item.split().1 } ) }}"
       loop: "{{ lsblk_output.stdout_lines }}"
       when: item is search(iscsi_size)
 
     - debug:
-        var: current_disks
+        var: scsi_devices_prelogin
         verbosity: 1
 
     - debug:
-        var: new_disks
+        var: scsi_devices_postlogin
         verbosity: 1
 
     - set_fact:
-        iscsi_device_list: "{{ new_disks | default([]) | difference(current_disks) }}"
+        iscsi_device_list: "{{ scsi_devices_postlogin | default({}) | difference(scsi_devices_prelogin) }}"
 
     - fail:
-        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ new_disks | difference(current_disks) }}"
+        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ iscsi_device_list }}"
       when: iscsi_device_list | length > 1
 
     - fail:
@@ -138,5 +144,5 @@
           - "  Portal: {{ iscsi_portal }}"
           - "  Size: {{ iscsi_size }}"
           - "  OS Device: {{ iscsi_device }}"
-          - "  OS WWID: {{ iscsi_wwid }}"
+          - "  OS WWID: {{ iscsi_wwid.stdout }}"
 ...
