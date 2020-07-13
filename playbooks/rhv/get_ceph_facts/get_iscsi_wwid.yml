@@ -1,0 +1,164 @@
+---
+- name: Retrieve WWID for given iSCSI LUN
+  hosts: iscsi_client
+  gather_facts: False
+  become: True
+  vars:
+    iscsi_portal: 192.168.170.7
+    iscsi_target: iqn.2020-06.com.ceph:12345:homero3-rhv-igw
+    iscsi_username: rhv-user
+    iscsi_password: ceph-rhv-user
+    iscsi_size: 200G
+  tasks:
+    - name: Ensure required packages are installed
+      yum:
+        name:
+          - iscsi-initiator-utils
+          - sg3_utils
+        state: installed
+
+    - name: Determine existing block devices
+      command: lsblk --noheadings --nodeps --output NAME,SIZE
+      register: lsblk_output
+
+    - debug:
+        var: lsblk_output
+        verbosity: 1
+
+    - set_fact:
+        scsi_devices_prelogin: {}
+
+    - set_fact:
+        scsi_devices_prelogin: "{{ scsi_devices_prelogin | combine( { item.split().0 : item.split().1 } ) }}"
+      loop: "{{ lsblk_output.stdout_lines }}"
+      when: item is search(iscsi_size)
+
+    - debug:
+        var: scsi_devices_prelogin
+        verbosity: 1
+
+# Does not work as the module does not pass authentication on discovery
+#    - name: Discover iSCSI targets on given portal
+#      open_iscsi:
+#        auto_node_startup: no
+#        show_nodes: yes
+#        discover: yes
+#        node_user: "{{ iscsi_username }}"
+#        node_pass: "{{ iscsi_password }}"
+#        portal: "{{ iscsi_portal }}"
+#        login: no
+#      register: iscsi_targets
+
+    - name: Update iSCSI discovery authentication for given portal
+      command: >
+        iscsiadm
+          --mode discoverydb
+          {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+          {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+          {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+          {% if ansible_verbosity == 0 %}--debug=0{% endif %}
+          --type sendtargets
+          --portal {{ iscsi_portal }}
+          --op=update
+          --name=discovery.sendtargets.auth.authmethod --value=CHAP
+          --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
+          --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
+
+    # Same command with added --discover will use updated record 
+    - name: Discover iSCSI targets on given portal
+      command: >
+        iscsiadm
+          --mode discoverydb
+          {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+          {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+          {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+          {% if ansible_verbosity == 0 %}--debug=0{% endif %}
+          --type sendtargets
+          --portal {{ iscsi_portal }}
+          --op=update
+          --name=discovery.sendtargets.auth.authmethod --value=CHAP
+          --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
+          --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
+          --discover
+      register: iscsi_targets
+
+    - debug:
+        var: iscsi_targets
+        verbosity: 1
+
+    - fail:
+        msg: "ERROR: Specified iSCSI target: '{{ iscsi_target }}' not found in the list of discovered targets: '{{ iscsi_targets.stdout }}'"
+      when: iscsi_target not in iscsi_targets.stdout
+
+    - name: Login to iSCSI target
+      open_iscsi:
+        auto_node_startup: no
+        show_nodes: yes
+        discover: no
+        node_user: "{{ iscsi_username }}"
+        node_pass: "{{ iscsi_password }}"
+        portal: "{{ iscsi_portal }}"
+        target: "{{ iscsi_target }}"
+        login: yes
+      register: iscsi_target_login
+
+    - debug:
+        var: iscsi_target_login
+        verbosity: 1
+
+    - name: Determine any added block devices
+      command: lsblk --noheadings --nodeps --output NAME,SIZE
+      register: lsblk_output
+
+    - set_fact:
+        scsi_devices_postlogin: {}
+
+    - set_fact:
+        scsi_devices_postlogin: "{{ scsi_devices_postlogin | default({}) | combine( { item.split().0 : item.split().1 } ) }}"
+      loop: "{{ lsblk_output.stdout_lines }}"
+      when: item is search(iscsi_size)
+
+    - debug:
+        var: scsi_devices_prelogin
+        verbosity: 1
+
+    - debug:
+        var: scsi_devices_postlogin
+        verbosity: 1
+
+    - set_fact:
+        iscsi_device_list: "{{ scsi_devices_postlogin | default({}) | difference(scsi_devices_prelogin) }}"
+
+    - fail:
+        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ iscsi_device_list }}"
+      when: iscsi_device_list | length > 1
+
+    - fail:
+        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found none."
+      when: iscsi_device_list | length == 0 
+
+    - set_fact:
+        iscsi_device: "{{ iscsi_device_list.0 }}"
+
+    - name: Gather WWID from {{ iscsi_device }}
+      command: /lib/udev/scsi_id --page=0x83 --whitelisted --device=/dev/{{ iscsi_device }}
+      register: iscsi_wwid
+
+    - name: Logout of iscsi target
+      command: >
+        iscsiadm --mode node
+          {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+          {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+          {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+          {% if ansible_verbosity == 0 %}--debug=0{% endif %}
+          --logoutall=all
+
+    - debug:
+        msg:
+          - "INFO: iSCSI LUN gathered facts"
+          - "  Target: {{ iscsi_target }}"
+          - "  Portal: {{ iscsi_portal }}"
+          - "  Size: {{ iscsi_size }}"
+          - "  OS Device: {{ iscsi_device }}"
+          - "  OS WWID: {{ iscsi_wwid.stdout }}"
+...
