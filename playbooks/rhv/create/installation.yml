@@ -1,25 +1,19 @@
 ---
 - hosts: rhv_dev
   tasks:
-    - name: Configure networking
+    - name: Set hostname
       vars:
-        # The network-scripts portion of the role is considered a provisioning
-        # step. By default, it is not ran unless this is override to yes. When
-        # re-running this role, it is probably not ideal to re-setup and restart
-        # networking. Which will happen when setup_nics=yes.
-        base_setup_nics: "{{ setup_nics | default('no') }}"
-      block:
-        - name: "Include network-scripts role to template /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
-          vars:
-            network_scripts_dest_path: /etc/sysconfig/network-scripts
-            network_scripts_nics: "{{ nics | mandatory }}"
-            network_scripts_clear_existing: yes
-            network_scripts_restart: yes
-          include_role:
-            name: network-scripts
-      when: base_setup_nics | bool
+        hostname_inject_hosts_files: false
+      import_role:
+        name: oasis_roles.system.hostname
       tags:
-        - network
+        - hostname
+
+    - name: Inject forward DNS entry to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^{{ ansible_default_ipv4.address }}"
+        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
 
     - name: Install katello package
       yum:
@@ -40,27 +34,6 @@
       tags:
         - rhsm
 
-    - name: Set hostname
-      vars:
-        hostname_inject_hosts_files: false
-      import_role:
-        name: oasis_roles.system.hostname
-      tags:
-        - hostname
-
-    - name: Inject forward DNS entry to /etc/hosts
-      lineinfile:
-        path: /etc/hosts
-        regexp: "^{{ ansible_default_ipv4.address }}"
-        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
-
-    - name: Ensure Cockpit is an active service in the firewall
-      vars:
-        firewalld_services: "{{ firewalld.firewalld_services }}"
-        firewalld_zone: "{{ firewalld.firewalld_zone }}"
-      import_role:
-        name: oasis_roles.system.firewalld
-
     - name: Yum update
       yum:
         name: '*'
@@ -74,6 +47,13 @@
         name: "{{ packages }}"
         state: installed
 
+    - name: Ensure Cockpit is an active service in the firewall
+      vars:
+        firewalld_services: "{{ firewalld.firewalld_services }}"
+        firewalld_zone: "{{ firewalld.firewalld_zone }}"
+      import_role:
+        name: oasis_roles.system.firewalld
+
     - name: Enable and start cockpit service
       systemd:
         name: cockpit.socket
@@ -84,6 +64,41 @@
       yum:
         name: rhvm-appliance
         state: installed
+
+    - name: Set Ansible logging for future debugging
+      ini_file:
+        path: /etc/ansible/ansible.cfg
+        section: defaults
+        option: log_path
+        value: /var/log/ansible.log
+
+    - name: Patch ovirt-hosted-engine-setup bug
+      patch:
+        src: ../files/01_prepare_routing_rules.yml.patch
+        dest: /usr/share/ansible/roles/ovirt.hosted-engine-setup/tasks/bootstrap_local_vm/01_prepare_routing_rules.yml
+
+    # Network setup needs to be done after, at least, the yum portion because
+    # this is dependent on the bridge-utils package which is installed by
+    # the rhvm-appliance package.
+    - name: Configure networking
+      vars:
+        # The network-scripts portion of the role is considered a provisioning
+        # step. By default, it is not ran unless this is override to yes. When
+        # re-running this role, it is probably not ideal to re-setup and restart
+        # networking. Which will happen when setup_nics=yes.
+        base_setup_nics: "{{ setup_nics | default('no') }}"
+      block:
+        - name: "Include network-scripts role to template /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
+          vars:
+            network_scripts_dest_path: /etc/sysconfig/network-scripts
+            network_scripts_nics: "{{ nics | mandatory }}"
+            network_scripts_clear_existing: yes
+            network_scripts_restart: yes
+          include_role:
+            name: network-scripts
+      when: base_setup_nics | bool
+      tags:
+        - network
 
     # he_iscsi_target cannot be reused from an existing installation
     # he_lun_id needs to be found ahead of time

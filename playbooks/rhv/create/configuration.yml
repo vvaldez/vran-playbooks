@@ -20,7 +20,8 @@
     # Attach storage
     ################
 
-    - ovirt_storage_domain:
+    - name: Attach storage domains
+      ovirt_storage_domain:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
         host: rhvm.escwq.com
@@ -50,7 +51,8 @@
 
     # Upload an ISO image
     # Since Ansible 2.8
-    - ovirt_disk:
+    - name: Create storage disks
+      ovirt_disk:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
         upload_image_path: "{{ item.upload_image_path }}"
@@ -69,7 +71,8 @@
     # Create networks
     ################
 
-    - ovirt_network:
+    - name: Create ovirt networks
+      ovirt_network:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
         vlan_tag: "{{ item.vlan_tag }}"
@@ -82,14 +85,15 @@
             assigned: yes
             display: no
             gluster: no
-            migration: no
+            migration: no # storage should be yes
             required: yes
       loop: "{{ ovirt.networks }}"
       delegate_to: localhost
       tags:
         - network
 
-    - ovirt_vnic_profile:
+    - name: Create ovirt vnic profiles
+      ovirt_vnic_profile:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
         network: "{{ item.name }}"
@@ -99,16 +103,6 @@
       delegate_to: localhost
       tags:
         - network
-
-    - name: Create host_network_list fact
-      vars:
-        host_network_list: []
-      set_fact:
-        host_network_list: "{{ host_network_list + [{'name': item.name, 'boot_protocol': 'none'}] }}"
-      loop: "{{ ovirt.networks }}"
-      delegate_to: localhost
-      tags:
-        - host-network
 
     - ovirt_host_network:
         auth: "{{ ovirt_auth }}"
@@ -120,7 +114,8 @@
           interfaces:
             - em1
             - em2
-        networks: "{{ host_network_list }}"
+        networks: "{{ ovirt.networks }}"
+        # sync_networks: yes
       delegate_to: localhost
       tags:
         - host-network

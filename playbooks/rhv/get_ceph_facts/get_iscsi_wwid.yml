@@ -64,7 +64,7 @@
           --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
           --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
 
-    # Same command with added --discover will use updated record 
+    # Same command with added --discover will use updated record
     - name: Discover iSCSI targets on given portal
       command: >
         iscsiadm
@@ -135,7 +135,7 @@
 
     - fail:
         msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found none."
-      when: iscsi_device_list | length == 0 
+      when: iscsi_device_list | length == 0
 
     - set_fact:
         iscsi_device: "{{ iscsi_device_list.0 }}"
