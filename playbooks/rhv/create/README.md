@@ -68,16 +68,20 @@
             ...
     ```
 
-7. Run `playbooks/rhv/create/installation.yml`
+7. Run `playbooks/rhv/create/installation.yml` to install the RHV hosted engine
 
     ```
     ansible-playbook -i ../ansible-inventory/vran/hosts/tewksbury.yml playbooks/rhv/create/installation.yml -e setup_nics=yes
     ```
 
-8. Run `playbooks/rhv/create/configuration.yml`
+8. Run `playbooks/rhv/create/configuration.yml` to configure networks, disks, etc for RHV
 
     ```
     ansible-playbook -i ../ansible-inventory/vran/hosts/tewksbury.yml playbooks/rhv/create/configuration.yml
     ```
 
-9. Launch VMs
+9. Run `playbooks/rhv/create/vms.yml` to launch virtual machines
+
+    ```
+    ansible-playbook -i ../ansible-inventory/vran/hosts/tewksbury.yml playbooks/rhv/create/vms.yml
+    ```
