@@ -86,16 +86,16 @@
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
         vlan_tag: "{{ item.vlan_tag }}"
-        vm_network: "{{ item.vm_network }}"
+        vm_network: yes
         mtu: "{{ item.mtu }}"
-        data_center: "{{ item.data_center }}"
+        data_center: Default
         wait: yes
         clusters:
           - name: Default
             assigned: yes
             display: no
             gluster: no
-            migration: no # storage should be yes
+            migration: "{{ item.migration | default(omit) }}"
             required: yes
       loop: "{{ ovirt.networks }}"
       delegate_to: localhost
