@@ -39,7 +39,7 @@
       loop: "{{ ovirt.storage.domains }}"
       delegate_to: localhost
       tags:
-        - iscsi
+        - storage
 
     ################
     # Create disks
@@ -48,6 +48,16 @@
     ## TODO
     # need to add the .cer cert here; otherwise upload doesn't work
     # and restart ovirt-imageio-daemon, ovirt-imageio-proxy, it seems
+
+    # Download images
+    - name: Download images onto rhv host
+      get_url:
+        url: "{{ item.url }}"
+        dest: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop: "{{ ovirt.get_urls }}"
+      tags:
+        - disk
 
     # Upload an ISO image
     # Since Ansible 2.8
@@ -118,5 +128,5 @@
         # sync_networks: yes
       delegate_to: localhost
       tags:
-        - host-network
+        - network
 ...
