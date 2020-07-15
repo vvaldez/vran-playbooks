@@ -1,3 +1,4 @@
+---
 roles:
   - name: base
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-base.git
@@ -35,11 +36,11 @@ roles:
     version: '1.1'
 
   - name: oasis_roles.satellite
-  - name: ovirt.hosted_engine_setup
-  - name: ovirt.engine-setup
 
 collections:
+  - community.general
   - oasis_roles.system
+  - ovirt.ovirt
   - theforeman.foreman
   - tripleo.operator
-  - community.general
+...

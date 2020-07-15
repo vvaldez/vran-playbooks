@@ -1,0 +1,132 @@
+---
+- hosts: rhv_dev
+  gather_facts: no
+  tasks:
+    ################
+    # Authenticate
+    ################
+
+    - name: Obtain SSO token with using username/password credentials
+      ovirt_auth:
+        url: https://ovirt-engine.escwq.com/ovirt-engine/api
+        username: admin@internal
+        password: "{{ ovirt.password }}"
+        insecure: yes
+      delegate_to: localhost
+      tags:
+        - always
+
+    ################
+    # Attach storage
+    ################
+
+    - name: Attach storage domains
+      ovirt_storage_domain:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+        host: rhvm.escwq.com
+        data_center: "{{ item.data_center }}"
+        iscsi:
+          target: "{{ item.iscsi_target }}"
+          lun_id:
+          - "{{ item.iscsi_lun_id }}"
+          address: "{{ item.iscsi_address }}"
+          override_luns: yes
+        discard_after_delete: True
+        backup: False
+        critical_space_action_blocker: 5
+        warning_low_space: 10
+      loop: "{{ ovirt.storage.domains }}"
+      delegate_to: localhost
+      tags:
+        - storage
+
+    ################
+    # Create disks
+    ################
+
+    ## TODO
+    # need to add the .cer cert here; otherwise upload doesn't work
+    # and restart ovirt-imageio-daemon, ovirt-imageio-proxy, it seems
+
+    # Download images
+    - name: Download images onto rhv host
+      get_url:
+        url: "{{ item.url }}"
+        dest: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop: "{{ ovirt.get_urls }}"
+      tags:
+        - disk
+
+    # Upload an ISO image
+    # Since Ansible 2.8
+    - name: Create storage disks
+      ovirt_disk:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+        upload_image_path: "{{ item.upload_image_path }}"
+        size: "{{ item.size | default(omit) }}"
+        storage_domain: "{{ item.storage_domain }}"
+        wait: true
+        bootable: "{{ item.bootable }}"
+        format: "{{ item.format }}"
+        content_type: "{{ item.content_type }}"
+        timeout: 1800
+      loop: "{{ ovirt.storage.disks }}"
+      tags:
+        - disk
+
+    ################
+    # Create networks
+    ################
+
+    - name: Create ovirt networks
+      ovirt_network:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+        vlan_tag: "{{ item.vlan_tag }}"
+        vm_network: yes
+        mtu: "{{ item.mtu }}"
+        data_center: Default
+        wait: yes
+        clusters:
+          - name: Default
+            assigned: yes
+            display: no
+            gluster: no
+            migration: "{{ item.migration | default(omit) }}"
+            required: yes
+      loop: "{{ ovirt.networks }}"
+      delegate_to: localhost
+      tags:
+        - network
+
+    - name: Create ovirt vnic profiles
+      ovirt_vnic_profile:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+        network: "{{ item.name }}"
+        state: present
+        data_center: Default
+      loop: "{{ ovirt.networks }}"
+      delegate_to: localhost
+      tags:
+        - network
+
+    - ovirt_host_network:
+        auth: "{{ ovirt_auth }}"
+        name: rhvm.escwq.com
+        save: yes
+        bond:
+          name: bond0
+          mode: 4
+          interfaces:
+            - em1
+            - em2
+        networks: "{{ ovirt.networks }}"
+        # sync_networks: yes
+      delegate_to: localhost
+      tags:
+        - network
+...
