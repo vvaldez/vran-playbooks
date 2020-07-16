@@ -1,5 +1,5 @@
 ---
-- hosts: rhv_dev
+- hosts: rhvh[0]
   tasks:
     - name: Set hostname
       vars:

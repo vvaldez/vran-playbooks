@@ -108,7 +108,7 @@
 - block:
     - name: Create custom ISO for RHEL 8
       command: >
-        genisoimage 
+        genisoimage
           -o {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
           -J
           -full-iso9660-filenames
@@ -131,7 +131,7 @@
 
 - name: Create custom ISO for RHEL 7
   command: >
-    genisoimage 
+    genisoimage
       -o {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ os_major_version }}.iso
       -untranslated-filenames
       -rational-rock
