@@ -1,0 +1,18 @@
+---
+- hosts: demo
+  connection: local
+  name: "Export RAID Server Configuration Profile"
+  gather_facts: False
+
+  tasks:
+    - name: "Exporting SCP RAID to a local path"
+      idrac_server_config_profile:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob.username }}"
+        idrac_password: "{{ oob.password }}"
+        share_name: "{{ oob.config.profile.RAID }}"
+        export_use: "Default"
+        scp_components: "RAID"
+        export_format: "JSON"
+        job_wait: False
+...

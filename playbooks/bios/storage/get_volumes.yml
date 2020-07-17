@@ -1,0 +1,19 @@
+---
+- hosts: demo
+  connection: local
+  name: View all storage configuration
+  gather_facts: False
+
+  tasks:
+    - name: View all volumes
+      dellemc_idrac_storage_volume:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob.username }}"
+        idrac_password: "{{ oob.password }}"
+        state: "view"
+        controller_id: "AHCI.Slot.4-1"
+      register: view_result
+
+    - debug:
+        var: view_result
+...

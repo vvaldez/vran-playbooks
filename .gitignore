@@ -14,6 +14,7 @@ files/*
 # Ignore subfolders of roles/
 roles/*
 !roles/requirements.yml
+!roles/build_iso
 
 # Ignore virtualenv
 venv/

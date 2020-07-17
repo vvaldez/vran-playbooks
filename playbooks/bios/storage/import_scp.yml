@@ -1,0 +1,19 @@
+---
+- hosts: demo
+  connection: local
+  name: "Import RAID Server Configuration Profile"
+  gather_facts: False
+  vars:
+    idrac_scp_file: raid-import.json
+
+  tasks:
+    - name: "Import SCP RAID from a local path"
+      idrac_server_config_profile:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob.username }}"
+        idrac_password: "{{ oob.password }}"
+        share_name: "{{ oob.config.profile.RAID }}"
+        share_file: "{{ idrac_scp_file }}"
+        scp_components: "RAID"
+        job_wait: True
+...

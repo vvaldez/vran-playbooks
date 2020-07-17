@@ -1,0 +1,32 @@
+---
+- hosts: demo
+  connection: local
+  name: Create OS virtual disk
+  gather_facts: False
+  vars:
+    idrac_controller: "AHCI.Slot.4-1"
+    idrac_volumes:
+      - name: "{{ inventory_hostname_short }}-os"
+        drives:
+          id:
+            - "Disk.Direct.0-0:AHCI.Slot.4-1"
+            - "Disk.Direct.1-1:AHCI.Slot.4-1"
+
+  tasks:
+    - name: Create RAID1 OS disk
+      dellemc_idrac_storage_volume:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob.username }}"
+        idrac_password: "{{ oob.password }}"
+        state: "create"
+        raid_reset_config: True
+        controller_id: "{{ idrac_controller }}"
+        volume_type: "RAID 1"
+        span_length: 2
+        raid_init_operation: "Fast"
+        volumes: "{{ idrac_volumes }}"
+      register: view_result
+
+    - debug:
+        var: view_result
+...
