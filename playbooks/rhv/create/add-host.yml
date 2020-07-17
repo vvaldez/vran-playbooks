@@ -1,0 +1,28 @@
+- hosts: rhv
+  gather_facts: no
+  tasks:
+    ################
+    # Authenticate
+    ################
+
+    - name: Obtain SSO token with using username/password credentials
+      ovirt_auth: "{{ ovirt.auth }}"
+      delegate_to: localhost
+      run_once: yes
+      tags:
+        - always
+
+    ################
+    # Add hosts
+    ################
+
+    - name: Add hosts
+      ovirt_host:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        name: "{{ item }}"
+        address: "{{ hostvars[item].ansible_host }}"
+        password: redhat
+      loop: "{{ groups['rhvh'] }}"
+      tags:
+        - host

@@ -79,10 +79,10 @@
     - name: Create ovirt networks
       ovirt_network:
         auth: "{{ ovirt_auth }}"
-        name: "{{ item.name }}"
-        vlan_tag: "{{ item.vlan_tag }}"
+        name: "{{ item.value.name }}"
+        vlan_tag: "{{ item.value.vlan_tag }}"
         vm_network: yes
-        mtu: "{{ item.mtu }}"
+        mtu: "{{ item.value.mtu }}"
         data_center: Default
         wait: yes
         clusters:
@@ -90,9 +90,9 @@
             assigned: yes
             display: no
             gluster: no
-            migration: "{{ item.migration | default(omit) }}"
+            migration: "{{ item.value.migration | default(omit) }}"
             required: yes
-      loop: "{{ ovirt.host_networks | map(attribute='networks') | flatten }}"
+      loop: "{{ ovirt.networks | dict2items }}"
       delegate_to: localhost
       tags:
         - network
@@ -100,17 +100,30 @@
     - name: Create ovirt vnic profiles
       ovirt_vnic_profile:
         auth: "{{ ovirt_auth }}"
-        name: "{{ item.name }}"
-        network: "{{ item.name }}"
+        name: "{{ item.value.name }}"
+        network: "{{ item.value.name }}"
         state: present
         data_center: Default
-      loop: "{{ ovirt.host_networks | map(attribute='networks') | flatten }}"
+      loop: "{{ ovirt.networks | dict2items }}"
       delegate_to: localhost
       tags:
         - network
 
+    - name: Initialize host_networks to empty list
+      set_fact:
+        host_networks: []
+      tags:
+        - network
+
+    - name: Set host_networks
+      set_fact:
+        host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
+      loop: "{{ groups['rhvh'] }}"
+      tags:
+        - network
+
     - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
-      loop: "{{ ovirt.host_networks }}"
+      loop: "{{ host_networks }}"
       delegate_to: localhost
       tags:
         - network

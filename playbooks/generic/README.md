@@ -41,7 +41,9 @@ Generate ISO image to use for baremetal boot and place it onto infra server.
     ansible-playbook -i ../ansible-inventory/vran/hosts/tewksbury.yml playbooks/generic/build_isos.yml
     ```
 
-4. Run the boot baremetal playbook. **Note**: `--limit` the run to the host/groups you want, it is set for `all` by default!
+4. Make sure the node is set to `Legacy` boot mode. This is currently manually done thru iDRAC.
+
+5. Run the boot baremetal playbook. **Note**: `--limit` the run to the host/groups you want, it is set for `all` by default!
 
     ```sh
     ansible-playbook -i ../ansible-inventory/vran/hosts/tewksbury.yml playbooks/bios/virtualmedia/os_install.yml --limit rhv-1.escwq.com

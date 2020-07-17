@@ -1,0 +1,12 @@
+- hosts: rhvh[0]
+  connection: local
+  gather_facts: no
+  vars:
+    host_networks: []
+  tasks:
+    - set_fact:
+        host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
+      loop: "{{ groups['rhvh'] }}"
+
+    - debug:
+        var: host_networks
