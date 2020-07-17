@@ -18,6 +18,22 @@
     # Attach storage
     ################
 
+    - name: Add hosts
+      ovirt_host:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        name: "{{ item }}"
+        address: "{{ item }}"
+        password: redhat
+      loop: "{{ groups['rhvh'] }}"
+      delegate_to: localhost
+      tags:
+        - host
+
+    ################
+    # Attach storage
+    ################
+
     - name: Attach storage domains
       ovirt_storage_domain:
         auth: "{{ ovirt_auth }}"
@@ -112,6 +128,7 @@
     - name: Initialize host_networks to empty list
       set_fact:
         host_networks: []
+      delegate_to: localhost
       tags:
         - network
 
@@ -119,6 +136,7 @@
       set_fact:
         host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
       loop: "{{ groups['rhvh'] }}"
+      delegate_to: localhost
       tags:
         - network
 

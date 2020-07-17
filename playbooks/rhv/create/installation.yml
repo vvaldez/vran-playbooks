@@ -1,5 +1,6 @@
 ---
 - hosts: rhvh
+  name: Initial bootstrapping
   tasks:
     - name: Set hostname
       vars:
@@ -95,11 +96,13 @@
       tags:
         - network
 
+- hosts: rhvh[0]
+  name: "Install rhv-m on {{ groups['rhvh'][0] }}"
+  tasks:
     - name: Install RHV-M Appliance
       yum:
         name: rhvm-appliance
         state: installed
-      delegate_to: rhvh[0]
       tags:
         - install
 
@@ -114,7 +117,6 @@
           -e {{ k }}='{{ v }}' \
           {% endfor %}
           /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
-      delegate_to: rhvh[0]
       tags:
         - install
 ...
