@@ -4,7 +4,7 @@
 - import_playbook: eject.yml
   when: virtual_media_connected|default('') is not match('NotConnected')
 
-- hosts: all
+- hosts: baremetal
   connection: local
   name: Insert and Attach VirtualMedia and set OneTimeBoot to Virtual CD
   gather_facts: False

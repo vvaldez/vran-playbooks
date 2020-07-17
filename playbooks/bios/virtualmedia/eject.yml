@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: baremetal
   connection: local
   name: Eject VirtualMedia
   gather_facts: False

@@ -21,7 +21,7 @@ search --no-floppy --set=root -l 'RHEL-7.8 Server.x86_64'
 
 ### BEGIN /etc/grub.d/10_linux ###
 menuentry 'Install RHEL 7.8 for {{ iso_hostname }} for vran' --class fedora --class gnu-linux --class gnu --class os {
-	linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL={{ iso_volume_id_bootloader_safe }} {{ install.boot_options }} bond={{ hostvars[iso_hostname].networks.mgmt.bond.name }}:{{ hostvars[iso_hostname].networks.mgmt.bond.members|join(',') }}:{{ hostvars[iso_hostname].networks.mgmt.bond.opts }} vlan={{ hostvars[iso_hostname].networks.mgmt.vlan.name }}:{{ hostvars[iso_hostname].networks.mgmt.bond.name }} ip={{ hostvars[iso_hostname].ansible_host }}::{{ hostvars[iso_hostname].networks.mgmt.interface.gateway }}:{{ hostvars[iso_hostname].networks.mgmt.interface.netmask }}:{{ iso_hostname }}:{{ hostvars[iso_hostname].networks.mgmt.interface.name }}:none nameserver={{ nameservers.0 }} inst.ks={{ install.ks.rhel7 }}
+	linuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL={{ iso_volume_id_bootloader_safe }} {{ install.boot_options }} bond={{ hostvars[iso_hostname].networks.mgmt.bond.name }}:{{ hostvars[iso_hostname].networks.mgmt.bond.members|join(',') }}:{{ hostvars[iso_hostname].networks.mgmt.bond.opts }} vlan={{ hostvars[iso_hostname].networks.mgmt.vlan.name }}:{{ hostvars[iso_hostname].networks.mgmt.bond.name }} ip={{ hostvars[iso_hostname].ansible_host }}::{{ hostvars[iso_hostname].networks.mgmt.interface.gateway }}:{{ hostvars[iso_hostname].networks.mgmt.interface.netmask }}:{{ iso_hostname }}:{{ hostvars[iso_hostname].networks.mgmt.interface.name }}:none nameserver={{ nameservers.0 }} inst.ks={{ install.ks.rhel7 }} os_device={{ install.os_device }}
 	initrdefi /images/pxeboot/initrd.img
 }
 submenu 'Troubleshooting -->' {
