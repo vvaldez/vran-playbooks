@@ -53,6 +53,8 @@
         satellite_admin_password: "{{ satellite.admin_password }}"
         satellite_organization: "{{ satellite.organization }}"
         satellite_location: "{{ satellite.location }}"
+        satellite_proxy_dns: "{{ satellite.enable_dns }}"
+        satellite_proxy_dns_managed: "{{ satellite.dns }}"
       import_role:
         name: oasis_roles.satellite
   tags:
