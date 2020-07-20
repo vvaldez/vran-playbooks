@@ -52,7 +52,7 @@
     iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/ auth rhv-user ceph-rhv-user
     ```
 
-5. Update rhv_dev.yml with wwid of drives
+5. Update `ansible-inventory/vran/hosts/group_vars/rhv.yml` with wwid of drives
 
     ```
     ansible-playbook \
@@ -108,7 +108,7 @@
       playbooks/rhv/create/configuration.yml
     ```
 
-8. Run `playbooks/rhv/create/vms.yml` to launch virtual machines"
+8. Run `playbooks/rhv/create/vms.yml` to launch virtual machines:
 
     ```sh
     ansible-playbook \
