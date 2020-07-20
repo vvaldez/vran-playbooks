@@ -1,4 +1,4 @@
-- hosts: rhv_dev
+- hosts: rhv
   gather_facts: no
   tasks:
     ################
@@ -6,12 +6,9 @@
     ################
 
     - name: Obtain SSO token with using username/password credentials
-      ovirt_auth:
-        url: https://ovirt-engine.escwq.com/ovirt-engine/api
-        username: admin@internal
-        password: "{{ ovirt.password }}"
-        insecure: yes
+      ovirt_auth: "{{ ovirt.auth }}"
       delegate_to: localhost
+      run_once: yes
       tags:
         - always
 
@@ -19,22 +16,10 @@
     # Create virtual machines
     ################
 
-    - set_fact:
-        vms_list: []
-      delegate_to: localhost
-      tags:
-        - vm
-
-    - set_fact:
-        vms_list: "{{ vms_list + [item | combine({'auth': ovirt_auth})] }}"
-      delegate_to: localhost
-      loop: "{{ ovirt.vms }}"
-      tags:
-        - vm
-
     - name: Create virtual machines
-      ovirt_vm: "{{ item }}"
-      loop: "{{ vms_list }}"
+      ovirt_vm: "{{ item | combine({'auth': ovirt_auth}) }}"
+      loop: "{{ ovirt.vms }}"
       delegate_to: localhost
+      run_once: yes
       tags:
         - vm

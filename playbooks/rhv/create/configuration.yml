@@ -1,5 +1,7 @@
 ---
-- hosts: rhv_dev
+# groups['rhvh'][0] is also utilized within the playbook. If you update
+# this host group, those references should be as well.
+- hosts: rhvh[0]
   gather_facts: no
   tasks:
     ################
@@ -7,14 +9,26 @@
     ################
 
     - name: Obtain SSO token with using username/password credentials
-      ovirt_auth:
-        url: https://ovirt-engine.escwq.com/ovirt-engine/api
-        username: admin@internal
-        password: "{{ ovirt.password }}"
-        insecure: yes
+      ovirt_auth: "{{ ovirt.auth }}"
       delegate_to: localhost
       tags:
         - always
+
+    ################
+    # Attach storage
+    ################
+
+    - name: Add hosts
+      ovirt_host:
+        auth: "{{ ovirt_auth }}"
+        cluster: Default
+        name: "{{ item }}"
+        address: "{{ item }}"
+        password: redhat
+      loop: "{{ groups['rhvh'] }}"
+      delegate_to: localhost
+      tags:
+        - host
 
     ################
     # Attach storage
@@ -24,7 +38,7 @@
       ovirt_storage_domain:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
-        host: rhvm.escwq.com
+        host: "{{ groups['rhvh'][0] }}"
         data_center: "{{ item.data_center }}"
         iscsi:
           target: "{{ item.iscsi_target }}"
@@ -49,8 +63,7 @@
     # need to add the .cer cert here; otherwise upload doesn't work
     # and restart ovirt-imageio-daemon, ovirt-imageio-proxy, it seems
 
-    # Download images
-    - name: Download images onto rhv host
+    - name: Download images onto {{ groups['rhvh'][0] }}
       get_url:
         url: "{{ item.url }}"
         dest: "{{ item.dest }}"
@@ -59,9 +72,7 @@
       tags:
         - disk
 
-    # Upload an ISO image
-    # Since Ansible 2.8
-    - name: Create storage disks
+    - name: Upload image
       ovirt_disk:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
@@ -84,10 +95,10 @@
     - name: Create ovirt networks
       ovirt_network:
         auth: "{{ ovirt_auth }}"
-        name: "{{ item.name }}"
-        vlan_tag: "{{ item.vlan_tag }}"
+        name: "{{ item.value.name }}"
+        vlan_tag: "{{ item.value.vlan_tag }}"
         vm_network: yes
-        mtu: "{{ item.mtu }}"
+        mtu: "{{ item.value.mtu }}"
         data_center: Default
         wait: yes
         clusters:
@@ -95,9 +106,9 @@
             assigned: yes
             display: no
             gluster: no
-            migration: "{{ item.migration | default(omit) }}"
+            migration: "{{ item.value.migration | default(omit) }}"
             required: yes
-      loop: "{{ ovirt.networks }}"
+      loop: "{{ ovirt.networks | dict2items }}"
       delegate_to: localhost
       tags:
         - network
@@ -105,27 +116,32 @@
     - name: Create ovirt vnic profiles
       ovirt_vnic_profile:
         auth: "{{ ovirt_auth }}"
-        name: "{{ item.name }}"
-        network: "{{ item.name }}"
+        name: "{{ item.value.name }}"
+        network: "{{ item.value.name }}"
         state: present
         data_center: Default
-      loop: "{{ ovirt.networks }}"
+      loop: "{{ ovirt.networks | dict2items }}"
       delegate_to: localhost
       tags:
         - network
 
-    - ovirt_host_network:
-        auth: "{{ ovirt_auth }}"
-        name: rhvm.escwq.com
-        save: yes
-        bond:
-          name: bond0
-          mode: 4
-          interfaces:
-            - em1
-            - em2
-        networks: "{{ ovirt.networks }}"
-        # sync_networks: yes
+    - name: Initialize host_networks to empty list
+      set_fact:
+        host_networks: []
+      delegate_to: localhost
+      tags:
+        - network
+
+    - name: Set host_networks
+      set_fact:
+        host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
+      loop: "{{ groups['rhvh'] }}"
+      delegate_to: localhost
+      tags:
+        - network
+
+    - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
+      loop: "{{ host_networks }}"
       delegate_to: localhost
       tags:
         - network

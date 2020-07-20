@@ -1,5 +1,6 @@
 ---
-- hosts: rhv_dev
+- hosts: rhvh
+  name: Initial bootstrapping
   tasks:
     - name: Set hostname
       vars:
@@ -60,11 +61,6 @@
         state: started
         enabled: yes
 
-    - name: Install RHV-M Appliance
-      yum:
-        name: rhvm-appliance
-        state: installed
-
     - name: Set Ansible logging for future debugging
       ini_file:
         path: /etc/ansible/ansible.cfg
@@ -100,6 +96,16 @@
       tags:
         - network
 
+- hosts: rhvh[0]
+  name: "Install rhv-m on {{ groups['rhvh'][0] }}"
+  tasks:
+    - name: Install RHV-M Appliance
+      yum:
+        name: rhvm-appliance
+        state: installed
+      tags:
+        - install
+
     # he_iscsi_target cannot be reused from an existing installation
     # he_lun_id needs to be found ahead of time
     - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
@@ -111,4 +117,6 @@
           -e {{ k }}='{{ v }}' \
           {% endfor %}
           /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
+      tags:
+        - install
 ...
