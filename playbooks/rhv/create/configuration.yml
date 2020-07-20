@@ -15,8 +15,14 @@
         - always
 
     ################
-    # Attach storage
+    # Add hosts
     ################
+
+    # This will fail to add hosts to an existing installation. The Error will be
+    # "Host * does not comply with the cluster Default networks..."
+    # The host_networks need to be added at this point, then this step re-ran;
+    # this will set the host into operational mode.
+    # Because of the special logic, we should probably make a playbook for this.
 
     - name: Add hosts
       ovirt_host:
@@ -25,6 +31,7 @@
         name: "{{ item }}"
         address: "{{ item }}"
         password: redhat
+        hosted_engine: deploy
       loop: "{{ groups['rhvh'] }}"
       delegate_to: localhost
       tags:
