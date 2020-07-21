@@ -1,5 +1,5 @@
-{% for name, detail in ovirt.networks.items() %}
-{% if detail.vlan_tag is defined and name != 'ovirtmgmt' %}
+{% for name, detail in networks.items() %}
+{% if detail.vlan_tag is defined and detail.name not in networking_skip_vlans %}
 interface vlan{{ detail.vlan_tag }}
  no shutdown
 {% if detail.name is defined %}
@@ -8,9 +8,6 @@ interface vlan{{ detail.vlan_tag }}
 {% endif %}
 {% if detail.mtu is defined %}
  mtu {{ detail.mtu }}
-{% endif %}
-{% if detail.address is defined %}
- ip address {{ detail.address }}/{{ detail.netmask | ipaddr('prefix') }}
 {% endif %}
 {% endif %}
 {% endfor %}

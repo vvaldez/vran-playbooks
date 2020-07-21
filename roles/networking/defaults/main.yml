@@ -1,0 +1,7 @@
+---
+networking_skip_vlans:
+  - ovirtmgmt
+networking_read_groups:
+  - rhvh
+  - rhvm
+...

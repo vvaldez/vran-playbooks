@@ -1,4 +1,4 @@
-{% for networked_server in networked_servers %}
+{% for networked_server in groups[networking_server_group] %}
 {% for port_channel in hostvars[networked_server]['port_channels'] %}
 interface port-channel{{ port_channel.id }}
  no shutdown
@@ -8,9 +8,7 @@ interface port-channel{{ port_channel.id }}
  vlt-port-channel {{ port_channel.id }}
 interface {{ port_channel['interfaces'][inventory_hostname] }}
  no shutdown
- channel-group {{ port_channel.id }} mode active
  no switchport
- mtu {{ port_channel.mtu }}
- flowcontrol receive off
+ channel-group {{ port_channel.id }} mode active
 {% endfor %}
 {% endfor %}
