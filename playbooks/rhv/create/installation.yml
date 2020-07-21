@@ -29,7 +29,7 @@
         rhsm_org_id: "{{ rhsm.rhsm_org_id }}"
         rhsm_activationkey: "{{ rhsm.rhsm_activationkey }}"
         rhsm_server_hostname: "{{ rhsm.rhsm_server_hostname }}"
-        rhsm_respositories: "{{ rhsm.rhsm_respositories }}"
+        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
       import_role:
         name: oasis_roles.system.rhsm
       tags:

@@ -179,6 +179,7 @@
     # Create lifecycle environments
     #########################
 
+
     - name: Add lifecycle environment
       theforeman.foreman.lifecycle_environment:
         username: "{{ satellite.admin_username }}"
@@ -229,6 +230,7 @@
         content_view: "{{ item.content_view }}"
         subscriptions: "{{ item.subscriptions }}"
         content_overrides: "{{ item.content_overrides }}"
+        release_version: "{{ item.release_version | default(omit) }}"
         auto_attach: False
       delegate_to: localhost
       tags:
