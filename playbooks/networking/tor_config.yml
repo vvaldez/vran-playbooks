@@ -1,0 +1,9 @@
+---
+- name: Configure TOR switches
+  hosts: networking
+  connection: network_cli
+
+  tasks:
+    - name: Create VLANs
+      include_role:
+        name: networking

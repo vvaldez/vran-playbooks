@@ -1,0 +1,16 @@
+---
+- name: Create VLANs
+  dellos10_config:
+    src: vlan.j2
+    update: check # change when ready
+
+- name: Create Port Channels
+  dellos10_config:
+    src: port_channel.j2
+    update: check # change when ready
+  loop:
+    - "{{ groups.rhvh }}"
+    - "{{ groups.rhvm }}"
+  loop_control:
+    loop_var: networked_servers
+...

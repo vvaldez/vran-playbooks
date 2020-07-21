@@ -1,0 +1,16 @@
+{% for networked_server in networked_servers %}
+{% for port_channel in hostvars[networked_server]['port_channels'] %}
+interface port-channel{{ port_channel.id }}
+ no shutdown
+ switchport mode trunk
+ switchport trunk allowed vlan {{ port_channel.allowed_vlans }}
+ mtu {{ port_channel.mtu }}
+ vlt-port-channel {{ port_channel.id }}
+interface {{ port_channel['interfaces'][inventory_hostname] }}
+ no shutdown
+ channel-group {{ port_channel.id }} mode active
+ no switchport
+ mtu {{ port_channel.mtu }}
+ flowcontrol receive off
+{% endfor %}
+{% endfor %}

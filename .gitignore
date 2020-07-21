@@ -15,6 +15,7 @@ files/*
 roles/*
 !roles/requirements.yml
 !roles/build_iso
+!roles/networking
 
 # Ignore virtualenv
 venv/
