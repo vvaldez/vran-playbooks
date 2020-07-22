@@ -1,14 +1,18 @@
 {% for networked_server in groups[networking_server_group] %}
-{% for port_channel in hostvars[networked_server]['port_channels'] %}
-interface port-channel{{ port_channel.id }}
+{% for bond_name, bond_detail in hostvars[networked_server]['host_networking']['bond'].items() %}
+interface port-channel{{ bond_detail.port_channel.id }}
  no shutdown
+ description {{ networked_server }} {{ bond_name }}
  switchport mode trunk
- switchport trunk allowed vlan {{ port_channel.allowed_vlans }}
+ switchport trunk allowed vlan {{ bond_detail.port_channel.networks | map('extract', networks) | list | json_query('[*].vlan_tag') | join(',') }}
  mtu {{ networking_port_channel_mtu }}
- vlt-port-channel {{ port_channel.id }}
-interface {{ port_channel['interfaces'][inventory_hostname] }}
+ vlt-port-channel {{ bond_detail.port_channel.id }}
+{% for bond_interface in bond_detail['physical'][inventory_hostname] %}
+interface {{ bond_interface }}
  no shutdown
  no switchport
- channel-group {{ port_channel.id }} mode active
+ description {{ networked_server }} {{ bond_name }}
+ channel-group {{ bond_detail.port_channel.id }} mode active
+{% endfor %}
 {% endfor %}
 {% endfor %}
