@@ -4,7 +4,7 @@ interface port-channel{{ port_channel.id }}
  no shutdown
  switchport mode trunk
  switchport trunk allowed vlan {{ port_channel.allowed_vlans }}
- mtu {{ port_channel.mtu }}
+ mtu {{ networks | dict2items | json_query('[*].value.mtu') | max  }}
  vlt-port-channel {{ port_channel.id }}
 interface {{ port_channel['interfaces'][inventory_hostname] }}
  no shutdown

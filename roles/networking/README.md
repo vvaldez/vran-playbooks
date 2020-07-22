@@ -29,9 +29,10 @@ Each key in `networks` should have another dictionary as its value. Within these
 | --- | ---- | ----------- |
 | `name`     | string  | The name of the VLAN, to be used as the `vlan-name`
 | `vlan_tag` | integer | The ID number of the VLAN interface to build. For example, to build `interface vlan5`, this value should be `5`
-| `mtu`      | integer | The MTU value. Example: `9216`
 
 If `vlan_tag` is missing, or if `name` exists within the role variable `networking_skip_vlans`, the network/VLAN will be skipped. If `vlan_tag` is present, but `name` and/or `mtu` are missing, the VLAN will still be created without the missing value(s).
+
+There is no setting for MTU as it is generated from the maximum value found among the VLANs defined in `networks`.
 
 #### Example: `group_vars/all.yml`
 ```
