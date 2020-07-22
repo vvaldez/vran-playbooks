@@ -2,6 +2,6 @@
 networking_skip_vlans:
   - ovirtmgmt
 networking_read_groups:
-  - rhvh
-  - rhvm
+  - compute
+networking_port_channel_mtu: 9000
 ...
