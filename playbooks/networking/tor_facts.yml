@@ -1,0 +1,11 @@
+---
+- name: Configure TOR switches
+  hosts: networking
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: Get network device facts
+      dellos10_facts:
+        gather_subset:
+          - "!config"
