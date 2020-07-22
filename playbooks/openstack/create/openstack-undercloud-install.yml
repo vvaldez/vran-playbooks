@@ -25,6 +25,8 @@
     - name: Apply director role
       import_role:
         name: director
+      tags:
+        - director
 
     - name: Set overcloud flavors to use UEFI
       shell: |
