@@ -1,26 +1,3 @@
 ---
-- name: Create VLANs
-  dellos10_config:
-    src: vlan.j2
-    update: check # change when ready
-  notify: save configuration
-  register: networking_vlan_out
-
-- debug:
-    msg: "{{ networking_vlan_out.commands }}"
-    verbosity: 1
-
-- name: Create Port Channels
-  dellos10_config:
-    src: port_channel.j2
-    update: check # change when ready
-  loop: "{{ networking_read_groups }}"
-  loop_control:
-    loop_var: networking_server_group
-  notify: save configuration
-  register: networking_pc_out
-
-- debug:
-    msg: "{{ networking_pc_out | json_query('results[*].commands') }}"
-    verbosity: 1
+- include_tasks: "{{ ansible_network_os }}.yml"
 ...
