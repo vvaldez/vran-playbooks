@@ -21,4 +21,17 @@
 - debug:
     msg: "{{ networking_pc_out | json_query('results[*].commands') }}"
     verbosity: 1
+
+- name: Create Single Interfaces
+  dellos10_config:
+    src: dellos10_single_interface.j2
+  loop: "{{ networking_read_groups }}"
+  loop_control:
+    loop_var: networking_server_group
+  notify: save configuration
+  register: networking_if_out
+
+- debug:
+    msg: "{{ networking_if_out | json_query('results[*].commands') }}"
+    verbosity: 1
 ...
