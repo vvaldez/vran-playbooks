@@ -6,7 +6,7 @@ It works via two major steps:
 
 * *Build VLAN interfaces.* Read a dictionary `networks` (expected to be available via Group Variables). VLAN interfaces are built on the switch using this information. 
 
-* *Build Port Channels.* Port channels and their member interfaces are built on the switch using a list `port_channels` found in the Host Variables of hosts belonging to the groups listed in the role variable `networking_read_groups`.
+* *Build Port Channels.* Port channels and their member interfaces are built on the switch using a dictionary `host_networking` found in the Host Variables of hosts belonging to the groups listed in the role variable `networking_read_groups`.
 
 ## Role Variables
 
@@ -14,8 +14,9 @@ Defaults are found at `defaults/main.yml` and they consist of the following:
 
 | Variable | Type | Description |
 | -------- | ---- | ----------- |
-| `networking_skip_vlans`  | list | When reading the `networks` dictionary to build VLANs, skip any dictionary key defined here.
-| `networking_read_groups` | list | When reading `hostvars` to build Port Channels, include hosts found within groups defined here.
+| `networking_skip_vlans`       | list | When reading the `networks` dictionary to build VLANs, skip any dictionary key defined here.
+| `networking_read_groups`      | list | When reading `hostvars` to build Port Channels, include hosts found within groups defined here.
+| `networking_port_channel_mtu` | integer | The MTU value to set on all Port Channels.
 
 ## Non-role Variables
 
@@ -27,11 +28,10 @@ Each key in `networks` should have another dictionary as its value. Within these
 
 | Key | Type | Description |
 | --- | ---- | ----------- |
-| `name`     | string  | The name of the VLAN, to be used as the `vlan-name`
 | `vlan_tag` | integer | The ID number of the VLAN interface to build. For example, to build `interface vlan5`, this value should be `5`
 | `mtu`      | integer | The MTU value. Example: `9216`
 
-If `vlan_tag` is missing, or if `name` exists within the role variable `networking_skip_vlans`, the network/VLAN will be skipped. If `vlan_tag` is present, but `name` and/or `mtu` are missing, the VLAN will still be created without the missing value(s).
+If `vlan_tag` is missing, or if the network's key exists within the role variable `networking_skip_vlans`, the network/VLAN will be skipped. If `vlan_tag` is present, but `name` and/or `mtu` are missing, the VLAN will still be created without the missing value(s).
 
 #### Example: `group_vars/all.yml`
 ```
@@ -50,24 +50,10 @@ networks:
 
 ### For Port Channel creation
 
-This role expects to find a list called `port_channels` defined for each host present in the groups specified in `networking_read_groups`. Each list item should have the following keys:
+This role expects to find a list called `host_networking` defined for each host present in the groups specified in `networking_read_groups`. Each list item should have the following keys:
 
-| Key | Type | Description |
-| --- | ---- | ----------- |
-| `id`            | integer    | The ID number of the port channel to build. For example, to build `interface port-channel5`, this value should be `5`
-| `allowed_vlans` | string     | The VLANs to permit on the trunk. This is a comma-seperated value, no spaces, ranges permitted. For example: `108,110-114`
-| `interfaces`    | dictionary | A dictionary with `key: value` pairs equivalent to `switch_name: interface_name`, indicating which switch has which phyiscal interface participating in the port channel. For example: `{ 'leaf1': 'ethernet1/1/32', 'leaf2': 'ethernet1/1/32' }`
-
-There is no setting for MTU as it is generated as the maximum value found among the VLANs defined in `networks`.
+TODO: describe the dicitonary
 
 #### Example: `host_vars/compute1.yml`
-```
-[...]
-port_channels:
-  - id: 1001
-    allowed_vlans: 108,110-114
-    interfaces:
-      leaf1: ethernet1/1/32
-      leaf2: ethernet1/1/32
-[...]
-```
+
+TODO: example
