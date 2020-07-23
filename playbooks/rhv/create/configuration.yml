@@ -79,11 +79,11 @@
       tags:
         - disk
 
-    - name: Upload image
+    - name: Create disks
       ovirt_disk:
         auth: "{{ ovirt_auth }}"
         name: "{{ item.name }}"
-        upload_image_path: "{{ item.upload_image_path }}"
+        upload_image_path: "{{ item.upload_image_path | default(omit) }}"
         size: "{{ item.size | default(omit) }}"
         storage_domain: "{{ item.storage_domain }}"
         wait: true
@@ -91,6 +91,7 @@
         format: "{{ item.format }}"
         content_type: "{{ item.content_type }}"
         timeout: 1800
+        interface: "{{ item.interface | default(omit) }}"
       loop: "{{ ovirt.storage.disks }}"
       tags:
         - disk

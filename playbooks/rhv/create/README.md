@@ -91,7 +91,7 @@
       -e setup_nics=yes \
       playbooks/rhv/create/installation.yml
 
-    # Install additional hosts
+    # Prep additional hosts for configuration
     ansible-playbook \
       -i ../ansible-inventory/vran/hosts/tewksbury.yml \
       -e setup_nics=yes \

@@ -28,9 +28,14 @@
       tags:
         - director
 
-    - name: Set overcloud flavors to use UEFI
-      shell: |
-        source /home/stack/stackrc;
+    - name: Apply customizations
+      shell: ~/ansible-generated/scripts/_create_roles.sh
+      become: yes
+      become_user: stack
 
-        openstack flavor set --property capabilities:boot_mode='uefi' control
-        openstack flavor set --property capabilities:boot_mode='uefi' compute
+    # - name: Set overcloud flavors to use UEFI
+    #   shell: |
+    #     source /home/stack/stackrc;
+
+    #     openstack flavor set --property capabilities:boot_mode='uefi' control
+    #     openstack flavor set --property capabilities:boot_mode='uefi' compute
