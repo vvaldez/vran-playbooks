@@ -9,3 +9,4 @@
       dellos10_facts:
         gather_subset:
           - "!config"
+...
