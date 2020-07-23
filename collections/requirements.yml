@@ -1,0 +1,8 @@
+---
+collections:
+  - community.general
+  - oasis_roles.system
+  - ovirt.ovirt
+  - theforeman.foreman
+  - tripleo.operator
+...
