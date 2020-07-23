@@ -1,6 +1,6 @@
 ---
 - name: test
-  hosts: demo
+  hosts: all
   connection: local
   gather_facts: False
   tasks:
@@ -8,5 +8,5 @@
         var: "{{ item }}" 
       loop:
         - oob
-        - rhv.ovirt.auth
+        - ovirt.auth
 ...
