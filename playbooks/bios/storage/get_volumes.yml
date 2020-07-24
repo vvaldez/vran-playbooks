@@ -3,6 +3,8 @@
   connection: local
   name: View all storage configuration
   gather_facts: False
+  vars:
+    idrac_controller: "AHCI.Slot.4-1"
 
   tasks:
     - name: View all volumes
@@ -11,7 +13,7 @@
         idrac_user: "{{ oob.username }}"
         idrac_password: "{{ oob.password }}"
         state: "view"
-        controller_id: "AHCI.Slot.4-1"
+        controller_id: "{{ idrac_controller }}"
       register: view_result
 
     - debug:
