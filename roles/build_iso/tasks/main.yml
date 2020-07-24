@@ -1,5 +1,5 @@
 ---
+- include_tasks: define_networking.yml
 - include_tasks: gen_kickstart.yml
-
 - include_tasks: build_iso.yml
 ...

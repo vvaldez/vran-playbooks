@@ -87,9 +87,6 @@
     dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
     remote_src: yes
 
-- debug:
-    msg: "{{ hostvars[iso_hostname] }}"
-
 - name: Modify legacy BIOS menu
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/isolinux.cfg.j2"
