@@ -10,6 +10,7 @@
       gateway: "{{ hostvars[iso_hostname].networks[hostvars[iso_hostname].host_networking.mgmt.network].gateway }}"
       netmask: "{{ hostvars[iso_hostname].networks[hostvars[iso_hostname].host_networking.mgmt.network].netmask }}"
       nameservers: "{{ hostvars[iso_hostname].nameservers }}"
+   iso_install_os_device: "{{ hostvars[iso_hostname].install.os_device | default(omit) }}"
 
 - debug:
     var: iso_networking
