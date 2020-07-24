@@ -17,7 +17,7 @@
         idrac_password: "{{ oob.password }}"
         state: "view"
         controller_id: "{{ idrac_controller_id | default(omit) }}"
-        volume_id: "{{ idrac_volaume_id | default(omit) }}"
+        volume_id: "{{ idrac_volume_id | default(omit) }}"
       register: view_result
 
     - debug:
