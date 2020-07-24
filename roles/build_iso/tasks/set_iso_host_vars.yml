@@ -13,6 +13,9 @@
     iso_install_os_device: "{{ hostvars[iso_hostname].install.os_device | default(null) }}"
 
 - debug:
-    var: iso_networking
+    var: "{{ item }}"
     verbosity: 1
+  loop:
+    - iso_networking
+    - iso_install_os_device
 ...
