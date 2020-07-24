@@ -1,5 +1,5 @@
 ---
-- hosts: demo
+- hosts: baremetal
   connection: local
   name: Create OS virtual disk
   gather_facts: False

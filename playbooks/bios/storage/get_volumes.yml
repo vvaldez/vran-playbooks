@@ -1,5 +1,5 @@
 ---
-- hosts: demo
+- hosts: baremetal
   connection: local
   name: View all storage configuration
   gather_facts: False
