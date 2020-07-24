@@ -1,5 +1,5 @@
 ---
-- hosts: demo
+- hosts: baremetal
   connection: local
   name: Delete disk
   gather_facts: False
