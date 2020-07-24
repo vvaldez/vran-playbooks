@@ -1,11 +1,22 @@
 ---
 - hosts: baremetal
   connection: local
-  name: "Export RAID Server Configuration Profile"
+  name: Export RAID Server Configuration Profile
   gather_facts: False
 
   tasks:
-    - name: "Exporting SCP RAID to a local path"
+    - name: Get local profile dir stats
+      stat:
+        path: "{{ oob.config.profile.RAID }}"
+      register: profile_dir_stat
+
+    - name: Create profile dir
+      file:
+        path: "{{ oob.config.profile.RAID }}"
+        state: directory
+      when: not profile_dir_stat.exists
+
+    - name: Exporting SCP RAID to a local path
       idrac_server_config_profile:
         idrac_ip: "{{ oob.ipaddr }}"
         idrac_user: "{{ oob.username }}"
