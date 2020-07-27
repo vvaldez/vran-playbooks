@@ -9,6 +9,8 @@ interface port-channel{{ bond_detail.port_channel_id }}
  switchport access vlan {{ networks[bond_detail.access_network]['vlan_tag'] }}
 {% endif %}
  mtu {{ networking_port_channel_mtu }}
+ lacp fallback enable
+ lacp fallback timeout {{ networking_lacp_fallback_timeout }}
  vlt-port-channel {{ bond_detail.port_channel_id }}
 {% for bond_interface in bond_detail['physical'][inventory_hostname] %}
 interface {{ bond_interface }}

@@ -4,4 +4,5 @@ networking_skip_vlans:
 networking_read_groups:
   - compute
 networking_port_channel_mtu: 9000
+networking_lacp_fallback_timeout: 10
 ...
