@@ -1,0 +1,8 @@
+---
+- name: View all host variables
+  hosts: all
+  gather_facts: False
+  tasks:
+    - debug:
+        var: hostvars[inventory_hostname]
+...
