@@ -41,4 +41,5 @@
     password: "{{ tower_password }}"
     body: '{{ tower_license | to_json }}'
     body_format: json
+    when: tower_license is defined | default(False)
 ...

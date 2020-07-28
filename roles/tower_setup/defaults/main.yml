@@ -17,7 +17,7 @@ tower_version: "3.6.1-1"
 tower_rhel_version: "8"
 
 # Tower setup archive variables
-tower_setup_archive_file: "ansible-tower-setup-bundle-{{ tower_version }}.el{{ tower_rhel_version }}.tar.gz"
+tower_setup_archive_file: "ansible-tower-setup-bundle-{{ tower_version }}.tar.gz"
 tower_setup_archive_dir: "{{ tower_setup_archive_file.split('.tar.gz').0 }}"
 tower_setup_archive_url: "https://releases.ansible.com/ansible-tower/setup-bundle/{{ tower_setup_archive_file }}"
 tower_setup_archive_remote_dir: "/tmp"

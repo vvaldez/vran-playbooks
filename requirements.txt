@@ -5,3 +5,4 @@ netaddr==0.7.18
 # satisfy a dependency on curl-config
 # https://gist.github.com/lxneng/1031014/f643787d9df008109656638095e2e7192ae8414a
 ovirt-engine-sdk-python==4.4.4
+omsdk

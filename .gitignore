@@ -15,6 +15,9 @@ files/*
 roles/*
 !roles/requirements.yml
 !roles/build_iso
+!roles/tower_*
+!roles/kvm_*
+!roles/tor_networking_day1
 
 # Ignore virtualenv
 venv/

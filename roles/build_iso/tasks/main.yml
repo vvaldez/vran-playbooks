@@ -1,10 +1,5 @@
 ---
+- include_tasks: set_iso_host_vars.yml
 - include_tasks: gen_kickstart.yml
-
 - include_tasks: build_iso.yml
-  vars:
-    iso_hostname:  "{{ host }}"
-  loop: "{{ build_iso_hosts }}"
-  loop_control:
-    loop_var: host
 ...

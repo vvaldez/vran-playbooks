@@ -23,6 +23,8 @@
     reboot_timeout: 900
   delegate_to: "{{ inventory_hostname }}"
   when: not no_os | default(False)
+  register: os_reboot_result
+  ignore_errors: yes
 
 - block:
     - import_tasks: ../actions/reboot_server.yml
@@ -33,7 +35,10 @@
         port: 22
         delay: 300
         timeout: 900
-  when: no_os | default(False)
+  when: >
+    no_os | default(False) or
+    os_reboot_result is failed
+
 
 - import_tasks: ../actions/wait_for_redfish_api.yml
 ...

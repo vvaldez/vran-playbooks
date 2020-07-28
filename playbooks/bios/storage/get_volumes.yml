@@ -1,8 +1,13 @@
 ---
-- hosts: demo
+- hosts: baremetal
   connection: local
   name: View all storage configuration
   gather_facts: False
+  vars:
+    # Optionally specify a controller if desired, default is all via 'null'
+    # e.g. idrac_controller_id: "AHCI.Slot.4-1"
+    idrac_controller_id: null
+    idrac_volaume_id: null
 
   tasks:
     - name: View all volumes
@@ -11,9 +16,11 @@
         idrac_user: "{{ oob.username }}"
         idrac_password: "{{ oob.password }}"
         state: "view"
-        controller_id: "AHCI.Slot.4-1"
+        controller_id: "{{ idrac_controller_id | default(omit) }}"
+        volume_id: "{{ idrac_volume_id | default(omit) }}"
       register: view_result
 
     - debug:
         var: view_result
+        verbosity: 1
 ...

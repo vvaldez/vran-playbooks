@@ -1,7 +1,7 @@
 ---
 - import_playbook: get_inventory.yml
 
-- hosts: all
+- hosts: baremetal
   connection: local
   name: Update firmware for "{{ oob.manager_name }}" 
   gather_facts: False

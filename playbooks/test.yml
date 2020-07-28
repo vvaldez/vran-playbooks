@@ -1,0 +1,12 @@
+---
+- name: test
+  hosts: all
+  connection: local
+  gather_facts: False
+  tasks:
+    - debug:
+        var: "{{ item }}" 
+      loop:
+        - oob
+        - ovirt.auth
+...
