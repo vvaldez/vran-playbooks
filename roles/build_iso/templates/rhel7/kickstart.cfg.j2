@@ -12,7 +12,7 @@ text
 reboot
 
 {% for ssh_key in ssh_keys %}
-sshkey --username={{ ansibe_user }} "{{ ssh_key }}"
+sshkey --username={{ ansible_user }} "{{ ssh_key }}"
 {% endfor %}
 
 url --url="{{ install.url['rhel' + hostvars[iso_hostname].os.version.major] }}"
