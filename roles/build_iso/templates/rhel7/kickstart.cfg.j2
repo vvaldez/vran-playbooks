@@ -11,7 +11,7 @@ eula --agreed
 text
 reboot
 
-{% for sshkey in ssh_keys] %}
+{% for ssh_key in ssh_keys %}
 sshkey --username={{ ansibe_user }} "{{ ssh_key }}"
 {% endfor %}
 
