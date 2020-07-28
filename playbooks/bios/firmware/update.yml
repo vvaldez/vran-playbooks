@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: baremetal
   connection: local
   name: Update firmware for "{{ oob.manager_name }}" to specified version "{{ update_version }}"
   gather_facts: False
