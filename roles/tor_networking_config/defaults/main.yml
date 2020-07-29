@@ -1,7 +1,4 @@
 ---
 tor_mtu: 9000
 tor_lacp_fallback_timeout: 10
-tor_skip_vlans:
-  - provider_sriov2
-  - provider_fronthaul2
 ...
