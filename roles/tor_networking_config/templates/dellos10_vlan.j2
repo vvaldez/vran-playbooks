@@ -1,0 +1,26 @@
+{% for site_name, site_detail in site_networks.items() %}
+{% for network_name, network_detail in site_detail.items() %}
+{% if network_name not in tor_skip_vlans %}
+{% if network_detail.vlan is defined %}
+{% if network_detail.vlan is search(':') %}
+{% for vlan in lookup('sequence', network_detail.vlan | replace(':', '-'), wantlist=True) %}
+interface vlan{{ vlan }}
+ no shutdown
+ vlan-name {{ network_name }}.{{ vlan }}
+ description {{ network_name }}
+{% if network_detail.mtu is defined %}
+ mtu {{ network_detail.mtu }}
+{% else %}
+ mtu {{ networking_mtu }}
+{% endif %}
+{% endfor %}
+{% else %}
+interface vlan{{ network_detail.vlan }}
+ no shutdown
+ vlan-name {{ network_name }}
+ description {{ network_name }}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endfor %}
