@@ -17,7 +17,7 @@ roles/*
 !roles/build_iso
 !roles/tower_*
 !roles/kvm_*
-!roles/tor_networking_day1
+!roles/tor_networking*
 
 # Ignore virtualenv
 venv/

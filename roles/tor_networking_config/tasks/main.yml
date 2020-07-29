@@ -1,0 +1,5 @@
+---
+- set_fact:
+    site_networks: "{{ sites | items2dict(key_name='name_lower', value_name='networks') }}"
+- include_tasks: "{{ ansible_network_os }}.yml"
+...
