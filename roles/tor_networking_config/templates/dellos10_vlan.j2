@@ -1,25 +1,27 @@
-{% for site_name, site_detail in site_networks.items() %}
-{% for network_name, network_detail in site_detail.items() %}
+{% set vlans_to_build = [] %}
+{% for network_name, network_detail in site_networks.items() %}
 {% if network_detail.vlan is defined %}
 {% if network_detail.vlan is search(':') %}
 {% for vlan in lookup('sequence', network_detail.vlan | replace(':', '-'), wantlist=True) %}
-interface vlan{{ vlan }}
- no shutdown
 {% if network_detail.mtu is defined %}
- mtu {{ network_detail.mtu }}
+{% set vlan_dict = ({"id": vlan, "mtu": network_detail.mtu}) %}
 {% else %}
- mtu {{ tor_mtu }}
+{% set vlan_dict = ({"id": vlan, "mtu": tor_mtu}) %}
 {% endif %}
+{% set vlans_to_build = vlans_to_build.append(vlan_dict) %}
 {% endfor %}
 {% else %}
-interface vlan{{ network_detail.vlan }}
- no shutdown
 {% if network_detail.mtu is defined %}
- mtu {{ network_detail.mtu }}
+{% set vlan_dict = ({"id": network_detail.vlan, "mtu": network_detail.mtu}) %}
 {% else %}
- mtu {{ tor_mtu }}
+{% set vlan_dict = ({"id": network_detail.vlan, "mtu": tor_mtu}) %}
 {% endif %}
+{% set vlans_to_build = vlans_to_build.append(vlan_dict) %}
 {% endif %}
 {% endif %}
 {% endfor %}
+{% for vlan in vlans_to_build | unique %}
+interface vlan{{ vlan.id }}
+ no shutdown
+ mtu {{ vlan.mtu }}
 {% endfor %}
