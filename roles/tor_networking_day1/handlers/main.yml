@@ -1,5 +1,0 @@
----
-- name: save configuration
-  dellos10_config:
-    save: yes
-...

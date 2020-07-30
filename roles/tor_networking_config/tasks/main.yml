@@ -1,5 +1,5 @@
 ---
 - set_fact:
-    site_networks: "{{ sites | items2dict(key_name='name_lower', value_name='networks') }}"
+    site_networks: "{{ hostvars[groups['site_' + site_name][0]]['sites'][site_name]['networks'] }}"
 - include_tasks: "{{ ansible_network_os }}.yml"
 ...
