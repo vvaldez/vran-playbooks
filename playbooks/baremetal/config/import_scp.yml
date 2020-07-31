@@ -1,14 +1,14 @@
 ---
 - hosts: baremetal
   connection: local
-  name: Import RAID Server Configuration Profile
+  name: Import iDRAC server configuration profile
   gather_facts: False
   vars:
     idrac_scp_share: "{{ oob.config.share.name }}"
     idrac_scp_file: "{{ inventory_hostname }}.json"
 
   tasks:
-    - name: Import SCP RAID from a infrastructure share
+    - name: Import server configuration profile
       idrac_server_config_profile:
         idrac_ip: "{{ oob.ipaddr }}"
         idrac_user: "{{ oob.username }}"
