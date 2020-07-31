@@ -1,0 +1,33 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Export RAID Server Configuration Profile
+  gather_facts: False
+  vars:
+    idrac_scp_dir: "{{ playbook_dir }}/scp_folder/"
+
+  tasks:
+    - name: Get local profile dir stats
+      stat:
+        path: "{{ idrac_scp_dir }}"
+      register: profile_dir_stat
+
+    - name: Create profile dir
+      file:
+        path: "{{ idrac_scp_dir }}"
+        state: directory
+      when:
+        - profile_dir.stat.exists is defined
+        - profile_dir_stat.exists
+
+    - name: Export SCP RAID to a local path
+      idrac_server_config_profile:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob.username }}"
+        idrac_password: "{{ oob.password }}"
+        share_name: "{{ idrac_scp_dir }}"
+        scp_components: "ALL"
+        export_format: JSON
+        export_use: Replace
+        job_wait: False
+...
