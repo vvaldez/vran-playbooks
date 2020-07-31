@@ -1,0 +1,23 @@
+@Vinny: Reminder to drop Dell condition in your Storage playbooks
+  # DELL BIOS ONLY: Updating iDRAC settings requires creating a configuration job
+  # to schedule the iDRAC update, so comment out below for non-Dell systems. 
+
+  # Uncomment below if you want the system to reboot upon changes. Reboots for iDRAC changes are not needed
+
+  #- name: Create iDRAC configuration job (schedule iDRAC setting update)
+  #  idrac_redfish_command:
+  #    category: Systems
+  #    command: CreateBiosConfigJob
+  #    baseuri: "{{ oob.ipaddr }}"
+  #    username: "{{ oob.username }}"
+  #    password: "{{ oob.password }}"
+  #  when: idrac_attribute_power.changed
+
+  #- name: Reboot system to apply new iDRAC settings
+  #  redfish_command:
+  #    category: Systems
+  #    command: PowerReboot
+  #    baseuri: "{{ oob.ipaddr }}"
+  #    username: "{{ oob.username }}"
+  #    password: "{{ oob.password }}"
+  #  when: idrac_attribute_power.changed
