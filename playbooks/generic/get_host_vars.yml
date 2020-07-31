@@ -1,6 +1,6 @@
 ---
 - name: View all host variables
-  hosts: all,!site_monitor
+  hosts: all
   gather_facts: False
   tasks:
     - name: Debug all host variables
@@ -10,18 +10,18 @@
       loop:
         - hostvars[inventory_hostname]
 
-    - name: Debug site variables from site_monitor perspective
+    - name: Debug site variable
       debug:
-        var: hostvars['site_monitor'].sites[item]
-        verbosity: 1
-      loop: "{{ sites.all }}"
+        var: site
 
     - name: Debug site variables from this hosts perspective
       debug:
         var: sites[item] | default(None)
       loop: "{{ sites.all }}"
 
-    - name: Debug site variable
+    - name: Debug site variables from this hosts perspective looping over each site group member 0
       debug:
-        var: site
+        var: hostvars[groups['site_' + item].0].sites[item]
+      loop: "{{ sites.all }}"
+
 ...
