@@ -1,5 +1,8 @@
 ---
 - set_fact:
     site_networks: "{{ hostvars[groups['site_' + site_name][0]]['sites'][site_name]['networks'] }}"
+- debug:
+    var: site_networks
+    verbosity: 1
 - include_tasks: "{{ ansible_network_os }}.yml"
 ...
