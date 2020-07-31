@@ -5,11 +5,11 @@
 
   - name: Define file to place results
     set_fact:
-      template: "{{ playbook_dir }}/playbook-output/{{ inventory_hostname }}/{{ timestamp }}"
+      template: "{{ playbook_dir }}/{{ inventory_hostname }}/{{ timestamp }"
 
   - name: Create dropoff directory for host
     file:
-      path: "{{ playbook_dir }}/playbook-output/{{ inventory_hostname }}"
+      path: "{{ playbook_dir }}/{{ inventory_hostname }}"
       state: directory
     delegate_to: localhost
 ...

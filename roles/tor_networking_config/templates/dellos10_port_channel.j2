@@ -4,9 +4,9 @@ interface port-channel{{ interface.port_channel_id }}
  no shutdown
  description {{ interface.host_name }} {{ interface.host_interface }}
  switchport mode trunk
- switchport trunk allowed vlan {{ network_roles[interface.network_role][interface.host_interface]['trunk_networks'] | map('extract', site_networks[site_name]) | list | json_query('[*].vlan') | join(',') | replace(':', '-') }}
+ switchport trunk allowed vlan {{ network_roles[interface.network_role][interface.host_interface]['trunk_networks'] | map('extract', site_networks) | list | json_query('[*].vlan') | join(',') | replace(':', '-') }}
 {% if network_roles[interface.network_role][interface.host_interface]['access_network'] is defined %}
- switchport access vlan {{ site_networks[site_name][network_roles[interface.network_role][interface.host_interface]['access_network']]['vlan'] }}
+ switchport access vlan {{ site_networks[network_roles[interface.network_role][interface.host_interface]['access_network']]['vlan'] }}
 {% endif %}
  mtu {{ tor_mtu }}
  lacp fallback enable
