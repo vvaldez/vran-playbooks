@@ -1,0 +1,18 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Update firmware for "{{ oob.manager_name }}" to specified version "{{ update_version }}"
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+    - name: Simple update
+      redfish_command:
+        category: Update
+        command: SimpleUpdate
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
+        update_image_uri: "{{ oob.firmware.http_url }}/{{ oob.firmware.version }}/{{ oob.firmware.filename }}"
+...

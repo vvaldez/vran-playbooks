@@ -1,0 +1,48 @@
+---
+- hosts: all
+  connection: local
+  name: Get all
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - name: Define output file
+    include_tasks: create_output_file.yml
+
+  - block:
+      - name: Get all information available in all categories
+        redfish_info:
+          category: all
+          command: all
+          baseuri: "{{ oob.ipaddr }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
+        register: result_all
+
+      - debug:
+          var: result_all
+          verbosity: 2
+
+  - block:
+      - name: Get all iDrac information in Manager category
+        idrac_redfish_info:
+          category: Manager
+          command:
+            - GetManagerAttributes
+          baseuri: "{{ oob.ipaddr }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
+        register: result_idrac
+
+      - debug:
+          var: result_idrac
+          verbosity: 2
+
+      - name: Copy results to output file
+        copy:
+          content: |
+            "{{ result_all | to_nice_yaml }}"
+            "{{ result_idrac | to_nice_yaml }}"
+          dest: "{{ template }}-redfish_facts.yml"
+...

@@ -1,0 +1,22 @@
+{% for interface in switch_config %}
+{% if not interface.port_channel_id %}
+interface {{ interface.interface_name }}
+ no shutdown
+ description {{ interface.host_name }} {{ interface.host_interface }}
+{% if network_roles[interface.network_role][interface.host_interface]['trunk_networks'] is defined %}
+ switchport mode trunk
+{% if network_roles[interface.network_role][interface.host_interface]['access_network'] is defined %}
+{% set allowed_vlans_diff = [network_roles[interface.network_role][interface.host_interface]['access_network']] %}
+{% else %}
+{% set allowed_vlans_diff = [] %}
+{% endif %}
+ switchport trunk allowed vlan {{ network_roles[interface.network_role][interface.host_interface]['trunk_networks'] | difference(allowed_vlans_diff) | map('extract', site_networks) | list | json_query('[*].vlan') | join(',') | replace(':', '-') }}
+{% else %}
+ switchport mode access
+{% endif %}
+{% if network_roles[interface.network_role][interface.host_interface]['access_network'] is defined %}
+ switchport access vlan {{ site_networks[network_roles[interface.network_role][interface.host_interface]['access_network']]['vlan'] }}
+{% endif %}
+ mtu {{ tor_mtu }}
+{% endif %}
+{% endfor %}

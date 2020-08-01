@@ -1,0 +1,35 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Create OS virtual disk
+  gather_facts: False
+  vars:
+    idrac_controller_id: "AHCI.Slot.5-1"
+    idrac_volume_type: "RAID 1"
+    idrac_volume_span_length: 2
+    idrac_volumes:
+      - name: "{{ inventory_hostname_short }}-os"
+        drives:
+          id:
+            - "Disk.Direct.0-0:AHCI.Slot.5-1"
+            - "Disk.Direct.1-1:AHCI.Slot.5-1"
+
+  tasks:
+    - name: Create RAID1 OS disk
+      dellemc_idrac_storage_volume:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
+        state: "create"
+        raid_reset_config: True
+        controller_id: "{{ idrac_controller_id }}"
+        volume_type: "{{ idrac_volume_type }}"
+        span_length: "{{ idrac_volume_span_length }}"
+        raid_init_operation: "Fast"
+        volumes: "{{ idrac_volumes }}"
+      register: view_result
+
+    - debug:
+        var: view_result
+        verbosity: 1
+...

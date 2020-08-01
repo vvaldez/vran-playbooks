@@ -1,0 +1,20 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Set iDRAC attributes - All (sans RAID)
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks: 
+  - name: Set iDRAC (sans RAID) attributes
+    idrac_redfish_config:
+      category: Manager
+      command: SetSystemAttributes
+      resource_id: iDRAC.Embedded.1
+      manager_attributes: "{{ oob.config.iDRAC.All }}"
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
+    register: idrac_attribute_power
+...

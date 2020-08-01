@@ -3,6 +3,25 @@
   hosts: all
   gather_facts: False
   tasks:
-    - debug:
-        var: hostvars[inventory_hostname]
+    - name: Debug all host variables
+      debug:
+        var: "{{ item }}"
+        verbosity: 1
+      loop:
+        - hostvars[inventory_hostname]
+
+    - name: Debug site variable
+      debug:
+        var: site
+
+    - name: Debug site variables from this hosts perspective
+      debug:
+        var: sites[item] | default(None)
+      loop: "{{ sites.all }}"
+
+    - name: Debug site variables from this hosts perspective looping over each site group member 0
+      debug:
+        var: hostvars[groups['site_' + item].0].sites[item]
+      loop: "{{ sites.all }}"
+
 ...

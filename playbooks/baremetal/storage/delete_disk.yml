@@ -1,0 +1,22 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Delete disk
+  gather_facts: False
+  vars:
+    idrac_volumes:
+      - name: "VD_R1_1"
+
+  tasks:
+    - name: Delete disk
+      dellemc_idrac_storage_volume:
+        idrac_ip: "{{ oob.ipaddr }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
+        state: "delete"
+        volumes: "{{ idrac_volumes }}"
+      register: view_result
+
+    - debug:
+        var: view_result
+...

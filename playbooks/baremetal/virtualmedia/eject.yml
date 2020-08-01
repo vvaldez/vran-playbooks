@@ -1,0 +1,56 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Eject VirtualMedia
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+  - name: Get VirtualMedia 
+    redfish_info:
+      category: Manager
+      command: GetVirtualMedia
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
+    register: virtual_media_result
+    delegate_to: localhost
+
+  - debug:
+      var: virtual_media_result.redfish_facts
+      verbosity: 1
+
+  - set_fact:
+      virtual_media_url: "{{ item.Image }}"
+      virtual_media_connected: "{{ item.ConnectedVia }}"
+    loop: "{{ virtual_media_result.redfish_facts.virtual_media.entries.0.1 }}"
+    when: item.Name is match('Virtual CD')
+
+  - debug:
+      var: virtual_media_url
+      verbosity: 1
+
+  - block:
+      - name: Eject ISO
+        redfish_command:
+          category: Manager
+          command: VirtualMediaEject
+          baseuri: "{{ oob.ipaddr }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
+          virtual_media:
+            image_url: "{{ virtual_media_url }}"
+          resource_id: "{{ oob.resource_ids.manager }}"
+        delegate_to: localhost
+        register: virtualmedia_eject_result
+
+      - debug:
+          var: virtualmedia_eject_result | to_nice_json
+          verbosity: 1
+
+    when:
+      - virtual_media_url | length  > 0
+      - virtual_media_url is defined
+  #End block
+...

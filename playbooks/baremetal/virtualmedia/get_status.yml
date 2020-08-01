@@ -1,0 +1,22 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Get VirtualMedia status
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+    - name: Get VirtualMedia status
+      redfish_info:
+        category: Manager
+        command: GetVirtualMedia
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
+      register: result
+      
+    - debug:
+        var: result
+        verbosity: 1
+...

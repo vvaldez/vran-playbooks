@@ -1,0 +1,11 @@
+---
+- name: Configure TOR switches
+  hosts: tor_networking
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: Create VLANs and Port Channels
+      include_role:
+        name: tor_networking_config
+...

@@ -1,0 +1,57 @@
+---
+# UNFINISHED: Technically, System Settings is not part of the BIOS but is managed by iDRAC
+# Needing research to see how to manage via Redfish and Ansible
+- hosts: baremetal
+  connection: local
+  name: Set BIOS attribute - ?????
+  gather_facts: False
+
+  # BIOS attributes that have been tested
+  #
+  # Name                  Value
+  # --------------------------------------------------
+  # MemTest               Disabled / Enabled
+  # SriovGlobalEnable     Disabled / Enabled
+
+  tasks:
+
+  - name: Set BIOS attribute {{ item.attribute_name }} to {{ item.attribute_value }}
+    redfish_config:
+      category: Systems
+      command: SetBiosAttributes
+      bios_attribute_name: "{{ item.attribute_name }}"
+      bios_attribute_value: "{{ item.attribute_value }}"
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
+    register: bios_attribute_proc
+
+    with_items:
+      - { attribute_name: , attribute_value:  }
+      - { attribute_name: , attribute_value:  }
+      - { attribute_name: , attribute_value:  }
+      - { attribute_name: , attribute_value:  }
+      - { attribute_name: , attribute_value:  }
+      - { attribute_name: , attribute_value:  }
+    
+  # DELL ONLY: Updating BIOS settings requires creating a configuration job
+  # to schedule the BIOS update, so comment out below for non-Dell systems.
+
+  - name: Create BIOS configuration job (schedule BIOS setting update)
+    idrac_redfish_command:
+      category: Systems
+      command: CreateBiosConfigJob
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
+    when: bios_attribute_proc.changed
+
+  - name: Reboot system to apply new BIOS settings
+    redfish_command:
+      category: Systems
+      command: PowerReboot
+      baseuri: "{{ oob.ipaddr }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
+    when: bios_attribute_proc.changed
+...

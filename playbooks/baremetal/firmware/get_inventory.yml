@@ -1,0 +1,46 @@
+---
+- hosts: baremetal
+  connection: local
+  name: Get all
+  gather_facts: False
+  collections:
+    - community.general
+
+  tasks:
+    - name: Get FirmwawreInventory
+      redfish_info:
+        category: Update
+        command: GetFirmwareInventory
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
+      register: inventory_results
+
+    - name: Get FirmwawreCapabilities
+      redfish_info:
+        category: Update
+        command: GetFirmwareUpdateCapabilities
+        baseuri: "{{ oob.ipaddr }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
+      register: capabilities_results
+
+    - set_fact:
+        installed_versions: []
+
+    - debug:
+        msg: "Firmware for Manager version: {{ item.Version }}"
+        verbosity: 3
+      loop: "{{ inventory_results.redfish_facts.firmware.entries }}"
+      when: item.Name is match(oob.manager_name)
+
+    - set_fact:
+        installed_versions: "{{ installed_versions + [ item.Version ] }}"
+      loop: "{{ inventory_results.redfish_facts.firmware.entries }}"
+      when: item.Name is match(oob.manager_name)
+
+    - debug:
+        msg:
+          - "Firmwawre update supports the following methods: {{ capabilities_results.redfish_facts.firmware_update_capabilities.entries['#UpdateService.SimpleUpdate'] }}"
+          - "Firmware installed for '{{ oob.manager_name }}': {{ installed_versions }}"
+...
