@@ -22,8 +22,8 @@
           resource_id: "{{ oob.resource_ids.system }}"
           boot_order:
           baseuri: "{{ oob.ipaddr }}"
-          username: "{{ oob.username }}"
-          password: "{{ oob.password }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
 
       - debug:
           var: onetimeboot_result
@@ -42,8 +42,8 @@
           category: Systems
           command: CreateBiosConfigJob
           baseuri: "{{ oob.ipaddr }}"
-          username: "{{ oob.username }}"
-          password: "{{ oob.password }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
     tags:
       - configjob
     when:

@@ -9,8 +9,8 @@
   #    category: Systems
   #    command: CreateBiosConfigJob
   #    baseuri: "{{ oob.ipaddr }}"
-  #    username: "{{ oob.username }}"
-  #    password: "{{ oob.password }}"
+  #    username: "{{ oob_username }}"
+  #    password: "{{ oob_password }}"
   #  when: idrac_attribute_power.changed
 
   #- name: Reboot system to apply new iDRAC settings
@@ -18,6 +18,6 @@
   #    category: Systems
   #    command: PowerReboot
   #    baseuri: "{{ oob.ipaddr }}"
-  #    username: "{{ oob.username }}"
-  #    password: "{{ oob.password }}"
+  #    username: "{{ oob_username }}"
+  #    password: "{{ oob_password }}"
   #  when: idrac_attribute_power.changed

@@ -11,8 +11,8 @@
     - name: Import SCP RAID from a infrastructure share
       idrac_server_config_profile:
         idrac_ip: "{{ oob.ipaddr }}"
-        idrac_user: "{{ oob.username }}"
-        idrac_password: "{{ oob.password }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
         command: "import"
         share_name: "{{ idrac_scp_share }}"
         scp_file: "{{ idrac_scp_file }}"

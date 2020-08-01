@@ -13,8 +13,8 @@
     - name: View all volumes
       dellemc_idrac_storage_volume:
         idrac_ip: "{{ oob.ipaddr }}"
-        idrac_user: "{{ oob.username }}"
-        idrac_password: "{{ oob.password }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
         state: "view"
         controller_id: "{{ idrac_controller_id | default(omit) }}"
         volume_id: "{{ idrac_volume_id | default(omit) }}"

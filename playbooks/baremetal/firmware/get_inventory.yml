@@ -12,8 +12,8 @@
         category: Update
         command: GetFirmwareInventory
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
       register: inventory_results
 
     - name: Get FirmwawreCapabilities
@@ -21,8 +21,8 @@
         category: Update
         command: GetFirmwareUpdateCapabilities
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
       register: capabilities_results
 
     - set_fact:

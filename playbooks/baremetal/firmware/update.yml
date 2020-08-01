@@ -12,7 +12,7 @@
         category: Update
         command: SimpleUpdate
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
         update_image_uri: "{{ oob.firmware.http_url }}/{{ oob.firmware.version }}/{{ oob.firmware.filename }}"
 ...

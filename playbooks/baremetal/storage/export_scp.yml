@@ -19,8 +19,8 @@
     - name: Exporting SCP RAID to a local path
       idrac_server_config_profile:
         idrac_ip: "{{ oob.ipaddr }}"
-        idrac_user: "{{ oob.username }}"
-        idrac_password: "{{ oob.password }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
         share_name: "{{ oob.config.profile.RAID }}"
         export_use: "Default"
         scp_components: "RAID"

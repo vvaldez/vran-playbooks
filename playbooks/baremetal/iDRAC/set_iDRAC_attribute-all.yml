@@ -14,7 +14,7 @@
       resource_id: iDRAC.Embedded.1
       manager_attributes: "{{ oob.config.iDRAC.All }}"
       baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
     register: idrac_attribute_power
 ...

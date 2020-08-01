@@ -9,8 +9,8 @@
           OneTimeBootMode: "{{ oob.one_time_boot_enable }}"
           OneTimeBootSeqDev: "{{ one_time_boot_device }}"
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
       register: onetimeboot_result
 
     - debug:
@@ -22,8 +22,8 @@
         category: Systems
         command: CreateBiosConfigJob
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
       tags:
         - configjob
       when:
