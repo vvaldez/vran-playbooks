@@ -21,8 +21,8 @@
         category: Manager
         command: VirtualMediaInsert
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
         virtual_media:
           image_url: "{{ iso_image_url }}"
           media_types:

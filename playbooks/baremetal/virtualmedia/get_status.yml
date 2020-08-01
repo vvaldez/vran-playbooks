@@ -12,8 +12,8 @@
         category: Manager
         command: GetVirtualMedia
         baseuri: "{{ oob.ipaddr }}"
-        username: "{{ oob.username }}"
-        password: "{{ oob.password }}"
+        username: "{{ oob_username }}"
+        password: "{{ oob_password }}"
       register: result
       
     - debug:

@@ -19,8 +19,8 @@
       command: SetBiosAttributes
       bios_attributes: "{{ oob.config.BIOS.All }}"
       baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
     register: bios_attribute
 
   # DELL BIOS ONLY: Updating BIOS settings requires creating a configuration job
@@ -31,8 +31,8 @@
       category: Systems
       command: CreateBiosConfigJob
       baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
     when:
       - "'Dell' in oob.SystemManufacturer"
       
@@ -42,8 +42,8 @@
 #      category: Systems
 #      command: PowerReboot
 #      baseuri: "{{ oob.ipaddr }}"
-#      username: "{{ oob.username }}"
-#      password: "{{ oob.password }}"
+#      username: "{{ oob_username }}"
+#      password: "{{ oob_password }}"
 #    when: 
 #      - "'Dell' in oob.SystemManufacturer"
       

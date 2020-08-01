@@ -18,8 +18,8 @@
     - name: Create RAID1 OS disk
       dellemc_idrac_storage_volume:
         idrac_ip: "{{ oob.ipaddr }}"
-        idrac_user: "{{ oob.username }}"
-        idrac_password: "{{ oob.password }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
         state: "create"
         raid_reset_config: True
         controller_id: "{{ idrac_controller_id }}"

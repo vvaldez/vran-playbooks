@@ -16,8 +16,8 @@
           category: all
           command: all
           baseuri: "{{ oob.ipaddr }}"
-          username: "{{ oob.username }}"
-          password: "{{ oob.password }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
         register: result_all
 
       - debug:
@@ -31,8 +31,8 @@
           command:
             - GetManagerAttributes
           baseuri: "{{ oob.ipaddr }}"
-          username: "{{ oob.username }}"
-          password: "{{ oob.password }}"
+          username: "{{ oob_username }}"
+          password: "{{ oob_password }}"
         register: result_idrac
 
       - debug:

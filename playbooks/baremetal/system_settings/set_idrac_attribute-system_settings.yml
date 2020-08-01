@@ -22,8 +22,8 @@
       bios_attribute_name: "{{ item.attribute_name }}"
       bios_attribute_value: "{{ item.attribute_value }}"
       baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
     register: bios_attribute_proc
 
     with_items:
@@ -42,8 +42,8 @@
       category: Systems
       command: CreateBiosConfigJob
       baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
     when: bios_attribute_proc.changed
 
   - name: Reboot system to apply new BIOS settings
@@ -51,7 +51,7 @@
       category: Systems
       command: PowerReboot
       baseuri: "{{ oob.ipaddr }}"
-      username: "{{ oob.username }}"
-      password: "{{ oob.password }}"
+      username: "{{ oob_username }}"
+      password: "{{ oob_password }}"
     when: bios_attribute_proc.changed
 ...

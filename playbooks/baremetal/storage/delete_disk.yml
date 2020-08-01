@@ -11,8 +11,8 @@
     - name: Delete disk
       dellemc_idrac_storage_volume:
         idrac_ip: "{{ oob.ipaddr }}"
-        idrac_user: "{{ oob.username }}"
-        idrac_password: "{{ oob.password }}"
+        idrac_user: "{{ oob_username }}"
+        idrac_password: "{{ oob_password }}"
         state: "delete"
         volumes: "{{ idrac_volumes }}"
       register: view_result
