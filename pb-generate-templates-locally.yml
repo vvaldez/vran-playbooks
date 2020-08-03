@@ -1,12 +1,31 @@
 - hosts: localhost
+  connection: local
   gather_facts: no
   vars:
     shared_dir: "../ansible-inventory/{{ datacenter }}/templates/shared/"
-    cluster_dir: "../ansible-inventory/{{ datacenter }}/templates/{{ named_env }}/"
     tmp_dir: "/tmp/ansible-generated/{{ datacenter }}/{{ named_env }}"
     output_dir: "../ansible-inventory/{{ datacenter }}/ansible-generated"
     quick: no
   tasks:
+    # Define a `site_groups` list that will hold all the groups which
+    # localhost should be added to `sites`/`overcloud` variable access for
+    # template generation.
+    # Initially, we hard code joining the `openstack` group.
+    - set_fact:
+        site_groups: ['openstack']
+
+    # Add every group with a name matching `site_*` in `groups` to the
+    # `site_groups` list.
+    - set_fact:
+        site_groups: "{{ site_groups + [item.key] }}"
+      loop: "{{ groups | dict2items }}"
+      when: "'site_' in item.key"
+
+    # Add localhost to each group in `site_groups`
+    - add_host:
+        name: localhost
+        groups: "{{ site_groups }}"
+
     - name: Ensure {{ tmp_dir }} doesn't already exist
       file:
         path: "{{ tmp_dir }}"
@@ -21,17 +40,40 @@
         template_directory_output_dir: "{{ tmp_dir }}"
         template_directory_changed_when: false
         template_directory_quick_mode: "{{ quick|bool }}"
-      no_log: true
+      no_log: false
 
-    # Template $cluster_dir into $tmp_dir
+    # Template $sites_dir into $tmp_dir
+    # loop_index is the site dictionary
     - include_role:
         name: template-directory
       vars:
-        template_directory_input_dir: "{{ cluster_dir }}"
+        template_directory_input_dir: "../ansible-inventory/{{ datacenter }}/templates/sites/"
         template_directory_output_dir: "{{ tmp_dir }}"
         template_directory_changed_when: false
         template_directory_quick_mode: "{{ quick|bool }}"
-      no_log: true
+        template_directory_filename_affix: "-{{ loop_index.name_lower }}"
+      loop: "{{ sites }}"
+      loop_control:
+        label: "{{ loop_index.name }}"
+        loop_var: loop_index
+      no_log: false
+
+    # Template $roles_dir into $tmp_dir
+    # loop_index[0] is the site dictionary
+    # loop_index[1].type is the role dictionary
+    - include_role:
+        name: template-directory
+      vars:
+        template_directory_input_dir: "../ansible-inventory/{{ datacenter }}/templates/roles"
+        template_directory_output_dir: "{{ tmp_dir }}"
+        template_directory_changed_when: false
+        template_directory_quick_mode: "{{ quick|bool }}"
+        template_directory_filename_affix: "-{{ loop_index[1].type.name_lower }}-{{ loop_index[0].name_lower }}"
+      loop: "{{ sites | subelements('roles') }}"
+      loop_control:
+        label: "{{ loop_index[0].name }}/{{ loop_index[1].type.name }}"
+        loop_var: loop_index
+      no_log: false
 
     # Copy $tmp_dir into $output_dir
     - include_role:
@@ -39,6 +81,4 @@
       vars:
         template_directory_input_dir: "{{ tmp_dir }}"
         template_directory_output_dir: "{{ output_dir }}"
-        template_directory_changed_when: true
-        template_directory_quick_mode: false
         template_directory_copy_only: true
