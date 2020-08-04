@@ -2,6 +2,7 @@
 # groups['rhvh'][0] is also utilized within the playbook. If you update
 # this host group, those references should be as well.
 - hosts: rhvh[0]
+  remote_user: root
   gather_facts: no
   tasks:
     ################
