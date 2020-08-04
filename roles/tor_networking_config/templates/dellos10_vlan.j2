@@ -6,7 +6,7 @@
 {% if network_detail.mtu is defined %}
 {% set vlan_dict = ({"id": vlan, "mtu": network_detail.mtu}) %}
 {% else %}
-{% set vlan_dict = ({"id": vlan, "mtu": tor_mtu}) %}
+{% set vlan_dict = ({"id": vlan, "mtu": ""}) %}
 {% endif %}
 {% set vlans_to_build = vlans_to_build.append(vlan_dict) %}
 {% endfor %}
@@ -14,7 +14,7 @@
 {% if network_detail.mtu is defined %}
 {% set vlan_dict = ({"id": network_detail.vlan, "mtu": network_detail.mtu}) %}
 {% else %}
-{% set vlan_dict = ({"id": network_detail.vlan, "mtu": tor_mtu}) %}
+{% set vlan_dict = ({"id": network_detail.vlan, "mtu": ""}) %}
 {% endif %}
 {% set vlans_to_build = vlans_to_build.append(vlan_dict) %}
 {% endif %}
@@ -23,5 +23,7 @@
 {% for vlan in vlans_to_build | unique %}
 interface vlan{{ vlan.id }}
  no shutdown
+{% if vlan.mtu %}
  mtu {{ vlan.mtu }}
+{% endif %}
 {% endfor %}

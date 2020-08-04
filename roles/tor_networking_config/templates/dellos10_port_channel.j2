@@ -2,7 +2,7 @@
 {% if interface.port_channel_id %}
 interface port-channel{{ interface.port_channel_id }}
  no shutdown
- description {{ interface.host_name }} {{ interface.host_interface }}
+ description "{{ interface.host_name }} {{ interface.host_interface }}"
  switchport mode trunk
 {% if network_roles[interface.network_role][interface.host_interface]['access_network'] is defined %}
 {% set allowed_vlans_diff = [network_roles[interface.network_role][interface.host_interface]['access_network']] %}
@@ -20,7 +20,7 @@ interface port-channel{{ interface.port_channel_id }}
 interface {{ interface.interface_name }}
  no shutdown
  no switchport
- description {{ interface.host_name }} {{ interface.host_interface }}
+ description "{{ interface.host_name }} {{ interface.host_interface }}"
  channel-group {{ interface.port_channel_id }} mode active
 {% endif %}
 {% endfor %}
