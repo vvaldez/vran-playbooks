@@ -8,6 +8,7 @@
 - debug:
     msg: "{{ networking_vlan_out.commands }}"
     verbosity: 1
+  when: networking_vlan_out.commands is defined
 
 - name: Create Port Channels
   dellos10_config:
@@ -18,6 +19,7 @@
 - debug:
     msg: "{{ networking_pc_out.commands }}"
     verbosity: 1
+  when: networking_pc_out.commands is defined
 
 - name: Create Single Interfaces
   dellos10_config:
@@ -28,4 +30,5 @@
 - debug:
     msg: "{{ networking_if_out.commands }}"
     verbosity: 1
+  when: networking_if_out.commands is defined
 ...
