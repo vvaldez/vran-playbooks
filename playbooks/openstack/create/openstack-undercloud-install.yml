@@ -1,27 +1,8 @@
 ---
-- hosts: localhost
-  connection: local
-  gather_facts: no
-  vars:
-    vars_prompt_message: Confirm the environment to target
-    vars_prompt_expected: "{{ datacenter }}-{{ named_env }}"
-    vars_prompt_disable: "{{ disable_prompt | default('no') }}"
-  roles:
-    - vars-prompt
-  tags:
-    - always
-
-
-
 - hosts: director
+  remote_user: root
   name: Apply base, subscription, and director roles
   tasks:
-    - name: Apply base role
-      import_role:
-        name: base
-      tags:
-        - base
-
     - name: Apply director role
       import_role:
         name: director
@@ -39,3 +20,4 @@
 
     #     openstack flavor set --property capabilities:boot_mode='uefi' control
     #     openstack flavor set --property capabilities:boot_mode='uefi' compute
+...
