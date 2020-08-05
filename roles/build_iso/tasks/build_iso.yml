@@ -147,7 +147,7 @@
   mount:
     path: "{{ iso_tempdir.path }}"
     src: "{{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
-    state: unmounted
+    state: absent
 
 - name: Remove temporary mount point
   file:
