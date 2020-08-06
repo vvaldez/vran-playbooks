@@ -87,6 +87,17 @@
     dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
     remote_src: yes
 
+- name: Unount ISO
+  mount:
+    path: "{{ iso_tempdir.path }}"
+    src: "{{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    state: absent
+
+- name: Remove temporary mount point
+  file:
+    path: "{{ iso_tempdir.path }}"
+    state: absent
+
 - name: Modify legacy BIOS menu
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/isolinux.cfg.j2"
@@ -142,17 +153,6 @@
       "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
   tags: build
   when: hostvars[iso_hostname].os.version.major|string is match('7')
-
-- name: Unount ISO
-  mount:
-    path: "{{ iso_tempdir.path }}"
-    src: "{{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
-    state: absent
-
-- name: Remove temporary mount point
-  file:
-    path: "{{ iso_tempdir.path }}"
-    state: absent
 
 - name: Remove build directory for custom ISO for {{ iso_hostname }}
   file:
