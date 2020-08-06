@@ -1,24 +1,21 @@
 ---
 - debug:
-    var: "{{ item }}"
+    var: iso_hostname
     verbosity: 1
-  loop:
-    - install
-    - iso_hostname
 
 - name: Check to see if source ISO is present
   stat:
-    path: "{{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    path: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
     get_checksum: no
   register: iso_path
 
 - name: Fail if ISO is not present
   fail:
-    msg: "FATAL ERROR! {{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }} does not exist!"
+    msg: "FATAL ERROR! {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }} does not exist!"
   when: iso_path.stat.exists == false
 
 - name: Obtain disk label from ISO
-  command: isoinfo -d -i {{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}
+  command: isoinfo -d -i {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}
   changed_when: False
   register: isoinfo
 
@@ -59,24 +56,24 @@
 
 - name: Check if previous build directory exists
   stat:
-    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
   register: build_path
 
 - name: Remove any previous build directory
   file:
     state: absent
-    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
   when: build_path.stat.exists
 
 - name: Create directory for custom ISO build for {{ iso_hostname }}
   file:
-    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
     state: directory
 
 - name: Mount ISO
   mount:
     path: "{{ iso_tempdir.path }}"
-    src: "{{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    src: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
     state: mounted
     fstype: iso9660
     opts: ro
@@ -84,13 +81,13 @@
 - name: Copy ISO contents
   copy:
     src: "{{ iso_tempdir.path }}/"
-    dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+    dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
     remote_src: yes
 
 - name: Unount ISO
   mount:
     path: "{{ iso_tempdir.path }}"
-    src: "{{ install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    src: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
     state: absent
 
 - name: Remove temporary mount point
@@ -101,18 +98,18 @@
 - name: Modify legacy BIOS menu
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/isolinux.cfg.j2"
-    dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/isolinux/isolinux.cfg"
+    dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/isolinux/isolinux.cfg"
 
 - name: Modify EFI menu
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/grub.cfg.j2"
-    dest: "{{ install.iso.dir }}/{{ iso_hostname }}/build/EFI/BOOT/grub.cfg"
+    dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/EFI/BOOT/grub.cfg"
 
 - block:
     - name: Create custom ISO for RHEL 8
       command: >
         genisoimage
-          -o {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
+          -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
           -J
           -full-iso9660-filenames
           -rock
@@ -124,10 +121,10 @@
           -boot-info-table
           -eltorito-alt-boot
           -efi-boot images/efiboot.img -no-emul-boot
-          "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+          "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
 
     - name: Modify ISO for UEFI
-      command: isohybrid --uefi {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
+      command: isohybrid --uefi {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
 
   #EndBlock
   when: hostvars[iso_hostname].os.version.major|string is match('8')
@@ -135,7 +132,7 @@
 - name: Create custom ISO for RHEL 7
   command: >
     genisoimage
-      -o {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
+      -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
       -untranslated-filenames
       -rational-rock
       -translation-table
@@ -150,19 +147,20 @@
       -boot-info-table
       -eltorito-alt-boot
       -efi-boot images/efiboot.img -no-emul-boot
-      "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+      "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
   tags: build
   when: hostvars[iso_hostname].os.version.major|string is match('7')
 
 - name: Remove build directory for custom ISO for {{ iso_hostname }}
   file:
-    path: "{{ install.iso.dir }}/{{ iso_hostname }}/build/"
+    path: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
     state: absent
   when: ansible_verbosity < 2
 
 - debug:
     msg:
-      - "Custom ISO created: {{ install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso"
-      - "Custom ISO available: {{ install.iso.url }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso"
-
+      - "Custom ISO created: {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso"
+      - "Custom ISO available: {{ hostvars[iso_hostname].install.iso.url }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso"
+      - "Kickstart file local: {{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].os.version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].os.version.major].split('/')[-1] }}"
+      - "Kickstart file remote: {{ hostvars[iso_hostname].install.ks.rhel7 }}"
 ...

@@ -6,6 +6,6 @@
 - name: Generate kickstart file for RHEL {{ hostvars[iso_hostname].os.version.major }}
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/kickstart.cfg.j2"
-    dest: "{{ install.ks.dir }}/rhel{{ hostvars[iso_hostname].os.version.major }}/ks/{{ install.ks['rhel' + hostvars[iso_hostname].os.version.major].split('/')[-1] }}"
+    dest: "{{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].os.version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].os.version.major].split('/')[-1] }}"
   run_once: yes
 ...
