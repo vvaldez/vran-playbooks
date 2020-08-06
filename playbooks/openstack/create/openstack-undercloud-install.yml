@@ -1,23 +1,21 @@
 ---
 - hosts: director
   remote_user: root
-  name: Apply base, subscription, and director roles
+  name: Install undercloud and introspect Overcloud nodes
   tasks:
+    - name: Remove cloud-init
+      dnf:
+        name: cloud-init
+        state: removed
+
     - name: Apply director role
       import_role:
         name: director
       tags:
         - director
 
-    - name: Apply customizations
-      shell: ~/ansible-generated/scripts/_create_roles.sh
+    - name: Create roles
       become: yes
       become_user: stack
-
-    # - name: Set overcloud flavors to use UEFI
-    #   shell: |
-    #     source /home/stack/stackrc;
-
-    #     openstack flavor set --property capabilities:boot_mode='uefi' control
-    #     openstack flavor set --property capabilities:boot_mode='uefi' compute
+      shell: /home/stack/ansible-generated/scripts/_create_roles.sh
 ...
