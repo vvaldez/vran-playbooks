@@ -1,4 +1,8 @@
 ---
+- debug:
+    var: install
+    verbosity: 1
+
 - set_fact:
     iso_networking:
       bond_interface: "{{ hostvars[iso_hostname].install.interface.name }}"
