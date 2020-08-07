@@ -1,8 +1,6 @@
 ---
 # Copy kickstart and put it in place for the host. Currently a single kickstart is possible for all servers using this version of RHEL,
-# However, in the case that individual kickstarts are needed per server, this task could generate a kickstart based
-# on a template. For now all of the host specific variables are set at the ISO boot options level
-# TODO: Improve logic and/or inventory definition of variables to help make this task clearer
+# However, in the case that individual kickstarts are needed per server, this task could generate an indivual kickstart per host
 - name: Generate kickstart file for RHEL {{ hostvars[iso_hostname].install.os_version.major }}
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/kickstart.cfg.j2"
