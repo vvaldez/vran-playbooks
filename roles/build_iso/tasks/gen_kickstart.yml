@@ -3,9 +3,9 @@
 # However, in the case that individual kickstarts are needed per server, this task could generate a kickstart based
 # on a template. For now all of the host specific variables are set at the ISO boot options level
 # TODO: Improve logic and/or inventory definition of variables to help make this task clearer
-- name: Generate kickstart file for RHEL {{ hostvars[iso_hostname].os.version.major }}
+- name: Generate kickstart file for RHEL {{ hostvars[iso_hostname].install.os_version.major }}
   template:
-    src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/kickstart.cfg.j2"
-    dest: "{{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].os.version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].os.version.major].split('/')[-1] }}"
+    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/kickstart.cfg.j2"
+    dest: "{{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major].split('/')[-1] }}"
   run_once: yes
 ...

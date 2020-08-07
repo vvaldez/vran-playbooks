@@ -5,17 +5,17 @@
 
 - name: Check to see if source ISO is present
   stat:
-    path: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    path: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
     get_checksum: no
   register: iso_path
 
 - name: Fail if ISO is not present
   fail:
-    msg: "FATAL ERROR! {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }} does not exist!"
+    msg: "FATAL ERROR! {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }} does not exist!"
   when: iso_path.stat.exists == false
 
 - name: Obtain disk label from ISO
-  command: isoinfo -d -i {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}
+  command: isoinfo -d -i {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }}
   changed_when: False
   register: isoinfo
 
@@ -73,7 +73,7 @@
 - name: Mount ISO
   mount:
     path: "{{ iso_tempdir.path }}"
-    src: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    src: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
     state: mounted
     fstype: iso9660
     opts: ro
@@ -87,7 +87,7 @@
 - name: Unount ISO
   mount:
     path: "{{ iso_tempdir.path }}"
-    src: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].os.version.major] }}"
+    src: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
     state: absent
 
 - name: Remove temporary mount point
@@ -97,19 +97,19 @@
 
 - name: Modify legacy BIOS menu
   template:
-    src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/isolinux.cfg.j2"
+    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/isolinux.cfg.j2"
     dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/isolinux/isolinux.cfg"
 
 - name: Modify EFI menu
   template:
-    src: "{{ 'rhel' + hostvars[iso_hostname].os.version.major }}/grub.cfg.j2"
+    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/grub.cfg.j2"
     dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/EFI/BOOT/grub.cfg"
 
 - block:
     - name: Create custom ISO for RHEL 8
       command: >
         genisoimage
-          -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
+          -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
           -J
           -full-iso9660-filenames
           -rock
@@ -124,15 +124,15 @@
           "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
 
     - name: Modify ISO for UEFI
-      command: isohybrid --uefi {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
+      command: isohybrid --uefi {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
 
   #EndBlock
-  when: hostvars[iso_hostname].os.version.major|string is match('8')
+  when: hostvars[iso_hostname].install.os_version.major|string is match('8')
 
 - name: Create custom ISO for RHEL 7
   command: >
     genisoimage
-      -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso
+      -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
       -untranslated-filenames
       -rational-rock
       -translation-table
@@ -149,7 +149,7 @@
       -efi-boot images/efiboot.img -no-emul-boot
       "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
   tags: build
-  when: hostvars[iso_hostname].os.version.major|string is match('7')
+  when: hostvars[iso_hostname].install.os_version.major|string is match('7')
 
 - name: Remove build directory for custom ISO for {{ iso_hostname }}
   file:
@@ -159,8 +159,8 @@
 
 - debug:
     msg:
-      - "Custom ISO created: {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso"
-      - "Custom ISO available: {{ hostvars[iso_hostname].install.iso.url }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].os.version.major }}.iso"
-      - "Kickstart file local: {{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].os.version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].os.version.major].split('/')[-1] }}"
+      - "Custom ISO created: {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+      - "Custom ISO available: {{ hostvars[iso_hostname].install.iso.url }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+      - "Kickstart file local: {{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major].split('/')[-1] }}"
       - "Kickstart file remote: {{ hostvars[iso_hostname].install.ks.rhel7 }}"
 ...

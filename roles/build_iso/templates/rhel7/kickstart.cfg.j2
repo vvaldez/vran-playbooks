@@ -15,7 +15,7 @@ reboot
 sshkey --username={{ ansible_user }} "{{ ssh_key }}"
 {% endfor %}
 
-url --url="{{ hostvars[iso_hostname].install.url['rhel' + hostvars[iso_hostname].os.version.major] }}"
+url --url="{{ hostvars[iso_hostname].install.url['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
 
 # Disk information
 %include /tmp/disk.ks
