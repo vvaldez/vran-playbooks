@@ -109,7 +109,7 @@
     - name: Create custom ISO for RHEL 8
       command: >
         genisoimage
-          -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
+          -o {{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
           -J
           -full-iso9660-filenames
           -rock
@@ -124,7 +124,7 @@
           "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/"
 
     - name: Modify ISO for UEFI
-      command: isohybrid --uefi {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
+      command: isohybrid --uefi {{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
 
   #EndBlock
   when: hostvars[iso_hostname].install.os_version.major|string is match('8')
@@ -132,7 +132,7 @@
 - name: Create custom ISO for RHEL 7
   command: >
     genisoimage
-      -o {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
+      -o {{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso
       -untranslated-filenames
       -rational-rock
       -translation-table
@@ -159,8 +159,8 @@
 
 - debug:
     msg:
-      - "Custom ISO created: {{ hostvars[iso_hostname].install.iso.dir }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
-      - "Custom ISO available: {{ hostvars[iso_hostname].install.iso.url }}{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+      - "Custom ISO created: {{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+      - "Custom ISO available: {{ hostvars[iso_hostname].install.iso.url }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
       - "Kickstart file local: {{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major].split('/')[-1] }}"
-      - "Kickstart file remote: {{ hostvars[iso_hostname].install.ks.rhel7 }}"
+      - "Kickstart file remote: {{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
 ...

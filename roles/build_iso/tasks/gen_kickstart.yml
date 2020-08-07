@@ -1,6 +1,18 @@
 ---
 # Copy kickstart and put it in place for the host. Currently a single kickstart is possible for all servers using this version of RHEL,
 # However, in the case that individual kickstarts are needed per server, this task could generate an indivual kickstart per host
+
+- name: Check if kickstart directory exists on target server
+  stat:
+    path: "{{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/"
+  register: kickstart_path
+
+- name: Create kickstar directory if needed
+  file:
+    state: directory
+    path: "{{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/"
+  when: not kickstart_path.stat.exists
+
 - name: Generate kickstart file for RHEL {{ hostvars[iso_hostname].install.os_version.major }}
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/kickstart.cfg.j2"

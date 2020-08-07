@@ -1,15 +1,16 @@
-#version=DEVEL
-# System authorization information
-auth --enableshadow --passalgo=sha512
-firstboot --disable
-# Keyboard layouts
+#version=RHEL8
 keyboard --vckeymap=us --xlayouts='us'
-# System language
 lang en_US.UTF-8
-
+firstboot --disable
 eula --agreed
 text
+skipx
 reboot
+rootpw --iscrypted {{ hostvars[iso_hostname].install.password }}
+services --enabled="chronyd"
+syspurpose --role="Red Hat Enterprise Linux Server" --sla="Self-Support" --usage="Production"
+
+timezone America/New_York --isUtc --ntpservers={{ ntp_servers|join(',') }}
 
 {% for ssh_key in ssh_keys %}
 sshkey --username={{ ansible_user }} "{{ ssh_key }}"
@@ -22,13 +23,6 @@ url --url="{{ hostvars[iso_hostname].install.url['rhel' + hostvars[iso_hostname]
 
 # Network information
 %include /tmp/network.ks
-
-# Root password
-rootpw --iscrypted {{ hostvars[iso_hostname].install.password }}
-# System services
-services --enabled="chronyd"
-# System timezone
-timezone America/New_York --isUtc
 
 %pre --log=/tmp/kickstart-pre-install.log
 #!/bin/sh
@@ -87,7 +81,7 @@ then
   # If not ip= parameter sent, use dhcp
   # TODO: for non-specified bond slaves, em1 and em2 are assumed, and mode=802.3ad - these should be dynamic instead
   cat <<EOF > /tmp/network.ks
-network  --bootproto=dhcp --device=bond0 --onboot=on --noipv4 --noipv6 --activate --bondslaves=em2,em1 --bondopts=downdelay=0,miimon=1,mode=802.3ad,updelay=0
+network  --bootproto=dhcp --device=bond0 --onboot=on --noipv4 --noipv6 --activate --bondslaves=eno1,eno2 --bondopts=downdelay=0,miimon=1,mode=802.3ad,updelay=0
 network  --bootproto=dhcp --device=bond0 --onboot=on --noipv6 --activate --vlanid=118 --interfacename=vlan118
 network  --hostname=localhost.localdomain
 EOF
@@ -102,16 +96,16 @@ fi
 
 # Append the remaining common config
 cat <<EOF >> /tmp/network.ks
-network  --bootproto=dhcp --device=em3 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=em4 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p1p1 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p1p2 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p3p1 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p3p2 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p7p1 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p7p2 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p8p1 --onboot=off --ipv6=auto
-network  --bootproto=dhcp --device=p8p2 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=eno3 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=eno4 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens1f0 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens1f1 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens3f0 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens3f1 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens7f0 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens7f1 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens8f0 --onboot=off --ipv6=auto
+network  --bootproto=dhcp --device=ens8f1 --onboot=off --ipv6=auto
 EOF
 
 echo "INFO: Contents of /tmp/network.ks"
@@ -197,15 +191,11 @@ echo "--------------------------------"
 %end
 
 %packages
-@^minimal
-@core
-chrony
+@^server-product-environment
 kexec-tools
-
 %end
 
 %addon com_redhat_kdump --enable --reserve-mb='auto'
-
 %end
 
 %anaconda
