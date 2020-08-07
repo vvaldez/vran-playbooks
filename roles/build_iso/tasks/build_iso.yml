@@ -97,12 +97,12 @@
 
 - name: Modify legacy BIOS menu
   template:
-    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/isolinux.cfg.j2"
+    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}_isolinux.cfg.j2"
     dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/isolinux/isolinux.cfg"
 
 - name: Modify EFI menu
   template:
-    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}/grub.cfg.j2"
+    src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}_grub.cfg.j2"
     dest: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/build/EFI/BOOT/grub.cfg"
 
 - block:
