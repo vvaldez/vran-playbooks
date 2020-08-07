@@ -11,8 +11,8 @@
   collections:
     - community.general
   vars:
-    iso_image_url: "{{ install.iso.url }}/{{ inventory_hostname }}/rhel{{ os.version.major }}.iso"
-    # e.g. 
+    iso_image_url: "{{ install.iso.url }}/{{ inventory_hostname }}/rhel{{ install.os_version.major }}.iso"
+    # e.g.
     #iso_image_url: http://172.17.118.15/rhel7/isos/rhel-server-7.8-x86_64-boot.iso
 
   tasks:
@@ -38,13 +38,13 @@
     - import_tasks: ../boot/set_idrac_one_time_boot.yml
       vars:
         one_time_boot_device: VCD-DVD
-      when: 
+      when:
         - "'Dell' in oob.SystemManufacturer"
 
     - import_tasks: ../boot/set_one_time_boot.yml
       vars:
         one_time_boot_device: "{{ oob.virtual_cd_device }}"
-      when: 
+      when:
         - "'Dell' not in oob.SystemManufacturer"
 
     - import_tasks: ../actions/reboot_server.yml
