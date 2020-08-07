@@ -4,6 +4,8 @@
     verbosity: 1
   loop:
     - iso_hostname
+    - hostvars[iso_hostname].install.os_device
+    - hostvars[iso_hostname].install.os_version
     - hostvars[iso_hostname].install.interface
     - hostvars[iso_hostname].install.network
 
