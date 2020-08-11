@@ -4,7 +4,7 @@
   tasks:
     - name: Install packages
       vars:
-        rhsm_repositories: "{{ rhsm.repositories }}"
+        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
       import_role:
         name: oasis_roles.system.rhsm
       tags:
