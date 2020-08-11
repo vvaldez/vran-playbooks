@@ -7,12 +7,12 @@
   stat:
     path: "{{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
     get_checksum: no
-  register: iso_path
+  register: iso_source_path
 
 - name: Fail if ISO is not present
   fail:
     msg: "FATAL ERROR! {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }} does not exist!"
-  when: iso_path.stat.exists == false
+  when: iso_source_path.stat.exists == false
 
 - name: Obtain disk label from ISO
   command: isoinfo -d -i {{ hostvars[iso_hostname].install.iso.source['rhel' + hostvars[iso_hostname].install.os_version.major] }}
@@ -95,6 +95,18 @@
     path: "{{ iso_tempdir.path }}"
     state: absent
 
+- name: Check for any previous ISOs for {{ iso_hostname }}
+  stat:
+    path: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+    get_checksum: no
+  register: iso_destination_path
+
+- name: Remove any previos ISO for {{ iso_hostname }}
+  file:
+    path: "{{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+    state: absent
+  when: iso_destination_path.stat.exists
+
 - name: Modify legacy BIOS menu
   template:
     src: "{{ 'rhel' + hostvars[iso_hostname].install.os_version.major }}_isolinux.cfg.j2"
@@ -160,7 +172,7 @@
 - debug:
     msg:
       - "Custom ISO created: {{ hostvars[iso_hostname].install.iso.dir }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
-      - "Custom ISO available: {{ hostvars[iso_hostname].install.iso.url }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
-      - "Kickstart file local: {{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major].split('/')[-1] }}"
-      - "Kickstart file remote: {{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
+      - "Custom ISO url: {{ hostvars[iso_hostname].install.iso.url }}/{{ iso_hostname }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}.iso"
+      - "Kickstart file created: {{ hostvars[iso_hostname].install.ks.dir }}/rhel{{ hostvars[iso_hostname].install.os_version.major }}/ks/{{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major].split('/')[-1] }}"
+      - "Kickstart file url: {{ hostvars[iso_hostname].install.ks['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
 ...
