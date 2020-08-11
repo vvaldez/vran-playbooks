@@ -46,7 +46,7 @@
     - name: List partitions on new image
       command:  virt-filesystems --partitions --human-readable --long --add {{ kvm_vm_dir }}/{{ kvm_vm.disk }}
       register: kvm_disk_partitions_resize_results
-    
+
     - debug:
         var: kvm_disk_partitions_resize_results.stdout
         verbosity: 1
@@ -59,7 +59,7 @@
         - "{{ kvm_vm.networks.management.vm_interface }}"
       loop_control:
         loop_var: interface
-    
+
     - name: Copy resolv.conf files
       template:
         src: resolv.conf.j2
@@ -72,7 +72,7 @@
           --hostname {{ kvm_vm.hostname }}.{{ kvm_vm.domain }}
           --root-password password:{{ kvm_vm_root_password }}
           --uninstall cloud-init
-          --ssh-inject root:string:"{{ ssh_key }}"
+          {% for ssh_key in ssh_keys %}--ssh-inject {{ ansible_user }}:string:"{{ ssh_key }}"{% endfor %}
           --copy-in /tmp/resolv.conf:/etc/
           --copy-in /tmp/ifcfg-{{ kvm_vm.networks.management.vm_interface }}:/etc/sysconfig/network-scripts/
           --run-command "restorecon -Rv /root/.ssh/"
