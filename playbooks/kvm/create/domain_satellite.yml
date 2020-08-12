@@ -16,6 +16,8 @@
       name: kvm_vm
     vars:
       kvm_vm: "{{ hostvars[satellite_vm_to_create].kvm_vm }}"
+      kvm_vm_dir: "{{ hostvars[satellite_vm_to_create].kvm_vm_dir }}"
+      kvm_vm_root_password: "{{ hostvars[satellite_vm_to_create].kvm_vm_root_password }}"
     tags:
       - setup
 ...

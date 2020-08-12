@@ -2,5 +2,5 @@
 kvm_vm_base_image_url: 'https://access.redhat.com/downloads/content/69/ver=/rhel---7/x86_64/product-downloads'
 kvm_vm_base_image: 'rhel-server-7.8-x86_64-kvm.qcow2'
 kvm_vm_base_image_local: '{{ kvm_vm_base_image }}'
-kvm_vm_base_image_disk: '{{ kvm_vm_dir }}/{{ kvm_vm_base_image }}'
+kvm_vm_base_image_disk: '{{ kvm_vm_libvirt_images }}/{{ kvm_vm_base_image }}'
 ...
