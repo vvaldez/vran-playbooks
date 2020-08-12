@@ -103,5 +103,11 @@ To deploy a Satellite server
 9. Configure Satellite **Note**: Limit hosts to operate on via `--limit`:
 
     ```sh
-    $ ansible-playbook -i ../ansible-inventory/tewksbury1/inventory/hosts.yml -e @secrets.yml -l satellite.escwq.com playbooks/satellite/create/configure_satellite.yml
+    $ ansible-playbook -i ../ansible-inventory/tewksbury1/inventory/hosts.yml -e @secrets.yml --limit satellite.escwq.com playbooks/satellite/create/configure_satellite.yml
+    ```
+
+10. If needed teardown Satellite **Note**: Limit hosts to operate on via `--limit`. **Note2**: Manually unregister from rhsm if desired, this is not currently automated:
+
+    ```sh
+    $ ansible-playbook -i ../ansible-inventory/tewksbury1/inventory/hosts.yml -e @secrets.yml --limit satellite.escwq.com playbooks/kvm/destroy/domain_satellite.yml
     ```
