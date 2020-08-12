@@ -6,11 +6,11 @@ To deploy a Satellite server
 
     ```yml
     satellite:
-    hosts:
+      hosts:
         satellite.escwq.com:
     ```
 
-2. Optionally add an SSH public key to to inventory e.g. `ansible-inventory/<site>/inventory/group_vars/all/vars.yml`:
+2. Optionally add an SSH public key to inventory e.g. `ansible-inventory/<site>/inventory/group_vars/all/vars.yml`:
 
     ```yml
     ssh_keys:
@@ -19,7 +19,7 @@ To deploy a Satellite server
       - "<keyN>..."
     ````
 
-3. Review/modify Satellite gorup variables `ansible-inventory/<site>/inventory/group_vars/satellite/`
+3. Review/modify Satellite gorup variables in `ansible-inventory/<site>/inventory/group_vars/satellite/`
 
     ```yml
     satellite:
@@ -28,12 +28,12 @@ To deploy a Satellite server
       manifest:
         state: present
         # manifest states accepted: absent, present, refreshed
-        filename: manifest_vRAN_POC_20191112T151114Z.zip
+        filename: manifest_20191112T151114Z.zip
         remote_prefix: http://172.17.118.15/satellite/
         temp_dir: ~/.ansible/tmp/
     ```
 
-4. Define the KVM VM details in the dictionary in hosts_vars file. **Note**: password is optional as an SSH key is injected. e.g. `ansible-inventory/<site>/inventory/host_vars/<host>.yml`:
+4. Define the KVM VM details for the host. **Note**: password is optional as an SSH key is injected. e.g. `ansible-inventory/<site>/inventory/host_vars/<host>.yml`:
 
     ```yml
     kvm_vm_root_password: 'redhat'
@@ -59,19 +59,14 @@ To deploy a Satellite server
           dns2: '{{ nameservers.1 }}'
     ```
 
-5. Define Satellite details in the dictionary in hosts_vars file. e.g. `ansible-inventory/<site>/inventory/host_vars/<host>.yml`:
+5. Define Satellite details for the host. e.g. `ansible-inventory/<site>/inventory/host_vars/<host>.yml`:
 
     ```yml
     satellite:
       server_url: https://172.17.118.8/
-      admin_username: "{{ satellite_admin_username }}"
-      admin_password: "{{ satellite_admin_password }}"
-      container_registry_url: "{{ container_registry_url }}"
-      container_registry_upstream_username: "{{ container_registry_upstream_username }}"
-      container_registry_upstream_password: "{{ container_registry_upstream_password }}"
     ```
 
-6. Define sensitive data. For Tower this will be provided by Tower Credentials. For CLI use define a file and populate it with these variables. (for best practice secure your file with `ansible-vault` or some other secure storage method). e.g. `secrets.yml`:
+6. Define sensitive data. For Tower this will be provided by Tower Credentials. For non-Tower use, create a file and populate it with these variables. (for best practice secure your file with `ansible-vault` or some other secure storage method). e.g. `secrets.yml`:
 
     ```yml
     ansible_user: root
