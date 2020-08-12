@@ -19,6 +19,17 @@
       tags:
         - packages
 
+    - name: enable required guest services
+      vars:
+        services: "{{ rhsm.services }}"
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items: "{{ services }}"
+      tags:
+        - services
+
     - name: Set hostname
       vars:
         hostname_inject_hosts_files: false
