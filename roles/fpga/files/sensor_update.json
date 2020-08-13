@@ -1,0 +1,20 @@
+{
+    "configurations": {
+        "fpgad-vc": {
+            "configuration": {
+                "sensors": [
+                    {
+                        "id": 25,
+                        "low-warn": 11.40,
+                        "low-fatal": 10.56
+                    },
+                    {
+                        "id": 3,
+                        "low-warn": 11.40,
+                        "low-fatal": 10.56
+                    }
+                ]
+            }
+        }
+    }
+}

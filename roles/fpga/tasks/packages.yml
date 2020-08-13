@@ -1,0 +1,70 @@
+---
+- name: Install Katello CA
+  dnf:
+    name: http://{{ fpga_satellite_info.server }}/pub/katello-ca-consumer-latest.noarch.rpm
+    state: present
+
+- name: Subscribe to Satellite
+  community.general.redhat_subscription:
+    activationkey: "{{ fpga_satellite_info.key }}"
+    org_id: "{{ fpga_satellite_info.org }}"
+    server_hostname: "{{ fpga_satellite_info.server}}"
+
+- name: Install EPEL packages
+  dnf:
+    name: "{{ fpga_packages.epel }}"
+    enablerepo: "{{ fpga_satellite_info.epel_repo }}"
+    state: present
+
+- name: Install OPAE tools
+  dnf:
+    name: "{{ fpga_packages.opae_tools }}"
+    state: latest
+
+- name: Start and enable fpgad
+  service:
+    name: fpgad
+    state: started
+    enabled: True
+
+- name: Get fpgad configuration
+  slurp:
+    src: /etc/opae/fpgad.cfg
+  register: fpgad_config
+
+- name: Update fpgad configuration
+  copy:
+    dest: /etc/opae/fpgad.cfg
+    content: >
+      {{ fpgad_config.content| b64decode | from_json
+      | combine( lookup('file', 'sensor_update.json') | from_json, recursive=True )
+      | to_nice_json }}
+  notify: restart fpgad
+
+- meta: flush_handlers
+
+- name: Reset firmware packages
+  block:
+
+    - name: Remove firmware packages
+      dnf:
+        name: "{{ fpga_packages.opae_fw }}"
+        state: absent
+
+    - name: Clean up firmware packages
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/share/opae/n3000/one-time-update
+        - /usr/share/opae/n3000/super-rsu
+
+    - name: Install firmware packages
+      dnf:
+        name: "{{ fpga_packages.opae_fw }}"
+        state: present
+
+  when:
+    - "'n3000_2' in fpga_info.card_type"
+    - True in fpga_info.fw_upgrade
+...

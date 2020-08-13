@@ -1,0 +1,98 @@
+---
+- name: Get FPGA BMC info
+  command: fpgainfo bmc
+  register: fpga_bmc
+  changed_when: False
+
+- name: Get FPGA Security info
+  command: fpgainfo security
+  register: fpga_security
+  changed_when: False
+
+- name: Initialize FPGA info
+  set_fact:
+    fpga_info: {}
+
+- name: Set FPGA info
+  vars:
+    regex_string: "{{ item.string + '.*' + item.delimiter + '(.*)' }}"
+    fpga_search:
+      - string: MAX10 NIOS FW
+        key: fw
+        delimiter: 'version '
+      - string: MAX10 Build
+        key: build
+        delimiter: 'version '
+      - string: PCIe s:b:d.f
+        key: pcie
+        delimiter: ': '
+      - string: Bitstream Id
+        key: bitstream_id
+        delimiter: ': '
+      - string: Bitstream Version
+        key: bitstream_ver
+        delimiter: ': '
+      - string: FPGA Core Temperature
+        key: temp_c
+        delimiter: ': '
+  set_fact:
+    fpga_info: "{{ fpga_info | combine( { item.key: fpga_bmc.stdout | regex_findall(regex_string) } ) }}"
+  loop: "{{ fpga_search }}"
+
+- name: Set FPGA hash info
+  vars:
+    matched_hashes:
+      bmc_hash: "{{ fpga_security.stdout | regex_findall('BMC root entry hash.*: (.*)') }}"
+  set_fact:
+    fpga_info: "{{ fpga_info | combine(matched_hashes) }}"
+
+- name: Determine FPGA types by root entry hash
+  vars:
+    type_info:
+      card_type: >-
+        {% if item == fpga_known_hashes.n3000_2 %}{{ fpga_info.card_type | default([]) + ['n3000_2'] -}}
+        {% elif item == fpga_known_hashes.n3000_n %}{{ fpga_info.card_type | default([]) + ['n3000_n'] -}}
+        {% else %}{{ fpga_info.card_type | default([]) + ['unknown'] }}{% endif %}
+  set_fact:
+    fpga_info: "{{ fpga_info | combine(type_info) }}"
+  loop: "{{ fpga_info.bmc_hash }}"
+
+- name: Set FPGA type when no root entry hash
+  vars:
+    type_info:
+      card_type: "{{ fpga_info.card_type | default([]) + ['n3000_2'] }}"
+  set_fact:
+    fpga_info: "{{ fpga_info | combine(type_info) }}"
+  when: fpga_info.bmc_hash | length == 0
+  loop: "{{ fpga_info.build }}"
+
+- name: Determine if a firmware update is needed
+  vars:
+    upgrade_info:
+      fw_upgrade: >-
+        {% if item != fpga_known_versions[fpga_info.card_type[fpga_idx]].prod.build -%}
+        {{ fpga_info.fw_upgrade | default([]) + [True] -}}
+        {% else %}{{ fpga_info.fw_upgrade | default([]) + [False] }}{% endif %}
+  set_fact:
+    fpga_info: "{{ fpga_info | combine(upgrade_info) }}"
+  loop: "{{ fpga_info.build }}"
+  loop_control:
+    index_var: fpga_idx
+
+- name: Determine if a bitstream change is needed
+  vars:
+    change_info:
+      bitstream_change: >-
+        {% if item != fpga_known_bitstreams[fpga_want_bitstream] -%}
+        {{ fpga_info.bitstream_change | default([]) + [True] -}}
+        {% else %}{{ fpga_info.bitstream_change | default([]) + [False] }}{% endif %}
+  set_fact:
+    fpga_info: "{{ fpga_info | combine(change_info) }}"
+  loop: "{{ fpga_info.bitstream_id }}"
+  loop_control:
+    index_var: fpga_idx
+
+- debug:
+    msg: "{{ fpga_info }}"
+    verbosity: 1
+...

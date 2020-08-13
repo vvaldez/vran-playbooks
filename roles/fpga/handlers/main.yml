@@ -1,0 +1,6 @@
+---
+- name: restart fpgad
+  service:
+    name: fpgad
+    state: restarted
+...

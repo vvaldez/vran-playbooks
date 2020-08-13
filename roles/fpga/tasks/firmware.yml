@@ -1,0 +1,30 @@
+---
+- name: Verify temperature
+  assert:
+    that: "{{ item | regex_search('\\d+\\.\\d+') | float < fpga_temp_c_max | float }}"
+    success_msg: "FPGA Core Temperature is {{ item }} (below threshold: {{ fpga_temp_c_max }})"
+    fail_msg: "FPGA Core Temperature is {{ item }} (at or above threshold: {{ fpga_temp_c_max }})"
+  loop: "{{ fpga_info.temp_c }}"
+  loop_control:
+    index_var: fpga_idx
+  when: "{{ fpga_info.fw_upgrade[fpga_idx] }}"
+
+- name: Stop fpgad
+  service:
+    name: fpgad
+    state: stopped
+
+- name: Upgrade tasks for N3000 (v2)
+  include_tasks: firmware_n3000_2.yml
+  when: "'n3000_2' in fpga_info.card_type"
+
+- name: Upgrade tasks for N3000-N
+  include_tasks: firmware_n3000_n.yml
+  when: "'n3000_n' in fpga_info.card_type"
+
+- name: Start fpgad
+  service:
+    name: fpgad
+    state: started
+  when: True not in fpga_info.bitstream_change
+...
