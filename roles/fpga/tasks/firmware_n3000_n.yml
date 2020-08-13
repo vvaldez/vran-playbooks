@@ -1,0 +1,9 @@
+---
+- name: N3000-N upgrade
+  vars:
+    update: >
+      There is currently no process defined to upgrade firmware on N3000-N models.
+      No FPGA firmware upgrade has occurred.
+  set_fact:
+    fpga_messages: "{{ fpga_messages | default([]) + [update] }}"
+...

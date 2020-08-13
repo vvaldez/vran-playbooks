@@ -1,0 +1,8 @@
+---
+- name: Perform FPGA setup
+  hosts: vdu
+
+  tasks:
+    - include_role:
+        name: fpga
+...
