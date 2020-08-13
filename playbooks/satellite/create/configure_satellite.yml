@@ -3,20 +3,37 @@
   gather_facts: yes
   vars:
     sync: no
+    satellite:
+      server_url: https://{{ ansible_host }}/
+      organization: Default
+      location: Tewksbury
+      manifest:
+        state: present
+        # manifest states accepted: absent, present, refreshed
+        filename: manifest_vRAN_POC_20191112T151114Z.zip
+        remote_prefix: http://172.17.118.15/satellite/
+        temp_dir: ~/.ansible/tmp/
   tasks:
     #########################
     # Import manifest
     #########################
 
-    - name: Import manifest
-      theforeman.foreman.subscription_manifest:
-        username: "{{ satellite.admin_username }}"
-        password: "{{ satellite.admin_password }}"
-        server_url: "{{ satellite.server_url }}"
-        validate_certs: no
-        organization: "{{ satellite.organization }}"
-        manifest_path: "../files/{{ satellite.manifest_filename }}"
-        state: refreshed
+    - block:
+      # This is ugly but need to figure out how to address this for Tower use case. manifest_path does not take remote url
+      - name: Obtain manifest
+        get_url:
+          dest: "{{ satellite.manifest.temp_dir.strip('/') }}/{{ satellite.manifest.filename }}"
+          url: "{{ satellite.manifest.remote_prefix.strip('/') }}/{{ satellite.manifest.filename }}"
+
+      - name: Import manifest
+        theforeman.foreman.subscription_manifest:
+          username: "{{ satellite.admin_username }}"
+          password: "{{ satellite.admin_password }}"
+          server_url: "{{ satellite.server_url }}"
+          validate_certs: no
+          organization: "{{ satellite.organization }}"
+          manifest_path: "{{ satellite.manifest.temp_dir.strip('/') }}/{{ satellite.manifest.filename }}"
+          state: "{{ satellite.manifest.state }}"
       delegate_to: localhost
       tags:
         - manifest

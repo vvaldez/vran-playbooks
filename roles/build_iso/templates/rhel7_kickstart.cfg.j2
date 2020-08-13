@@ -15,7 +15,7 @@ reboot
 sshkey --username={{ ansible_user }} "{{ ssh_key }}"
 {% endfor %}
 
-url --url="{{ install.url['rhel' + hostvars[iso_hostname].os.version.major] }}"
+url --url="{{ hostvars[iso_hostname].install.url['rhel' + hostvars[iso_hostname].install.os_version.major] }}"
 
 # Disk information
 %include /tmp/disk.ks
@@ -24,7 +24,7 @@ url --url="{{ install.url['rhel' + hostvars[iso_hostname].os.version.major] }}"
 %include /tmp/network.ks
 
 # Root password
-rootpw --iscrypted {{ install.password }}
+rootpw --iscrypted {{ hostvars[iso_hostname].install.password }}
 # System services
 services --enabled="chronyd"
 # System timezone
@@ -33,7 +33,7 @@ timezone America/New_York --isUtc
 %pre --log=/tmp/kickstart-pre-install.log
 #!/bin/sh
 
-# Process kernel cmdline to see if what was passed to ip= bond= and vlan= so all of these can be processed 
+# Process kernel cmdline to see if what was passed to ip= bond= and vlan= so all of these can be processed
 # Looking for boot options as describd here: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/installation_guide/chap-anaconda-boot-options
 #  bond=bond0:em1,em2:mode=802.3ad vlan=vlan118:bond0 ip=192.168.118.33::192.168.118.254:255.255.255.0:myhost.example.com:vlan118:none nameserver=8.8.8.8
 
@@ -120,8 +120,8 @@ cat /tmp/network.ks
 echo "--------------------------------"
 
 # Disk processing to deterine which device to install to.
-# Currently 2 methods are supported: 
-# 1. If no special parameters are defined when booting into this install, extremely simple logic will be used 
+# Currently 2 methods are supported:
+# 1. If no special parameters are defined when booting into this install, extremely simple logic will be used
 # to determine the first non-removable drive.
 # 2. If a parameter is passed to the kernel as `os_device=<device>` that will be used instead.
 # This allows either hard coding an sd device like sda or sdb, or more appropriately instead pass a device by id or path.
@@ -156,7 +156,7 @@ echo "--------------------------------"
 #      ├─rhel_rhv--3-root 253:0    0    50G  0 lvm  /
 #      └─rhel_rhv--3-swap 253:1    0     4G  0 lvm  [SWAP]
 
-# If no parameter passed, simply look for first non-removable. We could enhanced this by looking at size or other factors.
+# If no parameter passed, simply look for first non-removable. We could enhance this by looking at size or other factors.
 if [ -z "${os_device}" ]
 then
   for device in $(ls -d /sys/block/sd*)

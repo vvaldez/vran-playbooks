@@ -2,12 +2,22 @@
 - name: Create Satellite VM
   hosts: kvm_hypervisor
   gather_facts: False
+  vars:
+    # By default, the first host of this group will be setup as Satellite
+    # Specify the specific host to setup in the case that multiple hosts are part of the Satellite group (e.g. satellite2 or satellite-dev)
+    satellite_vm_to_create: "{{ groups['satellite'].0 }}"
   tasks:
-  - name: Create Satellite KVM VM
-    import_role:
+  - name: Debug | Creating KVM VM for host '{{ satellite_vm_to_create }}'
+    debug:
+      var: satellite_vm_to_create
+      verbosity: 1
+
+  - import_role:
       name: kvm_vm
     vars:
-      kvm_vm: "{{ hostvars[groups['satellite'].0].kvm_vm }}"
+      kvm_vm: "{{ hostvars[satellite_vm_to_create].kvm_vm }}"
+      kvm_vm_dir: "{{ hostvars[satellite_vm_to_create].kvm_vm_dir }}"
+      kvm_vm_root_password: "{{ hostvars[satellite_vm_to_create].kvm_vm_root_password }}"
     tags:
       - setup
 ...

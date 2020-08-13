@@ -1,15 +1,17 @@
 ---
 kvm_vm_root_password: 'password'
 kvm_vm_dir: '/var/lib/libvirt/images'
+kvm_vm_libvirt_images: '/var/lib/libvirt/images'
 kvm_vm:
   name: 'kvm_vm'
   ram: 8192
   vcpus: 2
-  os_variant: 'rhel7'
+  os_variant: 'rhel7.8'
   disk: 'kvm_vm.qcow2'
   size: '50G'
   hostname: 'kvm_vm'
   domain: 'example.com'
+  root_partition: /dev/sda1
   networks:
     management:
       libvirt: mgmt

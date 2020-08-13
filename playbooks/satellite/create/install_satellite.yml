@@ -4,7 +4,7 @@
   tasks:
     - name: Install packages
       vars:
-        rhsm_repositories: "{{ rhsm.repositories }}"
+        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
       import_role:
         name: oasis_roles.system.rhsm
       tags:
@@ -18,6 +18,17 @@
         state: installed
       tags:
         - packages
+
+    - name: enable required guest services
+      vars:
+        services: "{{ rhsm.services }}"
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items: "{{ services }}"
+      tags:
+        - services
 
     - name: Set hostname
       vars:
@@ -53,6 +64,8 @@
         satellite_admin_password: "{{ satellite.admin_password }}"
         satellite_organization: "{{ satellite.organization }}"
         satellite_location: "{{ satellite.location }}"
+        satellite_proxy_dns: "{{ satellite.enable_dns }}"
+        satellite_proxy_dns_managed: "{{ satellite.dns }}"
       import_role:
         name: oasis_roles.satellite
   tags:

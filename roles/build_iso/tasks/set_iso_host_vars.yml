@@ -1,16 +1,25 @@
 ---
+- debug:
+    var: "{{ item }}"
+    verbosity: 1
+  loop:
+    - iso_hostname
+    - hostvars[iso_hostname].install.os_device
+    - hostvars[iso_hostname].install.os_version
+    - hostvars[iso_hostname].install.interface
+    - hostvars[iso_hostname].install.network
+
 - set_fact:
     iso_networking:
       bond_interface: "{{ hostvars[iso_hostname].install.interface.name }}"
       bond_members: "{{ hostvars[iso_hostname].install.interface.members|join(',') }}"
       bond_options: "{{ hostvars[iso_hostname].install.interface.options }}"
-      vlan_tag: "{{ hostvars[iso_hostname].install.network.vlan }}"
       vlan_interface: "{{ hostvars[iso_hostname].install.interface.name }}.{{ hostvars[iso_hostname].install.network.vlan }}"
       ip: "{{ hostvars[iso_hostname].ansible_host }}"
       gateway: "{{ hostvars[iso_hostname].install.network.gateway_ip }}"
       netmask: "{{ hostvars[iso_hostname].install.network.ip_subnet | ipaddr('netmask') }}"
       nameservers: "{{ hostvars[iso_hostname].nameservers }}"
-    iso_install_os_device: "{{ hostvars[iso_hostname].install.os_device | default(null) }}"
+    iso_install_os_device: "{{ hostvars[iso_hostname].install.os_device | default(omit) }}"
 
 - debug:
     var: "{{ item }}"

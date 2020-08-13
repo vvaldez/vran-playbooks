@@ -1,0 +1,19 @@
+---
+- name: Teardown Satellite VM
+  hosts: kvm_hypervisor
+  gather_facts: False
+  vars:
+    # By default, the first host of this group will be setup as Satellite
+    # Specify the specific host to setup in the case that multiple hosts are part of the Satellite group (e.g. satellite2 or satellite-dev)
+    satellite_vm_to_teardown: "{{ groups['satellite'].0 }}"
+  tasks:
+  - name: Debug | Teardown KVM VM for host '{{ satellite_vm_to_create }}'
+    debug:
+      var: satellite_vm_to_teardown
+
+  - import_role:
+      name: kvm_vm
+    vars:
+      kvm_vm: "{{ hostvars[satellite_vm_to_teardown].kvm_vm }}"
+      teardown: True
+...

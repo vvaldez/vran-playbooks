@@ -12,23 +12,22 @@
     var: libvirt_vms
     verbosity: 1
 
-- name: Delete KVM VM
+- name: Teardown KVM VM
   include_tasks: teardown_vm.yml
   when:
-    - teardown_vm | default(False)
-    - kvm_vm.name in libvirt_vms.list_vms
-
+    - libvirt_vms.list_vms is search(kvm_vm.name)
+    - teardown | default(False)
 - block:
     - name: Create KVM VM
       include_tasks: create_vm.yml
       when:
-        - not teardown | default(False)
         - not create_empty_vm | default(False)
 
     - name: Create Empty KVM VM
       include_tasks: create_empty_vm.yml
       when:
-        - not teardown | default(False)
         - create_empty_vm | default(False)
-  when: not kvm_vm.name in libvirt_vms.list_vms
+  when:
+    - not libvirt_vms.list_vms is search(kvm_vm.name)
+    - not teardown | default(False)
 ...
