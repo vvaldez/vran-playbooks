@@ -1,0 +1,31 @@
+---
+fpga_satellite_info:
+  server: my-satellite.example.com
+  key: realtime-example
+  org: Default
+  epel_repo: Default_EPEL8_epel8
+
+fpga_packages:
+  epel:
+    - dkms
+  opae_tools:
+    - opae
+    - opae-tools
+    - opae-tools-extra
+    - opae.admin
+    - opae-intel-fpga-driver
+  opae_fw:
+    - opae-one-time-update-n3000-25G
+    - opae-super-rsu-n3000-2x2x25G
+
+fpga_files:
+  loc: http://localhost/fpga_files
+  bitstream:
+    4g: turbo4g_2x1x25g_2fvl_unsigned_20ww01.bin
+    5g: 20ww14.5-2x2x25G-5GLDPC-v1.5.7-3.0.0-unsigned.bin
+  pv11_patch: sr_n3000_rot_2x2x25G_1.1pv_unsigned.bin
+
+fpga_want_bitstream: 4g
+
+fpga_reboot_timeout: 1200
+...

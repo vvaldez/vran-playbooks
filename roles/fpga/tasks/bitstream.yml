@@ -1,0 +1,41 @@
+---
+- name: Download Bitstream file
+  get_url:
+    dest: /tmp
+    url: "{{ fpga_files.loc }}/{{ fpga_files.bitstream[fpga_want_bitstream] }}"
+
+- name: Stop fpgad
+  service:
+    name: fpgad
+    state: stopped
+
+- name: Update Bitstream - Step 1
+  command: fpgasupdate /tmp/{{ fpga_files.bitstream[fpga_want_bitstream] }} {{ fpga_info.pcie[fpga_idx] }}
+  when: item != fpga_known_bitstreams[fpga_want_bitstream]
+  loop: "{{ fpga_info.bitstream_id }}"
+  loop_control:
+    index_var: fpga_idx
+
+- name: Update Bitstream - Step 2
+  command: rsu bmcimg {{ fpga_info.pcie[fpga_idx] }}
+  when: item != fpga_known_bitstreams[fpga_want_bitstream]
+  loop: "{{ fpga_info.bitstream_id }}"
+  loop_control:
+    index_var: fpga_idx
+
+- name: Reboot server
+  reboot:
+    reboot_timeout: "{{ fpga_reboot_timeout }}"
+
+- name: Reload FPGA info
+  include_tasks: facts.yml
+
+- name: Verify Bitstream ID
+  assert:
+    that: "{{ fpga_info.bitstream_id[fpga_idx] == fpga_known_bitstreams[fpga_want_bitstream] }}"
+    success_msg: Bitstream updated successfully on {{ item }}
+    fail_msg: Bitstream did not update successfully on {{ item }}
+  loop: "{{ fpga_info.pcie }}"
+  loop_control:
+    index_var: fpga_idx
+...
