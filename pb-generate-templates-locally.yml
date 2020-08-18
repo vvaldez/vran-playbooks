@@ -3,6 +3,8 @@
   gather_facts: no
   vars:
     shared_dir: "../ansible-inventory/{{ datacenter }}/templates/shared/"
+    role_specific_dir: "../ansible-inventory/{{ datacenter }}/templates/role-specific/"
+    site_specific_dir: "../ansible-inventory/{{ datacenter }}/templates/site-specific/"
     tmp_dir: "/tmp/ansible-generated/{{ datacenter }}/{{ named_env }}"
     output_dir: "../ansible-inventory/{{ datacenter }}/ansible-generated"
     quick: no
@@ -47,7 +49,7 @@
     - include_role:
         name: template-directory
       vars:
-        template_directory_input_dir: "../ansible-inventory/{{ datacenter }}/templates/sites/"
+        template_directory_input_dir: "{{ site_specific_dir }}"
         template_directory_output_dir: "{{ tmp_dir }}"
         template_directory_changed_when: false
         template_directory_quick_mode: "{{ quick|bool }}"
@@ -65,7 +67,7 @@
     - include_role:
         name: template-directory
       vars:
-        template_directory_input_dir: "../ansible-inventory/{{ datacenter }}/templates/roles"
+        template_directory_input_dir: "{{ role_specific_dir }}"
         template_directory_output_dir: "{{ tmp_dir }}"
         template_directory_changed_when: false
         template_directory_quick_mode: "{{ quick|bool }}"
