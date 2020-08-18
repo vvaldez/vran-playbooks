@@ -54,7 +54,7 @@
         template_directory_filename_affix: "-{{ loop_index.name_lower }}"
       loop: "{{ sites }}"
       loop_control:
-        label: "{{ loop_index.name }}"
+        label: "{{ loop_index.name_upper }}"
         loop_var: loop_index
         index_var: my_idx
       no_log: false
@@ -72,7 +72,7 @@
         template_directory_filename_affix: "-{{ loop_index[1].type.name_lower }}-{{ loop_index[0].name_lower }}"
       loop: "{{ sites | subelements('roles') }}"
       loop_control:
-        label: "{{ loop_index[0].name }}/{{ loop_index[1].type.name }}"
+        label: "{{ loop_index[0].name_upper }}/{{ loop_index[1].type.name_upper }}"
         loop_var: loop_index
         index_var: my_idx
       no_log: false
