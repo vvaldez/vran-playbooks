@@ -1,22 +1,9 @@
 ---
-fpga_known_versions:
+fpga_known_builds:
   n3000_2:
-    alpha_1:
-      fw: D.1.0.13
-      build: D.1.0.13
-    alpha_2:
-      fw: D.1.0.13
-      build: D.1.0.14
-    beta_1:
-      fw: D.2.0.12
-      build: D.2.0.5
-    prod:
-      fw: D.2.0.19
-      build: D.2.0.6
+    v1_1: D.2.0.6
   n3000_n:
-    prod:
-      fw: D.2.1.24
-      build: D.2.0.7
+    v1_3: D.2.0.7
 
 fpga_known_hashes:
   n3000_2: "0x757f524c2f45db58ac2a6c93e72b9167149979b795195d09d5e2efad82f2b031"
@@ -25,12 +12,6 @@ fpga_known_hashes:
 fpga_known_bitstreams:
   4g: "0x2392950A010501"
   5g: "0x2331742A010507"
-
-fpga_known_devices:
-  10g: "0x0cf8"
-  25g: "0x0d58"
-
-fpga_interim_build: D.111.2.13
 
 fpga_temp_c_max: 80.00
 ...

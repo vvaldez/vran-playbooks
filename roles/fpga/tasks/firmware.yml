@@ -16,11 +16,11 @@
 
 - name: Upgrade tasks for N3000 (v2)
   include_tasks: firmware_n3000_2.yml
-  when: "'n3000_2' in fpga_info.card_type"
+  when: fpga_card_type == 'n3000_2'
 
 - name: Upgrade tasks for N3000-N
   include_tasks: firmware_n3000_n.yml
-  when: "'n3000_n' in fpga_info.card_type"
+  when: fpga_card_type == 'n3000_n'
 
 - name: Start fpgad
   service:

@@ -1,56 +1,15 @@
 ---
-- name: Determine upgrade type
+- name: N3000 v2 upgrade
   vars:
-    upgrade_type: >-
-      {% if item is version(fpga_known_versions.n3000_2.alpha_2.build, '<=') -%}
-      alpha{% elif item is version(fpga_known_versions.n3000_2.beta_1.build, '<=') and fpga_info.bmc_hash[fpga_idx] is not defined -%}
-      beta_nohash{% elif item is version(fpga_known_versions.n3000_2.beta_1.build, '<=') and fpga_info.bmc_hash[fpga_idx] is defined -%}
-      beta_hash{% else %}unknown{% endif %}
+    update: >-
+      Desired build version was {{ fpga_known_builds[fpga_card_type][fpga_want_build[fpga_card_type]] }}
+      but found build version {{ fpga_info.build[fpga_idx] }} on {{ item }}.
+      There is currently no process defined to upgrade firmware on N3000 v2 models.
+      No FPGA firmware upgrade has occurred.
   set_fact:
-    fpga_upgrade_type: "{{ fpga_upgrade_type | default([]) + [upgrade_type] }}"
-  loop: "{{ fpga_info.build }}"
+    fpga_messages: "{{ fpga_messages | default([]) + [update] }}"
+  loop: "{{ fpga_info.pcie }}"
   loop_control:
     index_var: fpga_idx
-
-- debug:
-    msg: Detected upgrade type(s) {{ fpga_upgrade_type }}
-    verbosity: 1
-
-# beta_hash currently fails here as no signing process is defined
-- name: Verify that the upgrade types are known identical
-  assert:
-    that: >
-      (('alpha' in fpga_upgrade_type and fpga_upgrade_type is not search('beta')) or
-      ('beta_nohash' in fpga_upgrade_type and 'beta_hash' not in fpga_upgrade_type and 'alpha' not in fpga_upgrade_type)) and
-      'unknown' not in fpga_upgrade_type
-    success_msg: Detected identical/valid upgrade type on all FPGAs ({{ fpga_upgrade_type[0] }})
-    fail_msg: Did not detect identical/valid upgrade type on all FPGAs ({{ fpga_upgrade_type }})
-
-- name: Determine RSU JSON
-  set_fact:
-    fpga_rsu_json: >-
-      {% if fpga_upgrade_type[0] == 'alpha' -%}
-      super-rsu.json{% elif fpga_upgrade_type[0] == 'beta_nohash' -%}
-      rollback-2x25G.json{% endif %}
-  when: fpga_upgrade_type[0] == 'alpha' or fpga_upgrade_type[0] == 'beta_nohash'
-
-- name: Execute upgrade
-  include_tasks: firmware_n3000_2_upgrade.yml
-  when: fpga_upgrade_type[0] == 'alpha' or fpga_upgrade_type[0] == 'beta_nohash'
-
-- name: Download PV 1.1 patch
-  get_url:
-    dest: /tmp
-    url: "{{ fpga_files.loc }}/{{ fpga_files.pv11_patch }}"
-  when: fpga_upgrade_type[0] == 'alpha' or fpga_upgrade_type[0] == 'beta_nohash'
-
-- name: Install PV 1.1 patch - Step 1
-  command: fpgasupdate /tmp/{{ fpga_files.pv11_patch }} {{ item }}
-  loop: "{{ fpga_info.pcie }}"
-  when: fpga_upgrade_type[0] == 'alpha' or fpga_upgrade_type[0] == 'beta_nohash'
-
-- name: Install PV 1.1 patch - Step 2
-  command: rsu bmcimg {{ item }}
-  loop: "{{ fpga_info.pcie }}"
-  when: fpga_upgrade_type[0] == 'alpha' or fpga_upgrade_type[0] == 'beta_nohash'
+  when: fpga_info.fw_upgrade[fpga_idx]
 ...
