@@ -5,11 +5,6 @@ roles:
     scm: git
     version: '1.2'
 
-  - name: director
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-director.git
-    scm: git
-    version: '2.4'
-
   - name: kvm
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-kvm.git
     scm: git
@@ -24,11 +19,6 @@ roles:
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-network-scripts.git
     scm: git
     version: '2.0'
-
-  - name: template-directory
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-template-directory.git
-    scm: git
-    version: '1.0'
 
   - name: vars-prompt
     src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-vars-prompt.git

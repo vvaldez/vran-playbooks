@@ -2,6 +2,7 @@
 # groups['rhvh'][0] is also utilized within the playbook. If you update
 # this host group, those references should be as well.
 - hosts: rhvh[0]
+  remote_user: root
   gather_facts: no
   tasks:
     ################
@@ -61,39 +62,6 @@
       delegate_to: localhost
       tags:
         - storage
-
-    ################
-    # Create disks
-    ################
-
-    ## TODO
-    # need to add the .cer cert here; otherwise upload doesn't work
-    # and restart ovirt-imageio-daemon, ovirt-imageio-proxy, it seems
-
-    - name: Download images onto {{ groups['rhvh'][0] }}
-      get_url:
-        url: "{{ item.url }}"
-        dest: "{{ item.dest }}"
-        mode: "{{ item.mode }}"
-      loop: "{{ ovirt.get_urls }}"
-      tags:
-        - disk
-
-    - name: Upload image
-      ovirt_disk:
-        auth: "{{ ovirt_auth }}"
-        name: "{{ item.name }}"
-        upload_image_path: "{{ item.upload_image_path }}"
-        size: "{{ item.size | default(omit) }}"
-        storage_domain: "{{ item.storage_domain }}"
-        wait: true
-        bootable: "{{ item.bootable }}"
-        format: "{{ item.format }}"
-        content_type: "{{ item.content_type }}"
-        timeout: 1800
-      loop: "{{ ovirt.storage.disks }}"
-      tags:
-        - disk
 
     ################
     # Create networks

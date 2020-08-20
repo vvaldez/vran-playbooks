@@ -60,21 +60,62 @@
     # If success, print the stack status
     # If failure, print the failures
     - block:
-        - name: openstack overcloud deploy
+        - name: openstack overcloud deploy {{ sites[0].name_lower }}
           import_role:
             name: tripleo.operator.tripleo_overcloud_deploy
           vars:
             CNF: /home/stack/ansible-generated/templates
             THT: /usr/share/openstack-tripleo-heat-templates
             tripleo_overcloud_deploy_debug: true
-            tripleo_overcloud_deploy_environment_files: "{{ overcloud.deploy_command.environment_files }}"
+            tripleo_overcloud_deploy_environment_files: "{{ overcloud.deploy_command.environment_files.common + overcloud.deploy_command.environment_files.spine_only }}"
             tripleo_overcloud_deploy_home_dir: /home/stack
             tripleo_overcloud_deploy_log_output: false
             tripleo_overcloud_deploy_networks_file: "{{ overcloud.deploy_command.networks_file }}"
-            tripleo_overcloud_deploy_roles_file: "{{ overcloud.deploy_command.roles_file }}"
-            tripleo_overcloud_deploy_stack: "{{ overcloud.deploy_command.stack }}"
+            tripleo_overcloud_deploy_roles_file: "{{ overcloud.deploy_command.roles_file }}-central.yaml"
+            tripleo_overcloud_deploy_stack: "{{ sites[0].name_lower }}"
             tripleo_overcloud_deploy_timeout: "{{ overcloud.deploy_command.timeout }}"
+            tripleo_overcloud_deploy_generate_scripts: true
             tripleo_overcloud_deploy_poll: 60
+
+        - debug:
+            var: tripleo_overcloud_deploy_result.stdout_lines
+
+        - name: Clear out existing ~/dcn-common directory
+          file:
+            path: ~/dcn-common
+            state: absent
+
+        - name: Ensure ~/dcn-common directory exists
+          file:
+            path: ~/dcn-common
+            state: directory
+            mode: '0755'
+
+        - name: openstack overcloud export
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_export
+          vars:
+            tripleo_overcloud_export_stack: "{{ sites[0].name_lower }}"
+            tripleo_overcloud_export_output_file: ~/dcn-common/control-plane-export.yaml
+
+        - name: openstack overcloud deploy {{ item.name_lower }}
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_deploy
+          vars:
+            CNF: /home/stack/ansible-generated/templates
+            THT: /usr/share/openstack-tripleo-heat-templates
+            tripleo_overcloud_deploy_debug: true
+            tripleo_overcloud_deploy_environment_files: "{{ overcloud.deploy_command.environment_files.common + overcloud.deploy_command.environment_files.leaf_only }}"
+            tripleo_overcloud_deploy_home_dir: /home/stack
+            tripleo_overcloud_deploy_log_output: false
+            tripleo_overcloud_deploy_networks_file: "{{ overcloud.deploy_command.networks_file }}"
+            tripleo_overcloud_deploy_roles_file: "{{ overcloud.deploy_command.roles_file }}-{{ item.name_lower }}.yaml"
+            tripleo_overcloud_deploy_stack: "{{ item.name_lower }}"
+            tripleo_overcloud_deploy_timeout: "{{ overcloud.deploy_command.timeout }}"
+            tripleo_overcloud_deploy_overcloud_ssh_port_timeout: 600
+            tripleo_overcloud_deploy_generate_scripts: true
+            tripleo_overcloud_deploy_poll: 60
+          loop: "{{ sites[1:] }}"
 
         - debug:
             var: tripleo_overcloud_deploy_result.stdout_lines
@@ -102,6 +143,12 @@
         - debug:
             var: shell_output.stdout_lines
           changed_when: false
+
+    - name: Ensure Tempest utilized networks exist
+      shell: |
+        source ~/{{ sites[0].name_lower}}rc
+
+        openstack stack create ~/ansible-generated/heat/external_tempest.yaml
 
       tags:
         - deploy

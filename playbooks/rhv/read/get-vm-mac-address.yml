@@ -1,0 +1,32 @@
+- hosts: rhvh[0]
+  gather_facts: no
+  vars:
+    vm: demo
+    nic: eth0
+  tasks:
+    ################
+    # Authenticate
+    ################
+
+    - name: Obtain SSO token with using username/password credentials
+      ovirt_auth: "{{ ovirt.auth }}"
+      delegate_to: localhost
+      tags:
+        - always
+
+    ################
+    # Get MAC address of provisioning nic
+    ################
+
+    - ovirt_nic_info:
+        auth: "{{ ovirt_auth }}"
+        vm: "{{ vm }}"
+        name: "{{ nic }}"
+      delegate_to: localhost
+      register: result
+
+    - set_fact:
+        ovirt_nic_mac: "{{ result.ovirt_nics[0].mac.address }}"
+
+    - debug:
+        msg: "{{ ovirt_nic_mac }}"
