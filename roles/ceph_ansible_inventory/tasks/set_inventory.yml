@@ -1,0 +1,6 @@
+---
+- name: Set inventory for ceph cluster on first node
+  template:
+    dest: /etc/ansible/hosts
+    src: hosts.j2
+...
