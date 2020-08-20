@@ -80,11 +80,25 @@
           --hostname {{ kvm_vm.hostname }}.{{ kvm_vm.domain }}
           --root-password password:{{ kvm_vm_root_password }}
           --uninstall cloud-init
-          {% for ssh_key in ssh_keys %}--ssh-inject {{ ansible_user }}:string:"{{ ssh_key }}"{% endfor %}
+          --ssh-inject {{ ansible_user }}:string:"{{ ssh_keys.0 }}"
           --copy-in /tmp/resolv.conf:/etc/
           --copy-in /tmp/ifcfg-{{ kvm_vm.networks.management.vm_interface }}:/etc/sysconfig/network-scripts/
           --run-command "restorecon -Rv /root/.ssh/"
           --selinux-relabel
+
+    - name: Customize image for additional SSH keys
+      command: >
+        virt-customize
+          --add {{ kvm_vm_dir }}/{{ kvm_vm.disk }}
+          --ssh-inject {{ ansible_user }}:string:"{{ ssh_key }}"
+          --run-command "restorecon -Rv /root/.ssh/"
+      loop: "{{ ssh_keys }}"
+      loop_control:
+        loop_var: ssh_key
+        extended: yes
+      when:
+        - ssh_keys | length > 1
+        - ansible_loop.index != 1
 
     - name: Create KVM VM
       command: >

@@ -4,17 +4,15 @@
   gather_facts: False
   become: True
   vars:
-    # Which cluster group to operate on
     ceph_automation_username: ceph_ansible
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
     ceph_gwcli_command: podman exec -t rbd-target-api bash -c
   remote_user: "{{ ceph_automation_username }}"
   pre_tasks:
     - name: Ensure usernames are at least 8 characters
       assert:
         that: "{{ item | length >= 8 }}"
-        fail_msg: "ERROR: Minimum length of username '{{ item }}' is 8 characters, currently it is of length: {{ item | length }}"
-        success_msg: "Minimum length of username '{{ item }}' is at least 8 characters at: {{ item | length }}"
+        fail_msg: "ERROR: Minimum length of username '{{ item }}' is 8 characters, currently it is of length {{ item | length }}."
+        success_msg: "Minimum length of username '{{ item }}' is at least 8 characters at {{ item | length }}."
       loop:
         - "{{ ceph_discovery_username }}"
         - "{{ ceph_chap_username }}"
@@ -22,15 +20,17 @@
     - name: Ensure passwors are at least 12 characters
       assert:
         that: "{{ item | length >= 12 }}"
-        fail_msg: "ERROR: Minimum length of password is 8 characters, currently it is of length: {{ item | length }}"
-        success_msg: "Minimum length of password is at least 12 characters at {{ item | length }}"
+        fail_msg: "ERROR: Minimum length of password is 8 characters, currently it is of length {{ item | length }}."
+        success_msg: "Minimum length of password is at least 12 characters at {{ item | length }}."
       loop:
         - "{{ ceph_discovery_password }}"
         - "{{ ceph_chap_password }}"
       no_log: True
 
   tasks:
-# I cannot get the podman conneciton to execute remotely, leaving attempt here for future investigation
+# I cannot get the podman conneciton to execute remotely, leaving attempt here for future investigation.
+# One way that does work is to execute the playbook locally on the ceph node running rbd-target-api container and execute the playbook remotely so it will run locally and connection: podman
+# This gives proper output within the remote playbook for stderr and stdout
 #    - name: Create temporary host group for container
 #      add_host:
 #        name: rbd_target_api
@@ -40,13 +40,14 @@
 #      changed_when: false
 #
 #    - name: Run command in container
-#      raw: gwcli /disks/ ls
+#      command: gwcli /disks/ ls
 #      delegate_to: rbd_target_api
 #      register: container_result
 #
 #    - debug:
 #        var: container_result
 
+    - pause:
     - name: Display run command for ceph-ansible
       debug:
         msg: "{{ ceph_gwcli_command }}"
