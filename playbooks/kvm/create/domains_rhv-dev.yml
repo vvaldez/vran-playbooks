@@ -1,0 +1,24 @@
+---
+- name: Create RHV KVM VMs
+  hosts: kvm_hypervisor
+  gather_facts: False
+  vars:
+    rhv_vms_to_create: "{{ groups['rhvh_dev'] }}"
+  tasks:
+    - name: Debug | Creating KVM VM for hosts '{{ rhv_vms_to_create }}'
+      debug:
+        var: rhv_vms_to_create
+        verbosity: 1
+
+    - include_role:
+        name: kvm_vm
+      vars:
+        kvm_vm: "{{ hostvars[vm].kvm_vm }}"
+        kvm_vm_dir: "{{ hostvars[vm].kvm_vm_dir }}"
+        kvm_vm_root_password: "{{ hostvars[vm].kvm_vm_root_password }}"
+      loop: "{{ rhv_vms_to_create }}"
+      loop_control:
+        loop_var: vm
+      tags:
+        - setup
+...
