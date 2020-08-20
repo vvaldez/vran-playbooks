@@ -14,4 +14,15 @@
       file:
         path: "{{ kvm_vm_dir }}/{{ kvm_vm.disk }}"
         state: absent
+
+    - name: Remove Ceph KVM disks
+      file:
+        path: "{{ kvm_vm_dir }}/{{ disk }}"
+        state: absent
+      loop:
+        - "{{ kvm_vm.disk_vdb }}"
+        - "{{ kvm_vm.disk_vdc }}"
+      loop_control:
+        loop_var: disk
+      when: teardown_ceph_secondry_disks | default(False)
 ...

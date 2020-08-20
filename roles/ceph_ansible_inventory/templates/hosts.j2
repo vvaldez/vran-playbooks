@@ -1,0 +1,22 @@
+[grafana-server]
+{{ ceph_cluster.0 }}
+
+[mons]
+{% for ceph_member in ceph_cluster %}
+{{ ceph_member }}
+{% endfor %}
+
+[osds]
+{% for ceph_member in ceph_cluster %}
+{{ ceph_member }}
+{% endfor %}
+
+[mgrs]
+{% for ceph_member in ceph_cluster %}
+{{ ceph_member }}
+{% endfor %}
+
+[iscsigws]
+{% for ceph_member in ceph_cluster %}
+{{ ceph_member }}
+{% endfor %}

@@ -1,0 +1,39 @@
+---
+- name: Setup prerequisites for Ceph
+  hosts: ceph
+  tags:
+    - prereq
+  tasks:
+    - name: Set hostname
+      vars:
+        hostname_inject_hosts_files: false
+      import_role:
+        name: oasis_roles.system.hostname
+      tags:
+        - hostname
+
+    - name: Register system
+      import_role:
+        name: oasis_roles.system.rhsm
+      ignore_errors: yes
+      vars:
+        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
+      tags:
+        - rhsm
+
+    - name: Install packages
+      vars:
+        packages: "{{ rhsm.packages }}"
+      yum:
+        name: "{{ packages }}"
+        state: installed
+      tags:
+        - packages
+
+    - name: Set firewall
+      vars:
+        firewalld_zone: "{{ firewalld.firewalld_zone }}"
+        firewalld_ports_open: "{{ firewalld.firewalld_ports_open }}"
+      import_role:
+        name: oasis_roles.system.firewalld
+...

@@ -1,0 +1,33 @@
+dummy:
+
+fetch_directory: << ceph.fetch_directory >>
+
+ntp_service_enabled: << ceph.ntp_service_enabled >>
+
+containerized_deployment: << ceph.containerized_deployment >>
+ceph_docker_registry_username: << ceph.ceph_docker_registry_username >>
+ceph_docker_registry_password: << ceph.ceph_docker_registry_password >>
+ceph_origin: << ceph.ceph_origin >>
+ceph_repository: << ceph.ceph_repository >>
+ceph_repository_type: << ceph.ceph_repository_type >>
+ceph_rhcs_version: << ceph.ceph_rhcs_version >>
+bootstrap_dirs_owner: << ceph.bootstrap_dirs_owner >>
+bootstrap_dirs_group: << ceph.bootstrap_dirs_group >>
+
+rbd_cache: << ceph.rbd_cache >>
+rbd_cache_writethrough_until_flush: << ceph.rbd_cache_writethrough_until_flush >>
+rbd_client_directories: << ceph.rbd_client_directories >>
+
+monitor_address_block: << ceph.monitor_address_block >>
+monitor_subnet: << ceph.monitor_subnet >>
+
+journal_size: << ceph.journal_size >>
+public_network: << ceph.public_network >>
+cluster_network: << ceph.cluster_network >>
+
+dashboard_enabled: << ceph.dashboard_enabled >>
+dashboard_admin_user: << ceph.dashboard_admin_user >>
+dashboard_admin_password: << ceph.dashboard_admin_password >>
+node_exporter_container_image: << ceph.node_exporter_container_image >>
+grafana_admin_user: << ceph.grafana_admin_user >>
+grafana_admin_password: << ceph.grafana_admin_password >>

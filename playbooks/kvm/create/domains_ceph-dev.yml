@@ -1,0 +1,25 @@
+---
+- name: Create Ceph KVM VMs
+  hosts: kvm_hypervisor
+  gather_facts: False
+  vars:
+    ceph_vms_to_create: "{{ groups['ceph_dev'] }}"
+  tasks:
+    - name: Debug | Creating KVM VM for hosts '{{ ceph_vms_to_create }}'
+      debug:
+        var: ceph_vms_to_create
+        verbosity: 1
+
+    - include_role:
+        name: kvm_vm
+      vars:
+        kvm_vm: "{{ hostvars[vm].kvm_vm }}"
+        kvm_vm_dir: "{{ hostvars[vm].kvm_vm_dir }}"
+        kvm_vm_root_password: "{{ hostvars[vm].kvm_vm_root_password }}"
+        create_ceph_secondry_disks: True
+      loop: "{{ ceph_vms_to_create }}"
+      loop_control:
+        loop_var: vm
+      tags:
+        - setup
+...
