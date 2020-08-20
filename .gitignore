@@ -19,7 +19,6 @@ roles/*
 !roles/kvm_*
 !roles/tor_networking*
 !roles/ceph_*
-!roles/ceph_*
 !roles/fpga*
 
 # Ignore virtualenv
