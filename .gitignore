@@ -18,11 +18,9 @@ roles/*
 !roles/tower_*
 !roles/kvm_*
 !roles/tor_networking*
-<<<<<<< HEAD
 !roles/ceph_*
-=======
+!roles/ceph_*
 !roles/fpga*
->>>>>>> master
 
 # Ignore virtualenv
 venv/
