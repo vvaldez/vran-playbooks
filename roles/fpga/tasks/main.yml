@@ -5,15 +5,15 @@
     success_msg: Real-time kernel detected
     fail_msg: Real-time kernel not detected
 
-- name: Set FPGA facts
-  include_tasks: facts.yml
-
 - name: Install packages
   include_tasks: packages.yml
 
-# - name: Upgrade Firmware
-#   include_tasks: firmware.yml
-#   when: True in fpga_info.fw_upgrade
+- name: Set FPGA facts
+  include_tasks: facts.yml
+
+- name: Upgrade Firmware
+  include_tasks: firmware.yml
+  when: True in fpga_info.fw_upgrade
 
 - name: Change Bitstream
   include_tasks: bitstream.yml

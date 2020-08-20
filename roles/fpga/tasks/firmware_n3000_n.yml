@@ -1,9 +1,15 @@
 ---
 - name: N3000-N upgrade
   vars:
-    update: >
+    update: >-
+      Desired build version was {{ fpga_known_builds[fpga_card_type][fpga_want_build[fpga_card_type]] }}
+      but found build version {{ fpga_info.build[fpga_idx] }} on {{ item }}.
       There is currently no process defined to upgrade firmware on N3000-N models.
       No FPGA firmware upgrade has occurred.
   set_fact:
     fpga_messages: "{{ fpga_messages | default([]) + [update] }}"
+  loop: "{{ fpga_info.pcie }}"
+  loop_control:
+    index_var: fpga_idx
+  when: fpga_info.fw_upgrade[fpga_idx]
 ...

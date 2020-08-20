@@ -27,5 +27,9 @@ fpga_files:
 
 fpga_want_bitstream: 4g
 
-fpga_reboot_timeout: 1200
+fpga_want_build:
+  n3000_2: v1_1
+  n3000_n: v1_3
+
+fpga_reboot_timeout: 1800
 ...

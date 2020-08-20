@@ -42,29 +42,4 @@
   notify: restart fpgad
 
 - meta: flush_handlers
-
-- name: Reset firmware packages
-  block:
-
-    - name: Remove firmware packages
-      dnf:
-        name: "{{ fpga_packages.opae_fw }}"
-        state: absent
-
-    - name: Clean up firmware packages
-      file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - /usr/share/opae/n3000/one-time-update
-        - /usr/share/opae/n3000/super-rsu
-
-    - name: Install firmware packages
-      dnf:
-        name: "{{ fpga_packages.opae_fw }}"
-        state: present
-
-  when:
-    - "'n3000_2' in fpga_info.card_type"
-    - True in fpga_info.fw_upgrade
 ...

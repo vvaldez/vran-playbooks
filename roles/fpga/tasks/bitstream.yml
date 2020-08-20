@@ -9,14 +9,14 @@
     name: fpgad
     state: stopped
 
-- name: Update Bitstream - Step 1
+- name: Update Bitstream - Step 1 of 2
   command: fpgasupdate /tmp/{{ fpga_files.bitstream[fpga_want_bitstream] }} {{ fpga_info.pcie[fpga_idx] }}
   when: item != fpga_known_bitstreams[fpga_want_bitstream]
   loop: "{{ fpga_info.bitstream_id }}"
   loop_control:
     index_var: fpga_idx
 
-- name: Update Bitstream - Step 2
+- name: Update Bitstream - Step 2 of 2
   command: rsu bmcimg {{ fpga_info.pcie[fpga_idx] }}
   when: item != fpga_known_bitstreams[fpga_want_bitstream]
   loop: "{{ fpga_info.bitstream_id }}"

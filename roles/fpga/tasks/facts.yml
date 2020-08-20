@@ -17,9 +17,6 @@
   vars:
     regex_string: "{{ item.string + '.*' + item.delimiter + '(.*)' }}"
     fpga_search:
-      - string: MAX10 NIOS FW
-        key: fw
-        delimiter: 'version '
       - string: MAX10 Build
         key: build
         delimiter: 'version '
@@ -28,9 +25,6 @@
         delimiter: ': '
       - string: Bitstream Id
         key: bitstream_id
-        delimiter: ': '
-      - string: Bitstream Version
-        key: bitstream_ver
         delimiter: ': '
       - string: FPGA Core Temperature
         key: temp_c
@@ -46,6 +40,12 @@
   set_fact:
     fpga_info: "{{ fpga_info | combine(matched_hashes) }}"
 
+- name: Verify that hashes were found for all cards
+  assert:
+    that: fpga_info.bmc_hash | length == fpga_info.pcie | length
+    success_msg: All cards had BMC root entry hashes
+    fail_msg: Not all cards had BMC root entry hashes (check output of 'fpgainfo security')
+
 - name: Determine FPGA types by root entry hash
   vars:
     type_info:
@@ -57,20 +57,23 @@
     fpga_info: "{{ fpga_info | combine(type_info) }}"
   loop: "{{ fpga_info.bmc_hash }}"
 
-- name: Set FPGA type when no root entry hash
-  vars:
-    type_info:
-      card_type: "{{ fpga_info.card_type | default([]) + ['n3000_2'] }}"
+- name: Verify that all cards were detected and identical type
+  assert:
+    that:
+      - "'unknown' not in fpga_info.card_type"
+      - fpga_info.card_type | unique | length == 1
+    success_msg: All cards detected as {{ fpga_info.card_type[0] }}
+    fail_msg: Detected an unknown card type or detected multiple known types
+
+- name: Set card type
   set_fact:
-    fpga_info: "{{ fpga_info | combine(type_info) }}"
-  when: fpga_info.bmc_hash | length == 0
-  loop: "{{ fpga_info.build }}"
+    fpga_card_type: "{{ fpga_info.card_type[0] }}"
 
 - name: Determine if a firmware update is needed
   vars:
     upgrade_info:
       fw_upgrade: >-
-        {% if item != fpga_known_versions[fpga_info.card_type[fpga_idx]].prod.build -%}
+        {% if item != fpga_known_builds[fpga_card_type][fpga_want_build[fpga_card_type]] -%}
         {{ fpga_info.fw_upgrade | default([]) + [True] -}}
         {% else %}{{ fpga_info.fw_upgrade | default([]) + [False] }}{% endif %}
   set_fact:
