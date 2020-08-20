@@ -1,0 +1,28 @@
+---
+- name: Setup Ceph
+  hosts: ceph
+  vars:
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_cluster: "{{ groups['ceph_dev'] }}"
+    ceph_automation_username: ceph_ansible
+  tags:
+    - setup
+  tasks:
+    - import_role:
+        name: ceph_setup
+
+    - block:
+      - import_role:
+          name: ceph_ansible_inventory
+      - name: Ensure playbooks are in place
+        copy:
+          dest: /usr/share/ceph-ansible/{{ ceph_playbook }}
+          src: /usr/share/ceph-ansible/{{ ceph_playbook }}.sample
+          remote_src: yes
+        loop:
+          - site-container.yml
+          - site.yml
+        loop_control:
+          loop_var: ceph_playbook
+      when: inventory_hostname is match(ceph_admin_node)
+...

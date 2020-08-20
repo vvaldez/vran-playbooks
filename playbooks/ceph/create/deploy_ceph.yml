@@ -1,0 +1,36 @@
+---
+- name: Run ceph-ansible
+  hosts: ceph
+  gather_facts: True
+  vars:
+    # Which cluster group to operate on
+    ceph_automation_username: ceph_ansible
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_playbook_dir: /usr/share/ceph-ansible
+    ceph_playbook: site-container.yml
+    ceph_inventory: /etc/ansible/hosts
+    ceph_playbook_command: >
+      ansible-playbook
+      --inventory {{ ceph_inventory }}
+      --user {{ ceph_automation_username }}
+      {{ ceph_playbook }}
+  remote_user: "{{ ceph_automation_username }}"
+  tasks:
+    - block:
+      - name: Display run command for ceph-ansible
+        debug:
+          msg: "{{ ceph_playbook_command }}"
+
+      - name: Run ceph-ansible
+        command: "{{ ceph_playbook_command }}"
+        args:
+          chdir: "{{ ceph_playbook_dir }}"
+        environment:
+          ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
+        register: ceph_ansible_playbook_run
+
+      - debug:
+          var: ceph_ansible_playbook_run
+          verbosity: 1
+      when: inventory_hostname is match(ceph_admin_node)
+...

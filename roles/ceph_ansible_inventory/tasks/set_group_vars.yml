@@ -1,0 +1,12 @@
+---
+- debug:
+    var: ceph_role
+    verbosity: 1
+
+- name: Set group_vars/{{ ceph_role }} for ceph cluster
+  template:
+    dest: /usr/share/ceph-ansible/group_vars/{{ ceph_role }}.yml
+    src: "group_vars_{{ ceph_role }}.yml.j2"
+    variable_start_string: "<<"
+    variable_end_string: ">>"
+...

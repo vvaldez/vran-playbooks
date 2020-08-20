@@ -1,0 +1,4 @@
+---
+- import_tasks: automation_user.yml
+- import_tasks: ssh_key_setup.yml
+...

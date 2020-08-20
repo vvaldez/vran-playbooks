@@ -1,0 +1,10 @@
+---
+- import_tasks: set_inventory.yml
+- include_tasks: set_group_vars.yml
+  loop:
+    - all
+    - osds
+    - iscsigws
+  loop_control:
+    loop_var: ceph_role
+...

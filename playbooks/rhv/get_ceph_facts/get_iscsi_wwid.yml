@@ -4,12 +4,24 @@
   gather_facts: False
   become: True
   vars:
-    iscsi_portal: 192.168.170.7
-    iscsi_target: iqn.2020-06.com.ceph:12345:homero3-rhv-igw
-    iscsi_username: rhv-user
-    iscsi_password: ceph-rhv-user
-    iscsi_size: 200G
+    iscsi_portal: "{{ hostvars[hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.gateways.0.name].ansible_host }}"
+    iscsi_target: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.targets.0.name }}"
+    iscsi_discovery_username: "{{ ceph_discovery_username }}"
+    iscsi_discovery_password: "{{ ceph_discovery_password }}"
+    iscsi_chap_username: "{{ ceph_chap_username }}"
+    iscsi_chap_password: "{{ ceph_chap_password }}"
+    iscsi_size: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.images.1.size | upper }}"
   tasks:
+    - debug:
+        var: "{{ item }}"
+        verbosity: 1
+      loop:
+        - iscsi_portal
+        - iscsi_target
+        - iscsi_discovery_username
+        - iscsi_chap_username
+        - iscsi_size
+
     - name: Ensure required packages are installed
       yum:
         name:
@@ -37,17 +49,22 @@
         var: scsi_devices_prelogin
         verbosity: 1
 
-# Does not work as the module does not pass authentication on discovery
-#    - name: Discover iSCSI targets on given portal
-#      open_iscsi:
-#        auto_node_startup: no
-#        show_nodes: yes
-#        discover: yes
-#        node_user: "{{ iscsi_username }}"
-#        node_pass: "{{ iscsi_password }}"
-#        portal: "{{ iscsi_portal }}"
-#        login: no
-#      register: iscsi_targets
+    - name: Attempt to discover iSCSI targets on given portal
+      open_iscsi:
+        auto_node_startup: no
+        show_nodes: yes
+        discover: yes
+        node_user: "{{ iscsi_discovery_username }}"
+        node_pass: "{{ iscsi_discovery_password }}"
+        portal: "{{ iscsi_portal }}"
+        login: no
+      register: iscsi_targets
+      ignore_errors: yes
+      # Does not work as the module does not pass authentication on discovery, but it needs to create the portal directory first
+
+    - debug:
+        var: iscsi_targets
+        verbosity: 1
 
     - name: Update iSCSI discovery authentication for given portal
       command: >
@@ -61,8 +78,8 @@
           --portal {{ iscsi_portal }}
           --op=update
           --name=discovery.sendtargets.auth.authmethod --value=CHAP
-          --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
-          --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
+          --name=discovery.sendtargets.auth.username --value={{ iscsi_discovery_username }}
+          --name=discovery.sendtargets.auth.password --value={{ iscsi_discovery_password }}
 
     # Same command with added --discover will use updated record
     - name: Discover iSCSI targets on given portal
@@ -77,8 +94,8 @@
           --portal {{ iscsi_portal }}
           --op=update
           --name=discovery.sendtargets.auth.authmethod --value=CHAP
-          --name=discovery.sendtargets.auth.username --value={{ iscsi_username }}
-          --name=discovery.sendtargets.auth.password --value={{ iscsi_password }}
+          --name=discovery.sendtargets.auth.username --value={{ iscsi_discovery_username }}
+          --name=discovery.sendtargets.auth.password --value={{ iscsi_discovery_password }}
           --discover
       register: iscsi_targets
 
@@ -86,17 +103,18 @@
         var: iscsi_targets
         verbosity: 1
 
-    - fail:
-        msg: "ERROR: Specified iSCSI target: '{{ iscsi_target }}' not found in the list of discovered targets: '{{ iscsi_targets.stdout }}'"
-      when: iscsi_target not in iscsi_targets.stdout
+    - assert:
+        that: iscsi_target in iscsi_targets.stdout
+        fail_msg: "ERROR: Specified iSCSI target: '{{ iscsi_target }}' not found in the list of discovered targets: '{{ iscsi_targets.stdout }}'"
+        success_msg: "Specified iSCSI target: '{{ iscsi_target }}' found in the list of discovered targets"
 
     - name: Login to iSCSI target
       open_iscsi:
         auto_node_startup: no
         show_nodes: yes
         discover: no
-        node_user: "{{ iscsi_username }}"
-        node_pass: "{{ iscsi_password }}"
+        node_user: "{{ iscsi_chap_username }}"
+        node_pass: "{{ iscsi_chap_password }}"
         portal: "{{ iscsi_portal }}"
         target: "{{ iscsi_target }}"
         login: yes

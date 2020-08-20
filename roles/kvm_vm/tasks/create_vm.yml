@@ -51,6 +51,14 @@
         var: kvm_disk_partitions_resize_results.stdout
         verbosity: 1
 
+    - block:
+      - name: Create KVM VM second disk at requested size
+        command: qemu-img create -f qcow2 {{ kvm_vm_dir }}/{{ kvm_vm.disk_vdb }} {{ kvm_vm.size_vdb }}
+
+      - name: Create KVM VM second disk at requested size
+        command: qemu-img create -f qcow2 {{ kvm_vm_dir }}/{{ kvm_vm.disk_vdc }} {{ kvm_vm.size_vdc }}
+      when: create_ceph_secondry_disks | default(False)
+
     - name: Copy interface configuration files
       template:
         src: ifcfg-{{ interface }}.j2
@@ -87,6 +95,10 @@
           --vcpus {{ kvm_vm.vcpus }}
           --os-variant {{ kvm_vm.os_variant }}
           --disk path={{ kvm_vm_dir }}/{{ kvm_vm.disk }},device=disk,bus=virtio,format=qcow2
+          {% if create_ceph_secondry_disks|default(False) %}
+          --disk path={{ kvm_vm_dir }}/{{ kvm_vm.disk_vdb }},device=disk,bus=virtio,format=qcow2
+          --disk path={{ kvm_vm_dir }}/{{ kvm_vm.disk_vdc }},device=disk,bus=virtio,format=qcow2
+          {% endif %}
           --noautoconsole
           --hvm
           --vnc

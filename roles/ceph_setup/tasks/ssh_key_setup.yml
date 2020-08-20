@@ -1,0 +1,26 @@
+---
+- block:
+  - name: Check for existing SSH keypair
+    stat:
+      path: ~/.ssh/id_rsa
+    register: ssh_key_stats
+
+  - name: Generate an OpenSSH keypair
+    openssh_keypair:
+      path: /home/{{ ceph_automation_username }}/.ssh/id_rsa
+      owner: "{{ ceph_automation_username }}"
+      group: "{{ ceph_automation_username }}"
+    when: not ssh_key_stats.stat.exists
+
+  - name: Slurp SSH public key
+    slurp:
+      src: /home/{{ ceph_automation_username }}/.ssh/id_rsa.pub
+    register: ssh_public_key
+  when: inventory_hostname is match(ceph_admin_node)
+
+- name: Add authorized key
+  authorized_key:
+    user: "{{ ceph_automation_username }}"
+    state: present
+    key: "{{ hostvars[ceph_admin_node].ssh_public_key.content | b64decode }}"
+...
