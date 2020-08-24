@@ -96,8 +96,16 @@
       tags:
         - network
 
+- import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
+  vars:
+    # Engine size
+    iscsi_size: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.images.0.size | upper }}"
+
 - hosts: rhvh[0]
   name: "Install rhv-m on {{ groups['rhvh'][0] }}"
+  vars:
+    rhv:
+      he_lun_id: "{{ iscsi_wwid.stdout }}"
   tasks:
     - name: Install RHV-M Appliance
       yum:

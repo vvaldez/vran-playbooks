@@ -1,9 +1,23 @@
 ---
+- import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
+  vars:
+    # Data domain size
+    iscsi_size: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.images.1.size | upper }}"
+
 # groups['rhvh'][0] is also utilized within the playbook. If you update
 # this host group, those references should be as well.
 - hosts: rhvh[0]
   remote_user: root
   gather_facts: no
+  vars:
+    ovirt:
+      storage:
+        domains:
+          - name: data
+            iscsi_address: "{{ rhv.he_storage_domain_addr }}"
+            iscsi_target: "{{ rhv.he_iscsi_target }}"
+            iscsi_lun_id: "{{ iscsi_wwid.stdout }}"
+            data_center: Default
   tasks:
     ################
     # Authenticate

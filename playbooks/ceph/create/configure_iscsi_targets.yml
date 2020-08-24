@@ -35,6 +35,7 @@
 #      add_host:
 #        name: rbd_target_api
 #        ansible_connection: podman
+#        ansible_podman_extra_args: "-H=tcp://{{ inventory_hostname }}:4243"
 #        ansible_host: rbd-target-api
 #        ansible_user: root
 #      changed_when: false
