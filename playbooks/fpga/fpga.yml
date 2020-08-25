@@ -1,6 +1,6 @@
 ---
 - name: Perform FPGA setup
-  hosts: vdu
+  hosts: "*ComputeVdu*"
 
   tasks:
     - include_role:
