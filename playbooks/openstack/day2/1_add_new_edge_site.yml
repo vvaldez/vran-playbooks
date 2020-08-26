@@ -1,0 +1,89 @@
+---
+- name: Check for required variables
+  hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ edge_site }}"
+
+- name: Upload ansible-generated templates
+  import_playbook: blocks/upload-ansible-generated-templates.yml
+
+- name: openstack undercloud install
+  import_playbook: blocks/openstack-undercloud-install.yml
+
+- name: openstack undercloud deploy central
+  import_playbook: blocks/openstack-overcloud-deploy.yml
+  vars:
+    dcn_export: yes
+    tripleo_overcloud_deploy_stack: central
+    tripleo_overcloud_deploy_networks_file: "{{ site.central.deploy_networks_file }}"
+    tripleo_overcloud_deploy_roles_file: "{{ site.central.deploy_roles_file }}"
+    tripleo_overcloud_deploy_environment_files: "{{ site.central.deploy_environment_files }}"
+
+- name: openstack overcloud node import
+  import_playbook: blocks/openstack-overcloud-node-import.yml
+  vars:
+    tripleo_overcloud_node_import_environment_file: /home/stack/ansible-generated/instackenv.yaml
+
+- name: Map Neutron ports to baremetal nodes
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Map Neutron ports to baremetal nodes
+      shell: /home/stack/ansible-generated/scripts/_map_neutron_ports.sh
+
+- name: openstack overcloud node introspect
+  import_playbook: blocks/openstack-overcloud-node-introspect.yml
+
+- name: Create roles for Overcloud nodes
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Create roles for Overcloud nodes
+      become: yes
+      become_user: stack
+      shell: /home/stack/ansible-generated/scripts/_create_roles.sh
+
+- name: "openstack undercloud deploy {{ edge_site }}"
+  import_playbook: blocks/openstack-overcloud-deploy.yml
+  vars:
+    dcn_export: no
+    tripleo_overcloud_deploy_stack: "{{ edge_site }}"
+    tripleo_overcloud_deploy_networks_file: "{{ site[edge_site].deploy_networks_file }}"
+    tripleo_overcloud_deploy_roles_file: "{{ site[edge_site].deploy_roles_file }}"
+    tripleo_overcloud_deploy_environment_files: "{{ site[edge_site].deploy_environment_files }}"
+
+- name: "openstack aggregate create {{ edge_site }}"
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - shell: |
+        source /home/stack/centralrc
+
+        openstack aggregate create --zone {{ edge_site }} {{ edge_site }}
+
+- name: tempest run central
+  import_playbook: blocks/tempest-run.yml
+  vars:
+    tempest_workspace: central
+
+- name: tempest run {{ edge_site }}
+  import_playbook: blocks/tempest-run.yml
+  vars:
+    tempest_workspace: "{{ edge_site }}"
+...

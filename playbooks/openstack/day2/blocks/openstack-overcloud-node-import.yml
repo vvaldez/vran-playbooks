@@ -1,0 +1,29 @@
+- name: openstack overcloud node import
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    # Check for required variables
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ tripleo_overcloud_node_import_environment_file }}"
+
+    - block:
+        # Now we get the roles, names, passwords and IPs from our instackenv.yaml file, but since we didn't specify the mac
+        # we don't get the port in neutron that we need for later on
+        - name: 7.1. openstack overcloud node import
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_node_import
+          vars:
+            tripleo_overcloud_node_import_debug: true
+            tripleo_overcloud_node_import_home_dir: /home/stack
+            tripleo_overcloud_node_import_log_output: false
+            tripleo_rc_file: /home/stack/stackrc
+
+      tags:
+        - '7.1'

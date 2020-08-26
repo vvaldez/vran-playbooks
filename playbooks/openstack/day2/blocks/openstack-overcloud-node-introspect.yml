@@ -1,0 +1,32 @@
+- name: openstack overcloud node introspect
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    # Check for required variables
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ tripleo_overcloud_node_import_environment_file }}"
+
+    - name: 7.3. Inspecting the Hardware of Nodes
+      block:
+        - name: 7.3. Check if any manageable nodes exist before trying to import them
+          shell: "source ~/stackrc; openstack baremetal node list --provision-state manageable -f value"
+          register: shell_output
+
+        # Now we use the introspection process to get the ports created and get a detailed inventory of the nodes
+        - name: 7.3. openstack overcloud node introspect --all-manageable
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_node_introspect
+          vars:
+            tripleo_overcloud_node_introspect_all_manageable: true
+            tripleo_overcloud_node_introspect_debug: true
+            tripleo_overcloud_node_introspect_provide: true
+            tripleo_overcloud_node_introspect_rc_file: /home/stack/stackrc
+            tripleo_rc_file: /home/stack/stackrc
+          when: shell_output.stdout != ''

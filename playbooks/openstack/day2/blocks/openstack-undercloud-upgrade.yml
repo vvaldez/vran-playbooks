@@ -1,12 +1,17 @@
 ---
-- name: OpenStack Undercloud Upgrade
+# Following the steps at:
+# https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.0/html/keeping_red_hat_openstack_platform_updated/assembly-updating_the_undercloud
+- name: openstack undercloud upgrade
   hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
   remote_user: root
-  gather_facts: yes
   tasks:
     - name: 3.1. Performing a minor update of an undercloud
       block:
-        - dnf:
+        - become_user: root
+          dnf:
             name:
               - "python3-tripleoclient*"
               - openstack-tripleo-common
@@ -15,8 +20,6 @@
             state: latest
 
         - name: openstack undercloud upgrade
-          become: yes
-          become_user: stack
           import_role:
             name: tripleo.operator.tripleo_undercloud_upgrade
           vars:
@@ -28,16 +31,13 @@
         - debug:
             var: tripleo_undercloud_upgrade_result.stdout_lines
 
-        - name: Reboot
+        - become_user: root
+          name: Reboot
           reboot:
-
       tags:
         - upgrade
 
-
     - name: 3.2. Updating the overcloud images
-      become: yes
-      become_user: stack
       block:
         - file:
             path: /home/stack/images/*
@@ -88,7 +88,6 @@
 
         - debug:
             var: shell_output.stdout_lines
-
       tags:
         - images
 ...

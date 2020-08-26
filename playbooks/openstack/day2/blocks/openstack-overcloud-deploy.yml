@@ -1,0 +1,83 @@
+---
+- name: openstack overcloud deploy
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  vars:
+    dcn_export: no
+  tasks:
+    # Check for required variables
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ tripleo_overcloud_deploy_stack }}"
+            - "{{ tripleo_overcloud_deploy_networks_file }}"
+            - "{{ tripleo_overcloud_deploy_roles_file }}"
+            - "{{ tripleo_overcloud_deploy_environment_files }}"
+
+    # Attempt to deploy the overcloud.
+    # If success, print the stack status
+    # If failure, print the failures
+    - block:
+        - name: openstack overcloud deploy {{ tripleo_overcloud_deploy_stack }}
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_deploy
+          vars:
+            tripleo_overcloud_deploy_debug: true
+            tripleo_overcloud_deploy_home_dir: /home/stack
+            tripleo_overcloud_deploy_log_output: false
+            tripleo_overcloud_deploy_timeout: 300
+            tripleo_overcloud_deploy_generate_scripts: false
+            tripleo_overcloud_deploy_poll: 60
+
+        - debug:
+            var: tripleo_overcloud_deploy_result.stdout_lines
+
+        - name: openstack stack list
+          shell: |
+            source ~/stackrc && \
+            openstack stack list
+          register: shell_output
+          changed_when: false
+
+        - debug:
+            var: shell_output.stdout_lines
+          changed_when: false
+
+      rescue:
+        - name: openstack stack failures list
+          shell: |
+            source ~/stackrc && \
+            openstack stack failures list {{ tripleo_overcloud_deploy_stack }} | \
+            sed 's/\\n/\n/g'
+          register: shell_output
+          changed_when: false
+
+        - debug:
+            var: shell_output.stdout_lines
+          changed_when: false
+
+    # If dcn_export then create ~/dcn-common/control-plane-export.yaml
+    - block:
+        - name: Clear out existing ~/dcn-common directory
+          file:
+            path: ~/dcn-common
+            state: absent
+
+        - name: Ensure ~/dcn-common directory exists
+          file:
+            path: ~/dcn-common
+            state: directory
+            mode: '0755'
+
+        - name: openstack overcloud export
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_export
+          vars:
+            tripleo_overcloud_export_stack: "{{ tripleo_overcloud_deploy_stack }}"
+            tripleo_overcloud_export_output_file: ~/dcn-common/control-plane-export.yaml
+      when: dcn_export | bool
