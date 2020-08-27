@@ -1,8 +1,9 @@
 ---
 - import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
   vars:
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
     # Data domain size
-    iscsi_size: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.images.1.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size | upper }}"
 
 # groups['rhvh'][0] is also utilized within the playbook. If you update
 # this host group, those references should be as well.

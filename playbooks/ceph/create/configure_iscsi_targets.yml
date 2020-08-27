@@ -1,10 +1,11 @@
 ---
 - name: Add iSCSI Targets to deployed Ceph Cluster
-  hosts: ceph_admin_node
+  hosts: ceph
   gather_facts: False
   become: True
   vars:
     ceph_automation_username: ceph_ansible
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
     ceph_gwcli_command: podman exec -t rbd-target-api bash -c
   remote_user: "{{ ceph_automation_username }}"
   pre_tasks:
@@ -28,102 +29,104 @@
       no_log: True
 
   tasks:
-# I cannot get the podman conneciton to execute remotely, leaving attempt here for future investigation.
-# One way that does work is to execute the playbook locally on the ceph node running rbd-target-api container and execute the playbook remotely so it will run locally and connection: podman
-# This gives proper output within the remote playbook for stderr and stdout
-#    - name: Create temporary host group for container
-#      add_host:
-#        name: rbd_target_api
-#        ansible_connection: podman
-#        ansible_podman_extra_args: "-H=tcp://{{ inventory_hostname }}:4243"
-#        ansible_host: rbd-target-api
-#        ansible_user: root
-#      changed_when: false
-#
-#    - name: Run command in container
-#      command: gwcli /disks/ ls
-#      delegate_to: rbd_target_api
-#      register: container_result
-#
-#    - debug:
-#        var: container_result
+    - block:
+      # I cannot get the podman conneciton to execute remotely, leaving attempt here for future investigation.
+      # One way that does work is to execute the playbook locally on the ceph node running rbd-target-api container and execute the playbook remotely so it will run locally and connection: podman
+      # This gives proper output within the remote playbook for stderr and stdout
+      #    - name: Create temporary host group for container
+      #      add_host:
+      #        name: rbd_target_api
+      #        ansible_connection: podman
+      #        ansible_podman_extra_args: "-H=tcp://{{ inventory_hostname }}:4243"
+      #        ansible_host: rbd-target-api
+      #        ansible_user: root
+      #      changed_when: false
+      #
+      #    - name: Run command in container
+      #      command: gwcli /disks/ ls
+      #      delegate_to: rbd_target_api
+      #      register: container_result
+      #
+      #    - debug:
+      #        var: container_result
 
-    - pause:
-    - name: Display run command for ceph-ansible
-      debug:
-        msg: "{{ ceph_gwcli_command }}"
+      - name: Display run command for ceph-ansible
+        debug:
+          msg: "{{ ceph_gwcli_command }}"
 
-    - name: Create rbd disk image for {{ image.description }}
-      command: "{{ ceph_gwcli_command }} 'gwcli /disks create rbd image={{ image.name }} size={{ image.size }}'"
-      loop: "{{ ceph.iscsi_targets.images }}"
-      loop_control:
-        loop_var: image
-      register: images_results
+      - name: Create rbd disk image for {{ image.description }}
+        command: "{{ ceph_gwcli_command }} 'gwcli /disks create rbd image={{ image.name }} size={{ image.size }}'"
+        loop: "{{ ceph.iscsi_targets.images }}"
+        loop_control:
+          loop_var: image
+        register: images_results
 
-    - debug:
-        var: images_results
-        verbosity: 1
+      - debug:
+          var: images_results
+          verbosity: 1
 
-    - name: Create iSCSI Targets
-      command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets create {{ target.name }}'"
-      loop: "{{ ceph.iscsi_targets.targets }}"
-      loop_control:
-        loop_var: target
-      register: targets_results
+      - name: Create iSCSI Targets
+        command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets create {{ target.name }}'"
+        loop: "{{ ceph.iscsi_targets.targets }}"
+        loop_control:
+          loop_var: target
+        register: targets_results
 
-    - debug:
-        var: targets_results
-        verbosity: 1
+      - debug:
+          var: targets_results
+          verbosity: 1
 
-    # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
-    - name: Add ceph nodes as gateways to first iSCSI Target
-      command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/gateways create {{ gateway.name }} {{ hostvars[gateway.name].ansible_host }}'"
-      loop: "{{ ceph.iscsi_targets.gateways }}"
-      # Gateways should be multples of 2
-      loop_control:
-        loop_var: gateway
-      register: gateways_results
+      # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
+      - name: Add ceph nodes as gateways to first iSCSI Target
+        command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/gateways create {{ gateway.name }} {{ hostvars[gateway.name].ansible_host }}'"
+        loop: "{{ ceph.iscsi_targets.gateways }}"
+        # Gateways should be multples of 2
+        loop_control:
+          loop_var: gateway
+        register: gateways_results
 
-    - debug:
-        var: gateways_results
-        verbosity: 1
+      - debug:
+          var: gateways_results
+          verbosity: 1
 
-    # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
-    - name: Add disk images to first iSCSI Target
-      command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/disks add rbd/{{ image.name }}'"
-      loop: "{{ ceph.iscsi_targets.images }}"
-      # Gateways should be multples of 2
-      loop_control:
-        loop_var: image
-      register: images_results
+      # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
+      - name: Add disk images to first iSCSI Target
+        command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/disks add rbd/{{ image.name }}'"
+        loop: "{{ ceph.iscsi_targets.images }}"
+        # Gateways should be multples of 2
+        loop_control:
+          loop_var: image
+        register: images_results
 
-    - debug:
-        var: images_results
-        verbosity: 1
+      - debug:
+          var: images_results
+          verbosity: 1
 
-    # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
-    - name: Disable host-based authentication
-      command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/hosts auth disable_acl'"
-      register: acl_results
+      # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
+      - name: Disable host-based authentication
+        command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/hosts auth disable_acl'"
+        register: acl_results
 
-    - debug:
-        var: acl_results
-        verbosity: 1
+      - debug:
+          var: acl_results
+          verbosity: 1
 
-    # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
-    - name: Set CHAP authentication on first iSCSI Target
-      command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/ auth {{ ceph_username }} {{ ceph_password }}'"
-      register: chap_results
+      # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
+      - name: Set CHAP authentication on first iSCSI Target
+        command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/ auth {{ ceph_username }} {{ ceph_password }}'"
+        register: chap_results
 
-    - debug:
-        var: chap_results
-        verbosity: 1
+      - debug:
+          var: chap_results
+          verbosity: 1
 
-    - name: Set discovery authentication on first iSCSI Target
-      command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/ discovery_auth {{ ceph_username }} {{ ceph_password }}'"
-      register: discovery_results
+      - name: Set discovery authentication on first iSCSI Target
+        command: "{{ ceph_gwcli_command }} 'gwcli /iscsi-targets/ discovery_auth {{ ceph_username }} {{ ceph_password }}'"
+        register: discovery_results
 
-    - debug:
-        var: discovery_results
-        verbosity: 1
+      - debug:
+          var: discovery_results
+          verbosity: 1
+
+      when: inventory_hostname is match(ceph_admin_node)
 ...

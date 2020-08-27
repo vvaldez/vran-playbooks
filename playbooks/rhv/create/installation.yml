@@ -16,37 +16,28 @@
         regexp: "^{{ ansible_default_ipv4.address }}"
         line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
 
-    - name: Install katello package
-      yum:
-        name: "https://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
-        state: installed
-        validate_certs: no
-      tags:
-        - rhsm
+#    - import_tasks: ../../generic/rhsm_register_satellite.yml
+    - import_tasks: ../../generic/rhsm_register_cdn.yml
 
-    - name: Register to Satellite
+    - name: Reset vir tmodule
+      command: yum --assumeyes module reset virt
+
+    - name: Enable virt module
+      command: yum --assumeyes module enable virt:8.2
+
+    - import_tasks: ../../generic/update_system.yml
+
+    - name: Synchronize installed packages
+      command: yum --assumeyes distro-sync
+
+    - name: Install packages
       vars:
-        rhsm_org_id: "{{ rhsm.rhsm_org_id }}"
-        rhsm_activationkey: "{{ rhsm.rhsm_activationkey }}"
-        rhsm_server_hostname: "{{ rhsm.rhsm_server_hostname }}"
-        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
-      import_role:
-        name: oasis_roles.system.rhsm
-      tags:
-        - rhsm
-
-    - name: Yum update
-      yum:
-        name: '*'
-        state: latest
-
-    - name: Install Cockpit
-      vars:
-        packages:
-          - cockpit-ovirt-dashboard
+        packages: "{{ rhsm.packages }}"
       yum:
         name: "{{ packages }}"
         state: installed
+      tags:
+        - packages
 
     - name: Ensure Cockpit is an active service in the firewall
       vars:
@@ -98,33 +89,55 @@
 
 - import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
   vars:
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
     # Engine size
-    iscsi_size: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.images.0.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.0.size | upper }}"
+  tags:
+    - install
 
-- hosts: rhvh[0]
-  name: "Install rhv-m on {{ groups['rhvh'][0] }}"
+- hosts: rhvh_dev
+  name: "Install RHV Manager on {{ inventory_hostname }}"
   vars:
     rhv:
-      he_lun_id: "{{ iscsi_wwid.stdout }}"
+      he_lun_id: "{{ hostvars['iscsi_client'].iscsi_wwid.stdout }}"
+    rhvm_initial_host: "{{ inventory_hostname }}"
   tasks:
-    - name: Install RHV-M Appliance
-      yum:
-        name: rhvm-appliance
-        state: installed
-      tags:
-        - install
+    - block:
+      - debug:
+          var: hostvars['iscsi_client']
+        tags:
+          - install
 
-    # he_iscsi_target cannot be reused from an existing installation
-    # he_lun_id needs to be found ahead of time
-    - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
-      shell: |
-        ansible-playbook \
-          -i "localhost," \
-          -c local \
-          {% for k,v in rhv.iteritems() %}
-          -e {{ k }}='{{ v }}' \
-          {% endfor %}
-          /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
-      tags:
-        - install
+      - debug:
+          var: rhv
+        tags:
+          - install
+
+      - name: Install RHV-M Appliance
+        yum:
+          name: rhvm-appliance
+          state: installed
+        tags:
+          - install
+
+      - debug:
+          var: hostvars[inventory_hostname].rhv
+        tags:
+          - install
+
+      # he_iscsi_target cannot be reused from an existing installation
+      # he_lun_id needs to be found ahead of time
+      - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
+        command: >
+          echo
+          ansible-playbook
+            -i "localhost,"
+            -c local
+            {% for k,v in rhv.iteritems() %}
+            -e {{ k }}='{{ v }}'
+            {% endfor %}
+            /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
+        tags:
+          - install
+      when: inventory_hostname is match(groups['rhvh_dev'].0)
 ...
