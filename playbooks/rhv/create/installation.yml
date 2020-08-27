@@ -97,22 +97,14 @@
 
 - hosts: rhvh_dev
   name: "Install RHV Manager on {{ inventory_hostname }}"
+  tags:
+    - install
   vars:
     rhv:
-      he_lun_id: "{{ hostvars['iscsi_client'].iscsi_wwid.stdout }}"
+      he_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
     rhvm_initial_host: "{{ inventory_hostname }}"
   tasks:
     - block:
-      - debug:
-          var: hostvars['iscsi_client']
-        tags:
-          - install
-
-      - debug:
-          var: rhv
-        tags:
-          - install
-
       - name: Install RHV-M Appliance
         yum:
           name: rhvm-appliance
@@ -121,23 +113,21 @@
           - install
 
       - debug:
-          var: hostvars[inventory_hostname].rhv
-        tags:
-          - install
+          var: hostvars[rhvm_initial_host].rhv
+          verbosity: 1
 
-      # he_iscsi_target cannot be reused from an existing installation
-      # he_lun_id needs to be found ahead of time
+      - debug:
+          var: rhv
+          verbosity: 1
+
       - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
         command: >
-          echo
           ansible-playbook
             -i "localhost,"
             -c local
-            {% for k,v in rhv.iteritems() %}
+            {% for k,v in rhv.items() -%}
             -e {{ k }}='{{ v }}'
-            {% endfor %}
+            {% endfor -%}
             /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
-        tags:
-          - install
       when: inventory_hostname is match(groups['rhvh_dev'].0)
 ...
