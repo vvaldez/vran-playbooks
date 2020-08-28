@@ -1,0 +1,47 @@
+---
+- name: Check for required variables
+  hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ role }}"
+            - "{{ site_name }}"
+
+- name: Upload ansible-generated templates
+  import_playbook: blocks/upload-ansible-generated-templates.yml
+
+- name: openstack overcloud node import
+  import_playbook: blocks/openstack-overcloud-node-import.yml
+  vars:
+    tripleo_overcloud_node_import_environment_file: /home/stack/ansible-generated/instackenv.yaml
+
+- name: Map Neutron ports to baremetal nodes
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Map Neutron ports to baremetal nodes
+      shell: /home/stack/ansible-generated/scripts/_map_neutron_ports.sh
+
+- name: openstack overcloud node introspect
+  import_playbook: blocks/openstack-overcloud-node-introspect.yml
+
+- name: "openstack undercloud deploy {{ site_name }}"
+  import_playbook: blocks/openstack-overcloud-deploy.yml
+  vars:
+    dcn_export: no
+    tripleo_overcloud_deploy_stack: "{{ site_name }}"
+    tripleo_overcloud_deploy_networks_file: "{{ site[site_name].deploy_networks_file }}"
+    tripleo_overcloud_deploy_roles_file: "{{ site[site_name].deploy_roles_file }}"
+    tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
+
+# Add all nodes for site being add to the AZ
+# openstack aggregate add host edge1vdu edge1-computevdu-0.lab.local || true
+...

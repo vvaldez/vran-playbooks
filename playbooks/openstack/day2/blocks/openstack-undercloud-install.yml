@@ -5,6 +5,10 @@
   gather_facts: no
   remote_user: root
   tasks:
+    # Gather_facts for tripleo_operator_ansible
+    - setup:
+        gather_subset: '!all'
+
     - name: 4.7. Installing director
       block:
         - name: 4.7. Copy undercloud.conf to /home/stack

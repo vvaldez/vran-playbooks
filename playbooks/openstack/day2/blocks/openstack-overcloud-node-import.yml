@@ -13,6 +13,10 @@
           loop:
             - "{{ tripleo_overcloud_node_import_environment_file }}"
 
+    # Gather_facts for tripleo_operator_ansible
+    - setup:
+        gather_subset: '!all'
+
     - block:
         # Now we get the roles, names, passwords and IPs from our instackenv.yaml file, but since we didn't specify the mac
         # we don't get the port in neutron that we need for later on

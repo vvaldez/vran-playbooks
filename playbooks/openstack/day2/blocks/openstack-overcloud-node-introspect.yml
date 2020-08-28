@@ -5,13 +5,9 @@
   gather_facts: no
   remote_user: root
   tasks:
-    # Check for required variables
-    - block:
-        - fail:
-            msg: "{{ item }} is not defined"
-          when: item is undefined
-          loop:
-            - "{{ tripleo_overcloud_node_import_environment_file }}"
+    # Gather_facts for tripleo_operator_ansible
+    - setup:
+        gather_subset: '!all'
 
     - name: 7.3. Inspecting the Hardware of Nodes
       block:

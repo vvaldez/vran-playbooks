@@ -19,6 +19,10 @@
             - "{{ tripleo_overcloud_deploy_roles_file }}"
             - "{{ tripleo_overcloud_deploy_environment_files }}"
 
+    # Gather_facts for tripleo_operator_ansible
+    - setup:
+        gather_subset: '!all'
+
     # Attempt to deploy the overcloud.
     # If success, print the stack status
     # If failure, print the failures
@@ -29,8 +33,10 @@
           vars:
             tripleo_overcloud_deploy_debug: true
             tripleo_overcloud_deploy_home_dir: /home/stack
-            tripleo_overcloud_deploy_log_output: false
-            tripleo_overcloud_deploy_timeout: 300
+            tripleo_overcloud_deploy_log: "/home/stack/automated_deploy_{{ tripleo_overcloud_deploy_stack }}.log"
+            tripleo_overcloud_deploy_log_output: true
+            tripleo_overcloud_deploy_timeout: 18000
+            tripleo_overcloud_deploy_timeout_arg: 300
             tripleo_overcloud_deploy_generate_scripts: false
             tripleo_overcloud_deploy_poll: 60
 

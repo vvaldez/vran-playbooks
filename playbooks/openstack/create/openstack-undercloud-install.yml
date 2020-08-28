@@ -75,8 +75,8 @@
           tags:
             - rhsm
 
-        - name: 3.1. Lock the undercloud to Red Hat Enterprise Linux 8.1
-          shell: subscription-manager release --set=8.1
+        - name: "3.1. Lock the undercloud to Red Hat Enterprise Linux {{ undercloud.rhsm_lock_release }}"
+          shell: "subscription-manager release --set={{ undercloud.rhsm_lock_release }}"
 
         - name: 3.1. Find out if python-tripleoclient installed
           shell: "rpm -q python3-tripleoclient"
@@ -177,7 +177,7 @@
             state: directory
             owner: stack
             group: stack
-          with_filetree: "{{ inventory_dir }}/../ansible-generated/{{ named_env }}"
+          with_filetree: "{{ inventory_dir }}/../ansible-generated"
           when: item.state == 'directory'
 
         - name: 4.1. Template ansible-generated/ deployment files to Director
@@ -187,7 +187,7 @@
             owner: stack
             group: stack
             mode: preserve
-          with_filetree: "{{ inventory_dir }}/../ansible-generated/{{ named_env }}"
+          with_filetree: "{{ inventory_dir }}/../ansible-generated"
           when: item.state == 'file'
 
       tags:
@@ -242,13 +242,13 @@
 
         - name: 4.8.1 Untar overcloud-full-latest
           unarchive:
-            src: /usr/share/rhosp-director-images/overcloud-full-latest-16.0.tar
+            src: /usr/share/rhosp-director-images/overcloud-full-latest.tar
             remote_src: yes
             dest: ~/images
 
         - name: 4.8.1 Untar ironic-python-agent-latest
           unarchive:
-            src: /usr/share/rhosp-director-images/ironic-python-agent-latest-16.0.tar
+            src: /usr/share/rhosp-director-images/ironic-python-agent-latest.tar
             remote_src: yes
             dest: ~/images
 
@@ -329,7 +329,6 @@
 
 
 
-
     - name: 7.3. Inspecting the Hardware of Nodes
       become: yes
       become_user: stack
@@ -353,8 +352,16 @@
       tags:
         - '7.3'
 
+
+
     - name: Create roles for Overcloud nodes
       become: yes
       become_user: stack
       shell: /home/stack/ansible-generated/scripts/_create_roles.sh
+
+
+    - name: Create realtime image
+      become: yes
+      become_user: stack
+      shell: /home/stack/ansible-generated/scripts/3.3-create-upload-rt-image.sh
 ...
