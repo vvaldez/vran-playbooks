@@ -125,6 +125,7 @@
           ansible-playbook
             -i "localhost,"
             -c local
+            -vvv
             {% for k,v in rhv.items() -%}
             -e {{ k }}='{{ v }}'
             {% endfor -%}
