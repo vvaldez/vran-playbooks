@@ -1,13 +1,13 @@
 ---
-- name: Create Ceph KVM VMs
+- name: Destroy Ceph KVM VMs
   hosts: kvm_hypervisor
   gather_facts: False
   vars:
-    ceph_vms_to_create: "{{ groups['ceph_dev'] }}"
+    ceph_vms_to_destroy: "{{ groups['ceph_dev'] }}"
   tasks:
-    - name: Debug | Creating KVM VM for hosts '{{ ceph_vms_to_create }}'
+    - name: Debug | Destroying KVM VM for hosts '{{ ceph_vms_to_destroy }}'
       debug:
-        var: ceph_vms_to_create
+        var: ceph_vms_to_destroy
         verbosity: 1
 
     - include_role:
@@ -18,7 +18,7 @@
         kvm_vm_root_password: "{{ hostvars[vm].kvm_vm_root_password }}"
         teardown_ceph_secondry_disks: True
         teardown: True
-      loop: "{{ ceph_vms_to_create }}"
+      loop: "{{ ceph_vms_to_destroy }}"
       loop_control:
         loop_var: vm
       tags:

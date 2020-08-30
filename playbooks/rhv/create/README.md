@@ -1,5 +1,5 @@
 1. Install OS
-2. Disable SSH GSSAPIAuthentication
+2. Disable SSH GSSAPIAuthentication if needed ()
 
     ```
     sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
@@ -17,7 +17,7 @@
     ssh-copy-id root@172.17.118.5
     ```
 
-4. Create and clear out existing Ceph target
+4. Clear out existing Ceph target if needed:
 
     ```sh
     ssh root@172.17.118.7
@@ -28,43 +28,56 @@
 
     # Cleanup the previous example
     # Delete disks from target
-    iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/disks/ delete rbd/rhv_engine_disk
-    iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/disks/ delete rbd/rhv_data_disk
+    iscsi-targets/iqn.2020-08.com.ceph:rhv-igw/disks/ delete rbd/rhv_engine_disk
+    iscsi-targets/iqn.2020-08.com.ceph:rhv-igw/disks/ delete rbd/rhv_data_disk
     # Delete target
-    iscsi-targets/ delete iqn.2020-06.com.ceph:12345:rhv-igw
+    iscsi-targets/ delete iqn.2020-08.com.ceph:rhv-igw
     # Delete disks
     disks/ delete rbd/rhv_engine_disk
     disks/ delete rbd/rhv_data_disk
-
-    # Create target
-    iscsi-targets/ create iqn.2020-06.com.ceph:12345:rhv-igw
-    # Create gateways
-    /iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/gateways create ceph-1.lab.roskosb.info 192.168.170.7
-    /iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/gateways create ceph-2.lab.roskosb.info 192.168.170.8
-    # Create disks
-    /disks create rbd image=rhv_engine_disk size=200g
-    /disks create rbd image=rhv_data_disk size=1T
-    # Add disks to target
-    /iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/disks add rbd/rhv_engine_disk
-    /iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/disks add rbd/rhv_data_disk
-    # Setup target authentication
-    iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/hosts auth disable_acl
-    iscsi-targets/iqn.2020-06.com.ceph:12345:rhv-igw/ auth rhv-user ceph-rhv-user
     ```
 
-5. Update `ansible-inventory/vran/hosts/group_vars/rhv.yml` with wwid of drives
+5. Define RHV iscsi Targets in `ansible-inventory/tewksbury1/inventory/group_vars/ceph/rhv_iscsi_targets.yml`
+
+    ```yaml
+    ceph:
+      iscsi_targets:
+        targets:
+          - name: iqn.2020-08.com.ceph:rhv-igw
+        gateways:
+          # Gateways should be added in multiples of 2, and one of these must be the server used to add the targets
+          - name: "{{ groups.ceph.0 }}"
+          - name: "{{ groups.ceph.1 }}"
+          - name: "{{ groups.ceph.2 }}"
+        images:
+          - name: rhv_engine
+            description: Hosted Engine
+            size: 200g
+          - name: rhv_data
+            description: VM Data
+            size: 2t
+    ```
+6. Create targets:
+
+    ```sh
+    ansible-playbook \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+      playbooks/ceph/configure_iscsi_targets.yml
+    ```
+
+7. Update `ansible-inventory/tewksbury1/inventory/group_vars/rhv/rhv.yml` with wwid of drives
 
     ```
     ansible-playbook \
-      -i ../ansible-inventory/vran/hosts/tewksbury.yml \
-      -e iscsi_target="iqn.2020-06.com.ceph:12345:rhv-igw" \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+      -e iscsi_target="iqn.2020-08.com.ceph:rhv-igw" \
       -e iscsi_size=200G \
       playbooks/rhv/get_ceph_facts/get_iscsi_wwid.yml
 
     ansible-playbook \
-      -i ../ansible-inventory/vran/hosts/tewksbury.yml \
-      -e iscsi_target="iqn.2020-06.com.ceph:12345:rhv-igw" \
-      -e iscsi_size=1T \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+      -e iscsi_target="iqn.2020-08.com.ceph:rhv-igw" \
+      -e iscsi_size=2T \
       playbooks/rhv/get_ceph_facts/get_iscsi_wwid.yml
     ```
 
@@ -77,41 +90,41 @@
         domains:
         - name: data
             ...
-            iscsi_lun_id: <1T>
+            iscsi_lun_id: <2T>
             ...
     ```
 
-6. Run `playbooks/rhv/create/installation.yml` to install the RHV hosted engine and additional hosts:
+8. Run `playbooks/rhv/create/installation.yml` to install the RHV hosted engine and additional hosts:
 
     ```sh
     # Initial installation of hosted engine
     # This currently fails on first run due to networking hang; need to reboot the node via iDRAC.
     ansible-playbook \
-      -i ../ansible-inventory/vran/hosts/tewksbury.yml \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
       -e setup_nics=yes \
       playbooks/rhv/create/installation.yml
 
     # Prep additional hosts for configuration
     ansible-playbook \
-      -i ../ansible-inventory/vran/hosts/tewksbury.yml \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
       -e setup_nics=yes \
       playbooks/rhv/create/installation.yml \
       --skip-tags install \
       --limit rhv-2.escwq.com,rhv-3.escwq.com
     ```
 
-7. Run `playbooks/rhv/create/configuration.yml` to configure hosts, storage, disks, networks, etc for RHV:
+9. Run `playbooks/rhv/create/configuration.yml` to configure hosts, storage, disks, networks, etc for RHV:
 
     ```sh
     ansible-playbook \
-      -i ../ansible-inventory/vran/hosts/tewksbury.yml \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
       playbooks/rhv/create/configuration.yml
     ```
 
-8. Run `playbooks/rhv/create/vms.yml` to launch virtual machines:
+10. Run `playbooks/rhv/create/vms.yml` to launch virtual machines:
 
     ```sh
     ansible-playbook \
-      -i ../ansible-inventory/vran/hosts/tewksbury.yml \
+      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
       playbooks/rhv/create/vms.yml
     ```

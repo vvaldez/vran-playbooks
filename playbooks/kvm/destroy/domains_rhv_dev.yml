@@ -1,0 +1,23 @@
+---
+- name: Destroy RHV KVM VMs
+  hosts: kvm_hypervisor
+  gather_facts: False
+  vars:
+    rhv_vms_to_destroy: "{{ groups['rhvh_dev'] }}"
+  tasks:
+    - name: Debug | Destroying KVM VM for hosts '{{ rhv_vms_to_destroy }}'
+      debug:
+        var: rhv_vms_to_destroy
+        verbosity: 1
+
+    - include_role:
+        name: kvm_vm
+      vars:
+        kvm_vm: "{{ hostvars[vm].kvm_vm }}"
+        teardown: True
+      loop: "{{ rhv_vms_to_destroy }}"
+      loop_control:
+        loop_var: vm
+      tags:
+        - setup
+...

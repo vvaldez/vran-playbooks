@@ -4,13 +4,14 @@
   gather_facts: False
   become: True
   vars:
-    iscsi_portal: "{{ hostvars[hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.gateways.0.name].ansible_host }}"
-    iscsi_target: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.targets.0.name }}"
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    iscsi_portal: "{{ hostvars[hostvars[ceph_admin_node].ceph.iscsi_targets.gateways.0.name].ansible_host }}"
+    iscsi_target: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.targets.0.name }}"
     iscsi_discovery_username: "{{ ceph_discovery_username }}"
     iscsi_discovery_password: "{{ ceph_discovery_password }}"
     iscsi_chap_username: "{{ ceph_chap_username }}"
     iscsi_chap_password: "{{ ceph_chap_password }}"
-    iscsi_size: "{{ hostvars[groups.ceph_admin_node.0].ceph.iscsi_targets.images.1.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size | upper }}"
   tasks:
     - debug:
         var: "{{ item }}"

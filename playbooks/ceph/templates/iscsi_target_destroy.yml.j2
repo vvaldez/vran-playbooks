@@ -1,0 +1,58 @@
+---
+- name: Destroy iSCSI Target on deployed Ceph Cluster
+  hosts: rbd-target-api
+  connection: podman
+  gather_facts: False
+  ignore_errors: yes
+  vars:
+    ceph:
+      iscsi_targets: {{ ceph.iscsi_targets }}
+  tasks:
+  {% raw %}
+    # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
+    - name: Remove disk images from first iSCSI Target
+      command: gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/disks delete rbd/{{ image.name }}
+      loop: "{{ ceph.iscsi_targets.images }}"
+      loop_control:
+        loop_var: image
+      register: images_results
+
+    - debug:
+        var: images_results
+        verbosity: 1
+
+    # For this use case only 1 iSCSI target is needed. However, in the case that multiple are needed, this loop should import a separate task file that itself loops through the correct disks per target.
+    - name: Remove ceph nodes as gateways from first iSCSI Target
+      command: gwcli /iscsi-targets/{{ ceph.iscsi_targets.targets.0.name }}/gateways delete {{ gateway.name }}
+      loop: "{{ ceph.iscsi_targets.gateways }}"
+      loop_control:
+        loop_var: gateway
+      register: gateways_results
+
+    - debug:
+        var: gateways_results
+        verbosity: 1
+
+    - name: Delete iSCSI Targets
+      command: gwcli /iscsi-targets delete {{ target.name }}
+      loop: "{{ ceph.iscsi_targets.targets }}"
+      loop_control:
+        loop_var: target
+      register: targets_results
+
+    - debug:
+        var: targets_results
+        verbosity: 1
+
+    - name: Delete rbd disk image for {{ image.description }}
+      command: gwcli /disks delete rbd/{{ image.name }}
+      loop: "{{ ceph.iscsi_targets.images }}"
+      loop_control:
+        loop_var: image
+      register: images_results
+
+    - debug:
+        var: images_results
+        verbosity: 1
+{% endraw %}
+...
