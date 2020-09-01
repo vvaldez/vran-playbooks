@@ -1,6 +1,8 @@
 ---
 - name: Setup prerequisites
   hosts: satellite
+  become: yes
+  become_user: root
   tasks:
     - name: Install packages
       vars:
@@ -42,7 +44,7 @@
       lineinfile:
         path: /etc/hosts
         regexp: "^{{ ansible_default_ipv4.address }}"
-        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+        line: "{{ ansible_host }} {{ ansible_fqdn }} {{ ansible_hostname }}"
 
     - name: Set firewall
       vars:
@@ -58,14 +60,16 @@
 
 - name: Setup Satellite
   hosts: satellite
+  become: yes
+  become_user: root
   tasks:
     - vars:
         satellite_admin_username: "{{ satellite.admin_username }}"
         satellite_admin_password: "{{ satellite.admin_password }}"
         satellite_organization: "{{ satellite.organization }}"
         satellite_location: "{{ satellite.location }}"
-        satellite_proxy_dns: "{{ satellite.enable_dns }}"
-        satellite_proxy_dns_managed: "{{ satellite.dns }}"
+        satellite_proxy_dns: false
+        satellite_proxy_dns_managed: false
       import_role:
         name: oasis_roles.satellite
   tags:
