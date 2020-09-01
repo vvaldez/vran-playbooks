@@ -145,9 +145,18 @@
           - python3-novajoin-tests-tempest
           - python3-octavia-tests-tempest
           - python3-telemetry-tests-tempest
-
       tags:
         - tempest
+
+    - name: Disable appstream for container-tools:rhel8
+      dnf:
+        name: 'container-tools:rhel8'
+        state: disabled
+
+    - name: Enable appstream for container-tools:2.0
+      dnf:
+        name: 'container-tools:2.0'
+        state: enabled
 
     - name: Add useful aliases for OpenStack
       become: yes
