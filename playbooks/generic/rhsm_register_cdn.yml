@@ -1,0 +1,9 @@
+---
+- name: Register system with CDN
+  import_role:
+    name: oasis_roles.system.rhsm
+  vars:
+    rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
+  tags:
+    - rhsm
+...

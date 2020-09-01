@@ -14,39 +14,35 @@
       lineinfile:
         path: /etc/hosts
         regexp: "^{{ ansible_default_ipv4.address }}"
-        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+        line: "{{ ansible_default_ipv4.address }} {{ inventory_hostname }} {{ ansible_hostname }}"
 
-    - name: Install katello package
-      yum:
-        name: "https://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
-        state: installed
-        validate_certs: no
-      tags:
-        - rhsm
+    - import_tasks: ../../generic/rhsm_register_cdn.yml
+      when: not rhsm.use_satellite | default(False)
+      name: Register with CDN
 
-    - name: Register to Satellite
+    # - import_tasks: ../../generic/rhsm_register_satellite.yml
+    #   when: rhsm.use_satellite | default(True)
+    #   name: Register with Satellite
+
+    - name: Reset virt module
+      command: yum --assumeyes module reset virt
+
+    - name: Enable virt module
+      command: yum --assumeyes module enable virt:8.2
+
+    - import_tasks: ../../generic/update_system.yml
+
+    - name: Synchronize installed packages
+      command: yum --assumeyes distro-sync
+
+    - name: Install packages
       vars:
-        rhsm_org_id: "{{ rhsm.rhsm_org_id }}"
-        rhsm_activationkey: "{{ rhsm.rhsm_activationkey }}"
-        rhsm_server_hostname: "{{ rhsm.rhsm_server_hostname }}"
-        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
-      import_role:
-        name: oasis_roles.system.rhsm
-      tags:
-        - rhsm
-
-    - name: Yum update
-      yum:
-        name: '*'
-        state: latest
-
-    - name: Install Cockpit
-      vars:
-        packages:
-          - cockpit-ovirt-dashboard
+        packages: "{{ rhsm.packages }}"
       yum:
         name: "{{ packages }}"
         state: installed
+      tags:
+        - packages
 
     - name: Ensure Cockpit is an active service in the firewall
       vars:
@@ -68,10 +64,10 @@
         option: log_path
         value: /var/log/ansible.log
 
-    - name: Patch ovirt-hosted-engine-setup bug
-      patch:
-        src: ../files/01_prepare_routing_rules.yml.patch
-        dest: /usr/share/ansible/roles/ovirt.hosted-engine-setup/tasks/bootstrap_local_vm/01_prepare_routing_rules.yml
+    # - name: Patch ovirt-hosted-engine-setup bug
+    #   patch:
+    #     src: ../files/01_prepare_routing_rules.yml.patch
+    #     dest: /usr/share/ansible/roles/ovirt.hosted-engine-setup/tasks/bootstrap_local_vm/01_prepare_routing_rules.yml
 
     # Network setup needs to be done after, at least, the yum portion because
     # this is dependent on the bridge-utils package which is installed by
@@ -96,27 +92,51 @@
       tags:
         - network
 
-- hosts: rhvh[0]
-  name: "Install rhv-m on {{ groups['rhvh'][0] }}"
-  tasks:
-    - name: Install RHV-M Appliance
-      yum:
-        name: rhvm-appliance
-        state: installed
-      tags:
-        - install
+- import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
+  vars:
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    # Engine size
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.0.size | upper }}"
+  tags:
+    - install
 
-    # he_iscsi_target cannot be reused from an existing installation
-    # he_lun_id needs to be found ahead of time
-    - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
-      shell: |
-        ansible-playbook \
-          -i "localhost," \
-          -c local \
-          {% for k,v in rhv.iteritems() %}
-          -e {{ k }}='{{ v }}' \
-          {% endfor %}
-          /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
-      tags:
-        - install
+- hosts: rhvh_dev
+  name: "Install RHV Manager on {{ inventory_hostname }}"
+  tags:
+    - install
+  vars:
+    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    # Engine size
+    rhv:
+      he_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
+    rhvm_initial_host: "{{ inventory_hostname }}"
+  tasks:
+    - block:
+      - name: Install RHV-M Appliance
+        yum:
+          name: rhvm-appliance
+          state: installed
+
+      - debug:
+          var: hostvars[rhvm_initial_host].rhv
+          verbosity: 1
+
+      - debug:
+          var: rhv
+          verbosity: 1
+
+      - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
+        command: >
+          ansible-playbook
+            -i "localhost,"
+            -c local
+            {% if ansible_verbosity > 0 %}--verbose{% endif %}
+            {% if ansible_verbosity > 1 %}--verbose{% endif %}
+            {% if ansible_verbosity > 2 %}--verbose{% endif %}
+            {% if ansible_verbosity > 3 %}--verbose{% endif %}
+            {% for k,v in rhv.items() -%}
+            -e {{ k }}='{{ v }}'
+            {% endfor -%}
+            /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
+      when: inventory_hostname is match(groups['rhvh_dev'].0)
 ...
