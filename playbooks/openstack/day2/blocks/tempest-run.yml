@@ -1,0 +1,107 @@
+---
+- name: tempest run {{ tempest_workspace }}
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  vars:
+    remove: no
+    concurrency: 0
+  tasks:
+    # Check for required variables
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ tempest_workspace }}"
+
+    - block:
+        - name: Remove existing tempest workspace
+          shell: |
+            tempest workspace list
+            tempest workspace remove --name {{ tempest_workspace }}
+
+        - name: Remove existing tempest director
+          file:
+            path: "/home/stack/tempest/{{ tempest_workspace }}"
+            state: absent
+
+      when: remove | bool
+
+    # Check if workspace exists already
+    - name: Check existing workspaces
+      shell: tempest workspace list -c Name -f value
+      register: shell_output
+      changed_when: false
+
+    # If not, then setup the workspace correctly
+    - block:
+        - name: tempest init
+          shell: "cd ~ && tempest init {{ tempest_workspace }}"
+
+        - name: Grab provider-network ID
+          shell: "source ~/{{ tempest_workspace }}rc && openstack network show provider-network -c id -f value"
+          register: nested_shell_output
+          changed_when: false
+
+        - name: discover-tempest-config
+          shell: |
+            source ~/{{ tempest_workspace }}rc
+
+            cd ~/tempest/{{ tempest_workspace }} && \
+            discover-tempest-config \
+              --convert-to-raw \
+              --network-id {{ nested_shell_output.stdout }} \
+              --create
+
+        - name: Ensure crudini is installed
+          become: yes
+          become_user: root
+          yum:
+            name: crudini
+            state: installed
+
+        - name: Set volume-feature-enabled.api_v2 in tempest.conf
+          shell: "crudini --set ~/tempest/{{ tempest_workspace }}/etc/tempest.conf volume-feature-enabled api_v2 True"
+
+        - name: Set compute.fixed_network_name in tempest.conf
+          shell: "crudini --set ~/tempest/{{ tempest_workspace }}/etc/tempest.conf compute fixed_network_name ansible-generated-tempest-network"
+
+        - name: Set compute.min_compute_nodes in tempest.conf
+          shell: "crudini --set ~/tempest/{{ tempest_workspace }}/etc/tempest.conf compute min_compute_nodes 6"
+
+      # If anything above fails, then the workspace wasn't setup correctly
+      # Remove it by deleting the workspace directory
+      rescue:
+        - name: Delete workspace on rescue
+          file:
+            path: "~/tempest/{{ tempest_workspace }}"
+            state: absent
+
+        - set_fact:
+            rescued: yes
+
+      when: tempest_workspace not in shell_output.stdout_lines
+
+    # This block always reaches, unless rescued is defined. At that point
+    # the workspace should not exist anymore
+    - block:
+        - name: Create saved_state.json
+          shell: "cd ~/tempest/{{ tempest_workspace }} && tempest cleanup --init-saved-state"
+
+        - name: Run Tempest smoke tests
+          shell: "cd ~/tempest/{{ tempest_workspace }} && tempest run --smoke {{ concurrency | ternary(\"--concurrency %s\" % concurrency, '') }}"
+          register: shell_output
+
+      always:
+        - name: Tempest test output
+          debug:
+            var: shell_output.stdout_lines
+          failed_when: shell_output.rc != 0
+      tags:
+        - run
+
+      when: rescued is not defined
+...

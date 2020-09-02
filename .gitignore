@@ -23,3 +23,5 @@ roles/*
 
 # Ignore virtualenv
 venv/
+
+test/

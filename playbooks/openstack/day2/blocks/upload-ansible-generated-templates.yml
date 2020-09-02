@@ -1,0 +1,45 @@
+- name: Upload ansible-generated templates
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    # Upload the latest output templates to the director
+    - block:
+        - name: Copy the existing ansible-generated folder to a backup location
+          vars:
+            date: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+          copy:
+            src: /home/stack/ansible-generated
+            dest: "/var/tmp/ansible-generated_{{ date }}"
+            remote_src: yes
+
+        - name: Ensure ansible-generated exists on director
+          file:
+            path: '/home/stack/ansible-generated/'
+            state: directory
+            owner: stack
+            group: stack
+            mode: '0755'
+
+        - name: Create /home/stack/ansible-generated directory structure
+          file:
+            path: "/home/stack/ansible-generated/{{ item.path }}"
+            state: directory
+            owner: stack
+            group: stack
+          with_filetree: "{{ inventory_dir }}/../ansible-generated"
+          when: item.state == 'directory'
+
+        - name: Template ansible-generated/ deployment files to director
+          template:
+            src: "{{ item.src }}"
+            dest: "/home/stack/ansible-generated/{{ item.path }}"
+            owner: stack
+            group: stack
+            mode: preserve
+          with_filetree: "{{ inventory_dir }}/../ansible-generated"
+          when: item.state == 'file'
+      tags:
+        - templates
