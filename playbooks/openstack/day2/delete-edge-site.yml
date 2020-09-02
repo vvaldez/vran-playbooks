@@ -1,0 +1,17 @@
+---
+- name: Check for required variables
+  hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ site_name }}"
+
+- name: "openstack overcloud delete {{ site_name }}"
+  import_playbook: blocks/openstack-overcloud-delete.yml
+  vars:
+    tripleo_overcloud_delete_name: "{{ site_name }}"
