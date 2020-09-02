@@ -93,21 +93,15 @@
     tripleo_overcloud_deploy_roles_file: "{{ site[site_name].deploy_roles_file }}"
     tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
   tags:
-    - openstack overcloud deploy site_name
+    - openstack overcloud deploy edge
 
-- name: "openstack aggregate create {{ site_name }}"
-  hosts: director
-  become: yes
-  become_user: stack
-  gather_facts: no
-  remote_user: root
-  tasks:
-    - shell: |
-        source /home/stack/centralrc
-
-        openstack aggregate create --zone {{ site_name }} {{ site_name }}
+- name: openstack aggregate create {{ site_name }}
+  import_playbook: blocks/openstack-aggregate-create.yml
+  vars:
+    aggregate_name: "{{ site_name }}"
+    zone_name: "{{ site_name }}"
   tags:
-    - openstack aggregate create site_name
+    - openstack aggregate create
 
 # - name: tempest run central
 #   import_playbook: blocks/tempest-run.yml

@@ -79,19 +79,13 @@
   tags:
     - openstack overcloud deploy site_name
 
-- name: "openstack aggregate create central"
-  hosts: director
-  become: yes
-  become_user: stack
-  gather_facts: no
-  remote_user: root
-  tasks:
-    - shell: |
-        source /home/stack/centralrc
-
-        openstack aggregate create --zone central central
+- name: openstack aggregate create central
+  import_playbook: blocks/openstack-aggregate-create.yml
+  vars:
+    aggregate_name: central
+    zone_name: central
   tags:
-    - openstack aggregate create central
+    - openstack aggregate create
 
 # - name: tempest run central
 #   import_playbook: blocks/tempest-run.yml
