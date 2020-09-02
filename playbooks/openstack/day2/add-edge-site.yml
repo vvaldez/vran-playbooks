@@ -26,9 +26,13 @@
       add_host:
         name: "{{ inventory_hostname }}"
         groups: "{{ group_names + [site_to_add] }}"
+  tags:
+    - minimal
 
 - name: Upload ansible-generated templates
   import_playbook: blocks/upload-ansible-generated-templates.yml
+  tags:
+    - minimal
 
 - name: openstack undercloud install
   import_playbook: blocks/openstack-undercloud-install.yml
@@ -93,6 +97,7 @@
     tripleo_overcloud_deploy_roles_file: "{{ site[site_name].deploy_roles_file }}"
     tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
   tags:
+    - minimal
     - openstack overcloud deploy edge
 
 - name: openstack aggregate create {{ site_name }}
@@ -101,6 +106,7 @@
     aggregate_name: "{{ site_name }}"
     zone_name: "{{ site_name }}"
   tags:
+    - minimal
     - openstack aggregate create
 
 # - name: tempest run central
@@ -115,5 +121,6 @@
 #   vars:
 #     tempest_workspace: "{{ site_name }}"
 #   tags:
+#     - minimal
 #     - tempest run site_name
 ...
