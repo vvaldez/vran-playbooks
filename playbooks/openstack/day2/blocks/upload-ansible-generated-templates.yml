@@ -23,6 +23,9 @@
             group: stack
             mode: '0755'
 
+        - debug:
+            msg: "{{ inventory_dir }}/../ansible-generated"
+
         - name: Create /home/stack/ansible-generated directory structure
           file:
             path: "/home/stack/ansible-generated/{{ item.path }}"
