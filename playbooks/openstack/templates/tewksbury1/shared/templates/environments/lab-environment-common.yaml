@@ -12,7 +12,7 @@ parameter_defaults:
   NeutronNetworkVLANRanges:
 {% for site in sites %}
     # {{ site.name_lower }}
-{%   for k, v in site.networks.iteritems() %}
+{%   for k, v in site.networks.items() %}
 {%     if 'provider' in v and v.provider | bool %}
 {%       set physnet = k.split('_')[1:] | join('_') %}
     - {{ physnet + '-' + site.name_lower }}:{{ v.vlan }}
