@@ -1,0 +1,29 @@
+nodes:
+{% for node in instackenv.nodes %}
+  - name: {{ node.name }}
+    arch: x86_64
+{% if 'mac' in node %}
+    mac: {{ node.mac | to_json }}
+{% endif %}
+{% if 'type' in node %}
+    pm_type: {{ node.type }}
+{% else %}
+    pm_type: {{ instackenv.pm.type }}
+{% endif %}
+{% if 'user' in node %}
+    pm_user: {{ '{{' }} instackenv.nodes[{{ loop.index0 }}].user }}
+{% else %}
+    pm_user: {{ '{{' }} instackenv.pm.user }}
+{% endif %}
+{% if 'password' in node %}
+    pm_password: '{{ '{{' }} instackenv.nodes[{{ loop.index0 }}].password }}'
+{% else %}
+    pm_password: '{{ '{{' }} instackenv.pm.password }}'
+{% endif %}
+{% if 'pm_vm_name' in node %}
+    pm_vm_name: {{ node.pm_vm_name }}
+{% endif %}
+    pm_addr: {{ node.pm_addr }}
+    capabilities: profile:{{ node.role }},boot_option:local
+
+{% endfor %}

@@ -1,4 +1,0 @@
----
-- name: Upload ansible-generated templates
-  import_playbook: blocks/upload-ansible-generated-templates.yml
-...

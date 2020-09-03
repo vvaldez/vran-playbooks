@@ -1,0 +1,39 @@
+heat_template_version: newton
+
+description: >
+  This Heat stack will create the initial Overcloud networking
+  resources for Tempest. It creates a network and a router connecting it
+  to the provider-network.
+
+parameters:
+
+resources:
+  tempest_network:
+    type: OS::Neutron::Net
+    properties:
+      name: ansible-generated-tempest-network
+      shared: true
+
+  tempest_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: tempest_network }
+      cidr: 192.168.0.0/24
+      gateway_ip: 192.168.0.1
+      enable_dhcp: true
+      name: ansible-generated-tempest-subnet
+
+  tempest_router:
+    type: OS::Neutron::Router
+    properties:
+      admin_state_up: true
+      external_gateway_info:
+        enable_snat: true
+        network: provider-network
+      name: ansible-generated-tempest-router
+
+  tempest_router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router: { get_resource: tempest_router }
+      subnet: { get_resource: tempest_subnet }

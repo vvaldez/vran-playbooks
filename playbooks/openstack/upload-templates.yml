@@ -1,0 +1,43 @@
+---
+- hosts: director
+  connection: local
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Set output_dir relative to **this** playbook
+      set_fact:
+        output_dir: "{{ playbook_dir }}/templates/{{ datacenter }}/.tmp"
+  tags:
+    - cleanup
+    - upload
+
+- name: Generate templates locally
+  import_playbook: "templates/tewksbury1/generate-templates-locally.yml"
+  tags:
+    - generate
+
+- name: Upload ansible-generated templates
+  import_playbook: blocks/upload-ansible-generated-templates.yml
+  vars:
+    # Because the previous import_playbook used connection: local,
+    # the python interpreter is set to the clients' discovery. ie /usr/bin/python.
+    # The director is RHEL8 and does not have /usr/bin/python by default though.
+    # So we need to override the found interpretor forcefully, otherwise
+    # this connection fails.
+    ansible_python_interpreter: python3.6
+    templates_dir: "{{ output_dir }}/ansible-generated"
+  tags:
+    - upload
+
+- hosts: director
+  connection: local
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Cleanup .tmp directory
+      file:
+        path: "{{ output_dir }}"
+        state: absent
+      tags:
+        - cleanup
+...
