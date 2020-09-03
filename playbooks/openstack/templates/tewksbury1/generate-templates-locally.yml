@@ -3,11 +3,11 @@
   gather_facts: no
   vars:
     jinja_macros_dir: "jinja-macros/"
-    shared_dir: "shared/"
+    output_dir: "{{ inventory_dir }}/../"
     role_specific_dir: "role-specific/"
+    shared_dir: "shared/"
     site_specific_dir: "site-specific/"
     tmp_dir: "/tmp/ansible-generated"
-#    output_dir: "{{ inventory_dir }}/../"
     quick: no
   tasks:
     - block:
@@ -16,7 +16,6 @@
           when: item is undefined
           loop:
             - "{{ datacenter }}"
-            - "{{ output_dir }}"
 
     # Define a `site_groups` list that will hold all the groups which
     # localhost should be added to `sites`/`overcloud` variable access for
