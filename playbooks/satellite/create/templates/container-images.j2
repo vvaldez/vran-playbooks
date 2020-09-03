@@ -1,0 +1,8 @@
+container_images:
+- product: {{  satellite.container_product_name }}
+  images:
+{% for item in registry_output.json.results %}
+{%  if item.name not in satellite.container_search_exclude_list %}
+    - name: {{ item.name }}
+{% endif %}
+{% endfor %}

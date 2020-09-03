@@ -19,7 +19,7 @@ To deploy a Satellite server
       - "<keyN>..."
     ````
 
-3. Review/modify Satellite gorup variables in `ansible-inventory/<site>/inventory/group_vars/satellite/`
+3. Review/modify Satellite group variables in `ansible-inventory/<site>/inventory/group_vars/satellite/`
 
     ```yml
     satellite:

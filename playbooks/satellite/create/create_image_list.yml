@@ -1,0 +1,16 @@
+- name: Create image list for container images
+  hosts: satellite
+  gather_facts: yes
+
+  tasks:
+    - name: get upstream image names
+      uri:
+        url: "{{ satellite.container_search_string }}"
+      register: registry_output
+      delegate_to: localhost
+
+    - name: create container-images.yml
+      template:
+        src: container-images.j2
+        dest: container-images.yml
+      delegate_to: localhost

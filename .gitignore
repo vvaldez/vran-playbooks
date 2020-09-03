@@ -1,5 +1,6 @@
 # Secrets file
 .vault_secret
+secrets.yml
 
 # Ignore Ansible generated files
 ansible-errors.json
