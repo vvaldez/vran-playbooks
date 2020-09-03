@@ -1,0 +1,87 @@
+{#
+The first site is assumed to be the central site, with all others being edges
+#}
+{# Init network_data.yaml's nested 'subnets' dictionary #}
+{%
+  set
+    external_subnets,
+    internal_api_subnets,
+    storage_subnets,
+    tenant_subnets =
+    {},
+    {},
+    {},
+    {}
+%}
+{#
+For each site which isn't the central site, go thru the following networks:
+
+- external
+- internal_api
+- storage
+- tenant
+
+and then append the correspoding <network>_<site>_subnet dictionary to the
+'subnets' dictionary, if the network is defined in sites.<networks>.
+#}
+{% for site in sites[1:] %}
+{%   if 'external' in site.networks %}
+{%     do site.networks.external.pop('name_lower') %}
+{%     do external_subnets.update({'external_' + site.name_lower + '_subnet': site.networks.external}) %}
+{%   endif %}
+{%   if 'internal_api' in site.networks %}
+{%     do site.networks.internal_api.pop('name_lower') %}
+{%     do internal_api_subnets.update({'internal_api_' + site.name_lower + '_subnet': site.networks.internal_api}) %}
+{%   endif %}
+{%   if 'storage' in site.networks %}
+{%     do site.networks.storage.pop('name_lower') %}
+{%     do storage_subnets.update({'storage_' + site.name_lower + '_subnet': site.networks.storage}) %}
+{%   endif %}
+{%   if 'tenant' in site.networks %}
+{%     do site.networks.tenant.pop('name_lower') %}
+{%     do tenant_subnets.update({'tenant_' + site.name_lower + '_subnet': site.networks.tenant}) %}
+{%   endif %}
+{% endfor %}
+{#
+Init the dictionary to hold each of the networks defined in the comment above
+#}
+{%
+  set
+    networks = {
+      'external': {
+        'subnets': external_subnets
+      },
+      'internal_api': {
+        'subnets': internal_api_subnets
+      },
+      'storage': {
+        'subnets': storage_subnets
+      },
+      'tenant': {
+        'subnets': tenant_subnets
+      }
+  }
+%}
+{#
+Rename `name_upper` key to `name` for networks belonging to central site.
+#}
+{% do sites[0].networks.external.update({'name': sites[0].networks.external.name_upper}) %}
+{% do sites[0].networks.internal_api.update({'name': sites[0].networks.internal_api.name_upper}) %}
+{% do sites[0].networks.storage.update({'name': sites[0].networks.storage.name_upper}) %}
+{% do sites[0].networks.tenant.update({'name': sites[0].networks.tenant.name_upper}) %}
+{% do sites[0].networks.external.pop('name_upper') %}
+{% do sites[0].networks.internal_api.pop('name_upper') %}
+{% do sites[0].networks.storage.pop('name_upper') %}
+{% do sites[0].networks.tenant.pop('name_upper') %}
+{#
+For each of the networks, set the corresponding network info coming from the
+first site found in sites. The first site is assumed to be the
+central site, and it's info goes at the root level, not within the nested
+subnets key.
+
+Print the final output as an array, as that is what OOO expects.
+#}
+- {{ networks.external | combine(sites[0].networks.external) | to_yaml | indent(2) }}
+- {{ networks.internal_api | combine(sites[0].networks.internal_api) | to_yaml | indent(2) }}
+- {{ networks.storage | combine(sites[0].networks.storage) | to_yaml | indent(2) }}
+- {{ networks.tenant | combine(sites[0].networks.tenant) | to_yaml | indent(2) }}

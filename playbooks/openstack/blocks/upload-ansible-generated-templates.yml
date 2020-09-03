@@ -7,13 +7,19 @@
   tasks:
     # Upload the latest output templates to the director
     - block:
-        - name: Copy the existing ansible-generated folder to a backup location
+        - name: Check if /home/stack/ansible-generated exists
+          stat:
+            path: /home/stack/ansible-generated
+          register: stat_output
+
+        - name: If /home/stack/ansible-generated exists, copy the folder to a backup location
           vars:
             date: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
           copy:
             src: /home/stack/ansible-generated
             dest: "/var/tmp/ansible-generated_{{ date }}"
             remote_src: yes
+          when: stat_output.stat.exists
 
         - name: Ensure ansible-generated exists on director
           file:
@@ -23,16 +29,13 @@
             group: stack
             mode: '0755'
 
-        - debug:
-            msg: "{{ inventory_dir }}/../ansible-generated"
-
         - name: Create /home/stack/ansible-generated directory structure
           file:
             path: "/home/stack/ansible-generated/{{ item.path }}"
             state: directory
             owner: stack
             group: stack
-          with_filetree: "{{ inventory_dir }}/../ansible-generated"
+          with_filetree: "{{ templates_dir }}"
           when: item.state == 'directory'
 
         - name: Template ansible-generated/ deployment files to director
@@ -42,7 +45,7 @@
             owner: stack
             group: stack
             mode: preserve
-          with_filetree: "{{ inventory_dir }}/../ansible-generated"
+          with_filetree: "{{ templates_dir }}"
           when: item.state == 'file'
       tags:
         - templates

@@ -1,0 +1,4 @@
+parameter_defaults:
+  CephClientKey: {{ overcloud.ooo.CephClientKey }}
+  CephClusterFSID: {{ overcloud.ooo.CephClusterFSID }}
+  CephExternalMonHost: '{{ overcloud.ooo.CephExternalMonHost }}'
