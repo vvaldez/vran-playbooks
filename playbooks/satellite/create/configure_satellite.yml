@@ -315,54 +315,53 @@
     #########################
 
 
-    - block:
-      - name: Create client activation key
-        theforeman.foreman.activation_key:
-          username: "{{ satellite.admin_username }}"
-          password: "{{ satellite.admin_password }}"
-          server_url: "{{ satellite.server_url }}"
-          validate_certs: no
-          organization: "{{ satellite.organization }}"
-          name: "{{ item.name }}"
-          lifecycle_environment: "{{ item.lifecycle_environment }}"
-          content_view: "{{ item.content_view }}"
-          subscriptions: "{{ item.subscriptions }}"
-          content_overrides: "{{ item.content_overrides }}"
-          auto_attach: False
-          release_version: "{{ item.releasever }}"
-        delegate_to: localhost
-        tags:
-          - activation-keys
-        loop: "{{ satellite.activation_keys }}"
-        when: "'activation_keys' in satellite"
-
+    - name: Create client activation key
+      block:
+        - theforeman.foreman.activation_key:
+            username: "{{ satellite.admin_username }}"
+            password: "{{ satellite.admin_password }}"
+            server_url: "{{ satellite.server_url }}"
+            validate_certs: no
+            organization: "{{ satellite.organization }}"
+            name: "{{ item.name }}"
+            lifecycle_environment: "{{ item.lifecycle_environment }}"
+            content_view: "{{ item.content_view }}"
+            subscriptions: "{{ item.subscriptions }}"
+            content_overrides: "{{ item.content_overrides }}"
+            auto_attach: False
+            release_version: "{{ item.releasever }}"
+          delegate_to: localhost
+          tags:
+            - activation-keys
+          loop: "{{ satellite.activation_keys }}"
+          when: "'activation_keys' in satellite"
       rescue:
-      - name: report error
-        set_fact:
-          pool_error_msg: |
-              There was a failure while creating activation keys.
-              This is often related to incorrect Pool IDs.
-              Please review the output below and update the Pool Ids in
-              the Inventory in the Activation Keys section to use these values.
-              Then re-run this playbook with --tags activation-keys
-        delegate_to: localhost
-        tags:
-          - activation-keys
+        - name: report error
+          set_fact:
+            pool_error_msg: |
+                There was a failure while creating activation keys.
+                This is often related to incorrect Pool IDs.
+                Please review the output below and update the Pool Ids in
+                the Inventory in the Activation Keys section to use these values.
+                Then re-run this playbook with --tags activation-keys
+          delegate_to: localhost
+          tags:
+            - activation-keys
 
-      - name: get pool IDs
-        set_fact:
-          pool_ids: "{{ pool_ids| default([])  + [ item.name + ' -> ' + item.cp_id ] }}"
-        delegate_to: localhost
-        loop: "{{ manifest.resources }}"
-        tags:
-          - activation-keys
+        - name: get pool IDs
+          set_fact:
+            pool_ids: "{{ pool_ids| default([])  + [ item.name + ' -> ' + item.cp_id ] }}"
+          delegate_to: localhost
+          loop: "{{ manifest.resources }}"
+          tags:
+            - activation-keys
 
-      - fail:
-          msg:
-            - "{{ pool_error_msg }}"
-            - "{{ pool_ids }}"
-        tags:
-          - activation-keys
+        - fail:
+            msg:
+              - "{{ pool_error_msg }}"
+              - "{{ pool_ids }}"
+          tags:
+            - activation-keys
   handlers:
 
     - name: Publish new content view - all Lifecycle envs
@@ -397,6 +396,10 @@
         - not create_content_views.results[index].changed
       listen: update exiting content view
 
+    # TODO: this is very slow and loops through to sync repos product by product
+    # This doesn't leverage all available cores for pulp sync tasks
+    # It would be quicker start all syncs individually, or maybe put these in the
+    # background with async.
     - name: If we added products to the nightly sync task we should sync them now
       theforeman.foreman.repository_sync:
         username: "{{ satellite.admin_username }}"
@@ -409,6 +412,6 @@
       delegate_to: localhost
       register: sync_status
       until: sync_status.changed == true
-      retries: 5
+      retries: 10
       listen: sync products
 
