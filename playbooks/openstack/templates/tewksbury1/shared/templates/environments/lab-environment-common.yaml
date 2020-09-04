@@ -1,0 +1,44 @@
+resource_registry:
+  OS::TripleO::Services::NovaAZConfig: OS::Heat::None
+
+parameter_defaults:
+
+  DnsServers: {{ overcloud.ooo.DnsServers | to_json }}
+  NtpServer: {{ overcloud.ooo.NtpServer | to_json }}
+  BondInterfaceOvsOptions: "mode=4 miimon=100"
+
+  DockerInsecureRegistryAddress: {{ overcloud.ooo.DockerInsecureRegistryAddress | to_json }}
+
+  NeutronNetworkVLANRanges:
+{% for site in sites %}
+    # {{ site.name_lower }}
+{%   for k, v in site.networks.items() %}
+{%     if 'provider' in v and v.provider | bool %}
+{%       set physnet = k.split('_')[1:] | join('_') %}
+    - {{ physnet + '-' + site.name_lower }}:{{ v.vlan }}
+{%     endif %}
+{%   endfor %}
+{% endfor %}
+  NeutronFlatNetworks:
+    - floating-ips
+
+  CloudName: {{ overcloud.ooo.CloudName }}
+  CloudDomain: {{ overcloud.ooo.CloudDomain }}
+
+  NovaReservedHostMemory: 4096
+
+  NeutronEnableIsolatedMetadata: true
+  NeutronEnableForceMetadata: true
+  NeutronEnableMetadataNetwork: true
+#  NeutronGlobalPhysnetMtu: 9000
+
+  ExtraConfig:
+    nova::compute::force_config_drive: true
+
+  RhsmVars:
+    rhsm_method: "satellite"
+    rhsm_server_hostname: "{{ overcloud.ooo.rhsm_server_hostname }}"
+    rhsm_baseurl: "https://{{ overcloud.ooo.rhsm_server_hostname }}/pulp/repos"
+    rhsm_activation_key: "{{ overcloud.ooo.rhsm_activation_key }}"
+    rhsm_org_id: "{{ overcloud.ooo.rhsm_org_id }}"
+    rhsm_force_register: True

@@ -1,0 +1,15 @@
+---
+parameter_defaults:
+  ContainerImagePrepare:
+  - set:
+      ceph_image: {{ undercloud.rhsm_org_id | lower }}-{{ undercloud.rhsm_lifecycle_environment }}-{{ undercloud.rhsm_content_view }}-osp16_containers-rhceph-4-rhel8
+      ceph_namespace: {{ undercloud.rhsm_server_hostname }}:5000
+      ceph_tag: latest
+      name_prefix: {{ undercloud.rhsm_org_id | lower }}-{{ undercloud.rhsm_lifecycle_environment }}-{{ undercloud.rhsm_content_view }}-osp16_containers
+      name_suffix: ''
+      namespace: {{ undercloud.rhsm_server_hostname }}:5000
+      neutron_driver: ovs
+      rhel_containers: false
+      tag: '16.1'
+    tag_from_label: '{version}-{release}'
+...

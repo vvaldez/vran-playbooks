@@ -1,0 +1,1 @@
+{{ lookup('template', loop_index[1].type.nic_config_file) }}

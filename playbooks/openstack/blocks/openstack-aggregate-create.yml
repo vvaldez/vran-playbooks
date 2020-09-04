@@ -1,0 +1,37 @@
+- name: "openstack aggregate create"
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    # Check for required variables
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ zone_name }}"
+            - "{{ aggregate_name }}"
+
+    - shell: |
+        source /home/stack/centralrc
+
+        # Check if the aggregate exists
+        openstack aggregate list  -c Name -c "Availability Zone" -f value | grep -q "{{ aggregate_name }} {{ zone_name }}"
+
+        # If the aggregate does not exist already
+        if [ ! $? -eq 0 ]; then
+          openstack aggregate create {{ aggregate_name }} --zone {{ zone_name }}
+
+          # change
+          exit 0
+        else
+          # no change
+          exit 1
+        fi
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      failed_when: shell_output.rc != 0 and shell_output.rc != 1
+  tags:
+    - openstack aggregate create
