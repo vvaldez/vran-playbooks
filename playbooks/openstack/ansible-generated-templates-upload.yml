@@ -1,9 +1,32 @@
+---
+- hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - set_fact:
+        output_dir: "templates/{{ datacenter }}/.tmp"
+
+    - include_tasks: "{{ relative_path_to_templates }}/tasks-to-generate-templates.yml"
+      vars:
+        # This relative path **has** to be in the current directory or a subdirectory.
+        # It **cannot** lead thru a parent directory. This is due to the
+        # jinja2 macro import being used within the templates, no current workaround exists.
+        relative_path_to_templates: "templates/{{ datacenter }}"
+
 - name: Upload ansible-generated templates
   hosts: director
   become: yes
   become_user: stack
   gather_facts: no
   remote_user: root
+  vars:
+    # Because the previous import_playbook used connection: local,
+    # the python interpreter is set to the clients' discovery. ie /usr/bin/python.
+    # The director is RHEL8 and does not have /usr/bin/python by default though.
+    # So we need to override the found interpretor forcefully, otherwise
+    # this connection fails.
+    ansible_python_interpreter: python3.6
+    templates_dir: "{{ output_dir }}/ansible-generated"
   tasks:
     # Upload the latest output templates to the director
     - block:
@@ -47,5 +70,18 @@
             mode: preserve
           with_filetree: "{{ templates_dir }}"
           when: item.state == 'file'
+  tags:
+    - upload
+
+- hosts: director
+  connection: local
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Cleanup .tmp directory
+      file:
+        path: "{{ output_dir }}"
+        state: absent
       tags:
-        - templates
+        - cleanup
+...

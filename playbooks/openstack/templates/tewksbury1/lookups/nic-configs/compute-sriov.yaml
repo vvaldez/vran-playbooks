@@ -159,7 +159,7 @@ resources:
           expression: $.data.max()
           data:
             - {get_param: ControlPlaneMtu}
-{% if loop_index[0].type == 'spine' %}
+{% if current_site.type == 'spine' %}
             - {get_param: StorageMtu}
 {% endif %}
             - {get_param: InternalApiMtu}
@@ -208,7 +208,7 @@ resources:
                     primary: true
                   - type: interface
                     name: nic2
-{% if loop_index[0].type == 'spine' %}
+{% if current_site.type == 'spine' %}
                 - type: vlan
                   mtu:
                     get_param: StorageMtu
@@ -258,10 +258,10 @@ resources:
                           next_hop:
                             get_param: ExternalInterfaceDefaultRoute
               - type: ovs_bridge
-{% if loop_index[0].type == 'spine' %}
+{% if current_site.type == 'spine' %}
                 name: br-provider
 {% else %}
-                name: br-{{ loop_index[0].name_lower }}
+                name: br-{{ current_site.name_lower }}
 {% endif %}
                 use_dhcp: false
                 mtu: 9000

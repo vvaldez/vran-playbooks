@@ -1,13 +1,13 @@
 resource_registry:
 # Configure Networks
-{% for role in loop_index.roles %}
+{% for role in current_site.roles %}
 {%   if role.type.name_upper == 'Controller'%}
 {%     set prepend_name = 'Controller' %}
 {%   else %}
-{%     set prepend_name = role.type.name_upper + loop_index.name_upper %}
+{%     set prepend_name = role.type.name_upper + current_site.name_upper %}
 {%   endif %}
   OS::TripleO::{{ prepend_name }}::Net::SoftwareConfig:
-    ../network/nic-{{ role.type.name_lower }}-{{ loop_index.name_lower }}.yaml
+    ../network/nic-{{ role.type.name_lower }}-{{ current_site.name_lower }}.yaml
 {% endfor %}
 
 # Disable Swift
@@ -17,13 +17,13 @@ resource_registry:
 
 parameter_defaults:
 
-  NovaComputeAvailabilityZone: {{ loop_index.name_lower }}
-  RootStackName: {{ loop_index.name_lower }}
+  NovaComputeAvailabilityZone: {{ current_site.name_lower }}
+  RootStackName: {{ current_site.name_lower }}
 
   NeutronBridgeMappings:
     - tenant:br-tenant
     - datacentre:br-ex
-    - ovs-{{ loop_index.name_lower }}:br-provider
+    - ovs-{{ current_site.name_lower }}:br-provider
     - floating-ips:br-float
 
   VipSubnetMap:
@@ -43,18 +43,18 @@ parameter_defaults:
 
   PublicVirtualFixedIPs: [{'ip_address':'172.17.119.10'}]
 
-{% for role in loop_index.roles %}
+{% for role in current_site.roles %}
 {%   if role.type.name_upper == 'Controller'%}
 {%     set prepend_name = 'Controller' %}
 {%   else %}
-{%     set prepend_name = role.type.name_upper + loop_index.name_upper %}
+{%     set prepend_name = role.type.name_upper + current_site.name_upper %}
 {%   endif %}
   #
   # {{ prepend_name }}
   #
 
   {{ prepend_name }}Count: {{ role.count }}
-  Overcloud{{ prepend_name }}Flavor: {{ role.type.name_lower }}-{{ loop_index.name_lower }}
+  Overcloud{{ prepend_name }}Flavor: {{ role.type.name_lower }}-{{ current_site.name_lower }}
   {{ prepend_name }}ControlPlaneSubnet: ctlplane-subnet
 
   {{ lookup('template', role.environment_file) | indent(2) }}

@@ -25,4 +25,6 @@ roles/*
 # Ignore virtualenv
 venv/
 
+# Ignore temporary directories
+.tmp/
 test/

@@ -1,17 +1,17 @@
 ###############################################################################
-# Role: ComputeVdu{{ loop_index.name_upper }}
+# Role: ComputeVdu{{ current_site.name_upper }}
 ###############################################################################
-- name: ComputeVdu{{ loop_index.name_upper }}
+- name: ComputeVdu{{ current_site.name_upper }}
   description: |
-    Basic ComputeVdu Node role for {{ loop_index.name_upper }}
+    Basic ComputeVdu Node role for {{ current_site.name_upper }}
   CountDefault: 1
   networks:
     External:
-      subnet: external_{{ loop_index.name_lower }}_subnet
+      subnet: external_{{ current_site.name_lower }}_subnet
     InternalApi:
-      subnet: internal_api_{{ loop_index.name_lower }}_subnet
+      subnet: internal_api_{{ current_site.name_lower }}_subnet
     Tenant:
-      subnet: tenant_{{ loop_index.name_lower }}_subnet
+      subnet: tenant_{{ current_site.name_lower }}_subnet
 {% if my_idx == 0 %}
     Storage:
       subnet: storage_{{ affix }}

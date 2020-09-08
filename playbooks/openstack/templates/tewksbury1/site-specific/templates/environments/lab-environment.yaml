@@ -1,1 +1,1 @@
-{{ lookup('template', loop_index.environment_file) }}
+{{ lookup('template', current_site.environment_file) }}
