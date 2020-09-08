@@ -1,0 +1,87 @@
+- name: Check for required variables
+  hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            # node_name should be the hostname as show in server list of the undercloud
+            - "{{ node_name }}"
+            - "{{ site_name }}"
+
+- import_playbook: blocks/add-director-to-site-group.yml
+
+- import_playbook: ansible-generated-templates-upload.yml
+
+#
+# Migrate all VMs off current node
+#
+
+- name: Disable the Compute service
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - shell: |
+        source ~/{{ sites[0].name_lower }}
+
+        openstack compute service set {{ node_name }}.{{ undercloud.overcloud_domain_name }} nova-compute --disable --disable-reason "automated remove of {{ node_name }}"
+
+- name: Find the node UUID
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - shell: |
+        source ~/stackrc
+
+        os server list --name {{ node_name }} -c ID -f value
+      register: shell_output
+
+    - set_fact:
+        node_uuid: shell_output.stdout
+
+- name: "openstack overcloud deploy {{ site_name }} --update-plan-only"
+  import_playbook: blocks/openstack-overcloud-deploy.yml
+  vars:
+    dcn_export: no
+    tripleo_overcloud_deploy_stack: "{{ site_name }}"
+    tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
+    tripleo_overcloud_deploy_update_plan_only: true
+
+- name: "openstack overcloud node delete {{ site_name }}"
+  import_playbook: blocks/openstack-overcloud-node-delete.yml
+  vars:
+    dcn_export: no
+    tripleo_overcloud_node_delete_stack: "{{ site_name }}"
+    tripleo_overcloud_node_delete_nodes: "{{ node_uuid }}"
+
+- name: Remove the node Overcloud services
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - shell: |
+        source ~/{{ site_name }}rc
+
+        # Remove the Compute service from the node
+        SERVICE_ID=$(openstack compute service list --host {{ node_name }}.{{ undercloud.overcloud_domain_name }} -c ID -f value)
+        openstack compute service delete ${SERVICE_ID}
+
+        # Remove the Compute service from the node
+        OPENVSWITCH_AGENT_ID=$(openstack network agent list --host {{ node_name }}.{{ undercloud.overcloud_domain_name }} --agent-type open-vswitch -c ID -f value)
+        openstack network agent delete ${OPENVSWITCH_AGENT_ID}
+
+        # Remove the deleted Compute service as a resource provider from the Placement service
+
+
+# Run tempest

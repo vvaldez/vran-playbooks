@@ -15,8 +15,6 @@
           when: item is undefined
           loop:
             - "{{ tripleo_overcloud_deploy_stack }}"
-            - "{{ tripleo_overcloud_deploy_networks_file }}"
-            - "{{ tripleo_overcloud_deploy_roles_file }}"
             - "{{ tripleo_overcloud_deploy_environment_files }}"
 
     # Gather_facts for tripleo_operator_ansible

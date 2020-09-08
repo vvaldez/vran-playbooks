@@ -1,0 +1,59 @@
+---
+- name: openstack overcloud node delete
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  vars:
+    dcn_export: no
+  tasks:
+    # Check for required variables
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            - "{{ tripleo_overcloud_node_delete_stack }}"
+            - "{{ tripleo_overcloud_node_delete_nodes }}"
+
+    # Gather_facts for tripleo_operator_ansible
+    - setup:
+        gather_subset: '!all'
+
+    # Attempt to delete the overcloud node
+    # If success, print the stack status
+    # If failure, print the failures
+    - block:
+        - name: openstack overcloud node delete {{ tripleo_overcloud_node_delete_stack }}
+          import_role:
+            name: tripleo.operator.tripleo_overcloud_node_delete
+          vars:
+            tripleo_overcloud_node_delete_home_dir: /home/stack
+
+        - debug:
+            var: tripleo_overcloud_node_delete_result.stdout_lines
+
+        - name: openstack stack list
+          shell: |
+            source ~/stackrc && \
+            openstack stack list
+          register: shell_output
+          changed_when: false
+
+        - debug:
+            var: shell_output.stdout_lines
+          changed_when: false
+
+      rescue:
+        - name: openstack stack failures list
+          shell: |
+            source ~/stackrc && \
+            openstack stack failures list {{ tripleo_overcloud_node_delete_stack }} | \
+            sed 's/\\n/\n/g'
+          register: shell_output
+          changed_when: false
+
+        - debug:
+            var: shell_output.stdout_lines
+          changed_when: false

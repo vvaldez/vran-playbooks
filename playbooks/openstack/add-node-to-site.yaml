@@ -12,6 +12,8 @@
             - "{{ role }}"
             - "{{ site_name }}"
 
+- import_playbook: blocks/add-director-to-site-group.yml
+
 - name: Upload ansible-generated templates
   import_playbook: ansible-generated-templates-upload.yml
 
