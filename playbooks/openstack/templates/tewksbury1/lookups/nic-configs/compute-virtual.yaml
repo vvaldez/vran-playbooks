@@ -245,10 +245,10 @@ resources:
                   use_dhcp: false
                   primary: true
               - type: ovs_bridge
-{% if loop_index[0].type == 'spine' %}
+{% if current_site.type == 'spine' %}
                 name: br-provider
 {% else %}
-                name: br-{{ loop_index[0].name_lower }}
+                name: br-{{ current_site.name_lower }}
 {% endif %}
                 use_dhcp: false
                 mtu: 1500

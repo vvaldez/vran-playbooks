@@ -1,14 +1,14 @@
 {% if my_idx == 0 %}
 {% set affix = 'subnet' %}
 {% else %}
-{% set affix = loop_index.name_lower + '_subnet' %}
+{% set affix = current_site.name_lower + '_subnet' %}
 {% endif %}
 ###############################################################################
-# Role: ComputeSriov{{ loop_index.name_upper }}
+# Role: ComputeSriov{{ current_site.name_upper }}
 ###############################################################################
-- name: ComputeSriov{{ loop_index.name_upper }}
+- name: ComputeSriov{{ current_site.name_upper }}
   description: |
-    Basic ComputeSriov Node role for {{ loop_index.name_upper }}
+    Basic ComputeSriov Node role for {{ current_site.name_upper }}
   CountDefault: 1
   networks:
     External:

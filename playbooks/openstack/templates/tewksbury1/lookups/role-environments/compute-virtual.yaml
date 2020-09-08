@@ -1,7 +1,7 @@
 {% import jinja_macros_dir + '/get_physnet_mapping.j2' as macros %}
-{% set site_upper = loop_index.name_upper %}
-{% set site_lower = loop_index.name_lower %}
-{% set role_name = 'ComputeVirtual' + loop_index.name_upper %}
+{% set site_upper = current_site.name_upper %}
+{% set site_lower = current_site.name_lower %}
+{% set role_name = 'ComputeVirtual' + current_site.name_upper %}
 
 {{ role_name }}Parameters:
   NovaEnableRbdBackend: false

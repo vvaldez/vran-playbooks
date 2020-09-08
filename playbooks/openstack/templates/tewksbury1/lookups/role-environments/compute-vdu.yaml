@@ -1,7 +1,7 @@
 {% import jinja_macros_dir + '/get_physnet_mapping.j2' as macros %}
-{% set site_upper = loop_index.name_upper %}
-{% set site_lower = loop_index.name_lower %}
-{% set role_name = 'ComputeVdu' + loop_index.name_upper %}
+{% set site_upper = current_site.name_upper %}
+{% set site_lower = current_site.name_lower %}
+{% set role_name = 'ComputeVdu' + current_site.name_upper %}
 {{ role_name }}Image: overcloud-realtime-compute
 
 {{ role_name }}ExtraConfig:

@@ -1,1 +1,1 @@
-{{ lookup('template', loop_index[1].type.nic_config_file) }}
+{{ lookup('template', current_site_role.type.nic_config_file) }}
