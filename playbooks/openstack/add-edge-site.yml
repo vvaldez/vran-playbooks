@@ -30,7 +30,7 @@
     - minimal
 
 - name: Upload ansible-generated templates
-  import_playbook: blocks/upload-ansible-generated-templates.yml
+  import_playbook: ansible-generated-templates-upload.yml
   tags:
     - minimal
 
