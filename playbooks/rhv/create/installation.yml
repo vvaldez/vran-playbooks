@@ -16,13 +16,13 @@
         regexp: "^{{ ansible_default_ipv4.address }}"
         line: "{{ ansible_default_ipv4.address }} {{ inventory_hostname }} {{ ansible_hostname }}"
 
-    - import_tasks: ../../generic/rhsm_register_cdn.yml
+    - include_tasks: ../../generic/rhsm_register_cdn.yml
       when: not rhsm.use_satellite | default(False)
       name: Register with CDN
 
-    # - import_tasks: ../../generic/rhsm_register_satellite.yml
-    #   when: rhsm.use_satellite | default(True)
-    #   name: Register with Satellite
+    - include_tasks: ../../generic/rhsm_register_satellite.yml
+      when: rhsm.use_satellite | default(True)
+      name: Register with Satellite
 
     - name: Reset virt module
       command: yum --assumeyes module reset virt
@@ -64,11 +64,6 @@
         option: log_path
         value: /var/log/ansible.log
 
-    # - name: Patch ovirt-hosted-engine-setup bug
-    #   patch:
-    #     src: ../files/01_prepare_routing_rules.yml.patch
-    #     dest: /usr/share/ansible/roles/ovirt.hosted-engine-setup/tasks/bootstrap_local_vm/01_prepare_routing_rules.yml
-
     # Network setup needs to be done after, at least, the yum portion because
     # this is dependent on the bridge-utils package which is installed by
     # the rhvm-appliance package.
@@ -94,18 +89,20 @@
 
 - import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
   vars:
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
     # Engine size
     iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.0.size | upper }}"
   tags:
     - install
 
-- hosts: rhvh_dev
+- hosts:
+    - rhvh
+    - rhvh_dev
   name: "Install RHV Manager on {{ inventory_hostname }}"
   tags:
     - install
   vars:
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
     # Engine size
     rhv:
       he_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"

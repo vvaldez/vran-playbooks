@@ -5,7 +5,7 @@
   become: True
   vars:
     ceph_automation_username: ceph_ansible
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
   remote_user: "{{ ceph_automation_username }}"
   tasks:
     - when: inventory_hostname is match(ceph_admin_node)

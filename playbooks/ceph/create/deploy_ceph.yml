@@ -5,7 +5,7 @@
   vars:
     # Which cluster group to operate on
     ceph_automation_username: ceph_ansible
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
     ceph_playbook_dir: /usr/share/ceph-ansible
     ceph_playbook: site-container.yml
     ceph_inventory: /etc/ansible/hosts
