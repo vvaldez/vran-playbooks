@@ -3,6 +3,8 @@
   connection: local
   name: Export RAID Server Configuration Profile
   gather_facts: False
+  collections:
+    - dellemc.openmanage
   vars:
     idrac_scp_dir: "{{ playbook_dir }}/scp_folder/"
 
