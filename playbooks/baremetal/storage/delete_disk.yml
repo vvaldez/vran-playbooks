@@ -3,9 +3,11 @@
   connection: local
   name: Delete disk
   gather_facts: False
+  collections:
+    - dellemc.openmanage
   vars:
     idrac_volumes:
-      - name: "VD_R1_1"
+      - name: "{{ inventory_hostname_short }}-os"
 
   tasks:
     - name: Delete disk

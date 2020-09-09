@@ -3,6 +3,8 @@
   connection: local
   name: Import iDRAC server configuration profile
   gather_facts: False
+  collections:
+    - dellemc.openmanage
   vars:
     idrac_scp_share: "{{ oob.config.share.name }}"
     idrac_scp_file: "{{ inventory_hostname }}.json"

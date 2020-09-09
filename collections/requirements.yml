@@ -10,4 +10,5 @@ collections:
   - ovirt.ovirt
   - theforeman.foreman
   - tripleo.operator
+  - dellemc.openmanage
 ...
