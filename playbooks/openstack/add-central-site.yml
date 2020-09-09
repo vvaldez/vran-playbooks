@@ -1,32 +1,4 @@
 ---
-- name: Check for required variables
-  hosts: director
-  connection: local
-  gather_facts: no
-  tasks:
-    - block:
-        - fail:
-            msg: "{{ item }} is not defined"
-          when: item is undefined
-          loop:
-            - "{{ site_name }}"
-
-- name: Add director host to the Ansible group of the site being added
-  hosts: director
-  become: yes
-  become_user: stack
-  gather_facts: no
-  remote_user: root
-  tasks:
-    - name: Set site_to_add fact
-      set_fact:
-        site_to_add: "site_{{ site_name }}"
-
-    - name: Add director host to the correct site group
-      add_host:
-        name: "{{ inventory_hostname }}"
-        groups: "{{ group_names + [site_to_add] }}"
-
 - name: Upload ansible-generated templates
   import_playbook: ansible-generated-templates-upload.yml
 
@@ -68,16 +40,16 @@
   tags:
     - create roles
 
-- name: "openstack overcloud deploy central"
+- name: openstack overcloud deploy central
   import_playbook: blocks/openstack-overcloud-deploy.yml
   vars:
     dcn_export: no
-    tripleo_overcloud_deploy_stack: "central"
+    tripleo_overcloud_deploy_stack: central
     tripleo_overcloud_deploy_networks_file: "{{ site.central.deploy_networks_file }}"
     tripleo_overcloud_deploy_roles_file: "{{ site.central.deploy_roles_file }}"
     tripleo_overcloud_deploy_environment_files: "{{ site.central.deploy_environment_files }}"
   tags:
-    - openstack overcloud deploy site_name
+    - openstack overcloud deploy central
 
 - name: openstack aggregate create central
   import_playbook: blocks/openstack-aggregate-create.yml
