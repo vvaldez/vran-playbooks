@@ -3,6 +3,8 @@
   connection: local
   name: View all storage configuration
   gather_facts: False
+  collections:
+    - dellemc.openmanage
   vars:
     # Optionally specify a controller if desired, default is all via 'null'
     # e.g. idrac_controller_id: "AHCI.Slot.4-1"
