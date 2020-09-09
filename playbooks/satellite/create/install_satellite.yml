@@ -2,22 +2,13 @@
 - name: Setup prerequisites
   hosts: satellite
   tasks:
-    - name: Install packages
+    - name: Register server with CDN
       vars:
         rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
       import_role:
         name: oasis_roles.system.rhsm
       tags:
         - rhsm
-
-    - name: Install packages
-      vars:
-        packages: "{{ rhsm.packages }}"
-      yum:
-        name: "{{ packages }}"
-        state: installed
-      tags:
-        - packages
 
     - name: enable required guest services
       vars:
@@ -38,37 +29,22 @@
       tags:
         - hostname
 
-    - name: Inject forward DNS entry to /etc/hosts
-      lineinfile:
-        path: /etc/hosts
-        regexp: "^{{ ansible_default_ipv4.address }}"
-        line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
-
-    - name: Set firewall
-      vars:
-        firewalld_zone: "{{ firewalld.firewalld_zone }}"
-        firewalld_ports_open: "{{ firewalld.firewalld_ports_open }}"
-      import_role:
-        name: oasis_roles.system.firewalld
-
   tags:
     - prereq
-
 
 
 - name: Setup Satellite
   hosts: satellite
   tasks:
     - vars:
-        satellite_admin_username: "{{ satellite.admin_username }}"
-        satellite_admin_password: "{{ satellite.admin_password }}"
-        satellite_organization: "{{ satellite.organization }}"
-        satellite_location: "{{ satellite.location }}"
-        satellite_proxy_dns: "{{ satellite.enable_dns }}"
-        satellite_proxy_dns_managed: "{{ satellite.enable_dns }}"
-        satellite_pulp_workers: "{{ satellite.pulp_workers }}"
+        satellite_server_url:  "{{ satellite.server_url }}"
+        satellite_hostname: "{{ ansible_hostname }}"
+        satellite_domain: "{{ dns_domain }}"
+        satellite_hostip: "{{ ansible_default_ipv4.address }}"
+        satellite_options: "{{ satellite.options }}"
+        satellite_packages: "{{ rhsm.packages}}"
       import_role:
-        name: oasis_roles.satellite
+        name: oasis_roles.satellite.install
   tags:
     - setup
 ...
