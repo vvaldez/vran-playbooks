@@ -11,8 +11,8 @@
             msg: "{{ item }} is not defined"
           when: item is undefined
           loop:
-            - "{{ zone_name }}"
             - "{{ aggregate_name }}"
+            - "{{ zone_name }}"
 
     - shell: |
         source /home/stack/centralrc

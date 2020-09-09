@@ -148,6 +148,11 @@
       tags:
         - tempest
 
+    - name: Install Placement service package
+      dnf:
+        name: python3-osc-placement
+        state: installed
+
     - name: Disable appstream for container-tools:rhel8
       dnf:
         name: 'container-tools:rhel8'
