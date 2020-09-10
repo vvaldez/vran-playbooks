@@ -1,7 +1,7 @@
 ---
 - import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
   vars:
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
     # Data domain size
     iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size | upper }}"
 

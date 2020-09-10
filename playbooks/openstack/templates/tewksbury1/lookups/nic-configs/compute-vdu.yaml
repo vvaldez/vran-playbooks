@@ -1,6 +1,6 @@
 heat_template_version: rocky
 description: >
-  Software Config to drive os-net-config with 2 bonded nics on a bridge with VLANs attached for the Compute{{ loop_index[0].name_upper }} role.
+  Software Config to drive os-net-config with 2 bonded nics on a bridge with VLANs attached for the Compute{{ current_site.name_upper }} role.
 parameters:
   ControlPlaneIp:
     default: ''
@@ -225,7 +225,7 @@ resources:
                           next_hop:
                             get_param: ExternalInterfaceDefaultRoute
               - type: ovs_bridge
-                name: br-{{ loop_index[0].name_lower }}
+                name: br-{{ current_site.name_lower }}
                 use_dhcp: false
                 mtu: 9000
                 members:

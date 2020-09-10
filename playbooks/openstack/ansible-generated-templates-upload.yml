@@ -1,9 +1,28 @@
+---
+- hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - set_fact:
+        output_dir: "templates/{{ datacenter }}/.tmp"
+        # This relative path **has** to be in the current directory or a subdirectory.
+        # It **cannot** lead thru a parent directory. This is due to the
+        # jinja2 macro import being used within the templates, no current workaround exists.
+        relative_path_to_templates: "templates/{{ datacenter }}"
+
+    - include_tasks: "{{ relative_path_to_templates }}/tasks-to-generate-templates.yml"
+
+    - name: Clear out discovered python interpreter
+      meta: clear_facts
+
 - name: Upload ansible-generated templates
   hosts: director
   become: yes
   become_user: stack
   gather_facts: no
   remote_user: root
+  vars:
+    templates_dir: "{{ output_dir }}/ansible-generated"
   tasks:
     # Upload the latest output templates to the director
     - block:
@@ -47,5 +66,26 @@
             mode: preserve
           with_filetree: "{{ templates_dir }}"
           when: item.state == 'file'
+
+        - name: Clear out discovered python interpreter
+          meta: clear_facts
+
+  tags:
+    - upload
+
+- hosts: director
+  connection: local
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Cleanup .tmp directory
+      file:
+        path: "{{ output_dir }}"
+        state: absent
       tags:
-        - templates
+        - cleanup
+
+    - name: Clear out discovered python interpreter
+      meta: clear_facts
+
+...

@@ -3,16 +3,13 @@
   connection: local
   name: Create OS virtual disk
   gather_facts: False
+  collections:
+    - dellemc.openmanage
   vars:
-    idrac_controller_id: "AHCI.Slot.5-1"
-    idrac_volume_type: "RAID 1"
-    idrac_volume_span_length: 2
-    idrac_volumes:
-      - name: "{{ inventory_hostname_short }}-os"
-        drives:
-          id:
-            - "Disk.Direct.0-0:AHCI.Slot.5-1"
-            - "Disk.Direct.1-1:AHCI.Slot.5-1"
+    idrac_controller_id: "{{ oob.storage.virtual_disks.os.controller_id }}"
+    idrac_volume_type: "{{ oob.storage.virtual_disks.os.volume_type }}"
+    idrac_volume_span_length: "{{ oob.storage.virtual_disks.os.volume_span_length }}"
+    idrac_volumes: "{{ oob.storage.virtual_disks.os.volumes }}"
 
   tasks:
     - name: Create RAID1 OS disk

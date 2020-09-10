@@ -1,14 +1,14 @@
 {% if my_idx == 0 %}
 {% set affix = 'subnet' %}
 {% else %}
-{% set affix = loop_index.name_lower + '_subnet' %}
+{% set affix = current_site.name_lower + '_subnet' %}
 {% endif %}
 ###############################################################################
-# Role: ComputeVirtual{{ loop_index.name_upper }}
+# Role: ComputeVirtual{{ current_site.name_upper }}
 ###############################################################################
-- name: ComputeVirtual{{ loop_index.name_upper }}
+- name: ComputeVirtual{{ current_site.name_upper }}
   description: |
-    Basic ComputeVirtual Node role for {{ loop_index.name_upper }}
+    Basic ComputeVirtual Node role for {{ current_site.name_upper }}
   CountDefault: 1
   networks:
     External:

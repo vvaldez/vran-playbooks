@@ -6,18 +6,18 @@ source ~/stackrc
 cd ~
 
 time openstack overcloud deploy \
-  --stack {{ loop_index.name_lower }} \
+  --stack {{ current_site.name_lower }} \
   --templates \
   --timeout 300 \
-  -n {{ loop_index.deploy_networks_file}} \
-  -r {{ loop_index.deploy_roles_file }} \
-  -e {{ loop_index.deploy_environment_files | join (' \\\n  -e ') }} \
+  -n {{ current_site.deploy_networks_file}} \
+  -r {{ current_site.deploy_roles_file }} \
+  -e {{ current_site.deploy_environment_files | join (' \\\n  -e ') }} \
   --log-file deployment.log \
   --config-download-only
 
-{% if loop_index.type == 'spine' %}
+{% if current_site.type == 'spine' %}
 rm -rf /home/stack/dcn-common/*
 openstack overcloud export \
-  --stack {{ loop_index.name_lower }} \
+  --stack {{ current_site.name_lower }} \
   --output-file /home/stack/dcn-common/control-plane-export.yaml
 {% endif %}

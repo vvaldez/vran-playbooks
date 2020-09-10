@@ -1,0 +1,95 @@
+- name: Check for required variables
+  hosts: director
+  connection: local
+  gather_facts: no
+  tasks:
+    - block:
+        - fail:
+            msg: "{{ item }} is not defined"
+          when: item is undefined
+          loop:
+            # server_name should be the hostname as show in server list of the undercloud
+            - "{{ server_name }}"
+            - "{{ site_name }}"
+
+- import_playbook: blocks/add-director-to-site-group.yml
+  tags:
+    - always
+
+- import_playbook: ansible-generated-templates-upload.yml
+  tags:
+    - templates
+
+#
+# Migrate all VMs off current node
+#
+
+- name: Disable the Compute service
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - name: Disable the Compute service
+      shell: |
+        source ~/{{ sites[0].name_lower }}rc
+
+        openstack compute service set {{ server_name }}.{{ undercloud.overcloud_domain_name }} nova-compute --disable --disable-reason "ANSIBLE: Removal of {{ server_name }}"
+  tags:
+    - node-delete
+
+- name: Find the node UUID
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - shell: |
+        source ~/stackrc
+
+        openstack server list --name {{ server_name }} -c ID -f value
+      register: shell_output
+
+    - set_fact:
+        node_uuid: "{{ shell_output.stdout_lines }}"
+  tags:
+    - node-delete
+
+- name: "openstack overcloud deploy {{ site_name }} --update-plan-only"
+  import_playbook: blocks/openstack-overcloud-deploy.yml
+  vars:
+    dcn_export: no
+    tripleo_overcloud_deploy_stack: "{{ site_name }}"
+    tripleo_overcloud_deploy_networks_file: "{{ site[site_name].deploy_networks_file }}"
+    tripleo_overcloud_deploy_roles_file: "{{ site[site_name].deploy_roles_file }}"
+    tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
+    tripleo_overcloud_deploy_update_plan_only: true
+  tags:
+    - deploy
+
+- name: "openstack overcloud node delete {{ site_name }}"
+  import_playbook: blocks/openstack-overcloud-node-delete.yml
+  vars:
+    dcn_export: no
+    tripleo_overcloud_node_delete_stack: "{{ site_name }}"
+    tripleo_overcloud_node_delete_nodes: "{{ node_uuid }}"
+  tags:
+    - node-delete
+
+- name: Remove the node Overcloud resources
+  hosts: director
+  become: yes
+  become_user: stack
+  gather_facts: no
+  remote_user: root
+  tasks:
+    - shell: |
+        source ~/{{ sites[0].name_lower }}rc
+
+        # Remove the network services for the deleted node
+        NETWORK_AGENT_IDS=$(openstack network agent list --host {{ server_name }}.{{ undercloud.overcloud_domain_name }} -c ID -f value)
+        openstack network agent delete ${NETWORK_AGENT_IDS}
+
+# Run tempest

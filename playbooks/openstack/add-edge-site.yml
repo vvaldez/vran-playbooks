@@ -11,26 +11,12 @@
           loop:
             - "{{ site_name }}"
 
-- name: Add director host to the Ansible group of the site being added
-  hosts: director
-  become: yes
-  become_user: stack
-  gather_facts: no
-  remote_user: root
-  tasks:
-    - name: Set site_to_add fact
-      set_fact:
-        site_to_add: "site_{{ site_name }}"
-
-    - name: Add director host to the correct site group
-      add_host:
-        name: "{{ inventory_hostname }}"
-        groups: "{{ group_names + [site_to_add] }}"
+- import_playbook: blocks/add-director-to-site-group.yml
   tags:
     - minimal
 
 - name: Upload ansible-generated templates
-  import_playbook: blocks/upload-ansible-generated-templates.yml
+  import_playbook: ansible-generated-templates-upload.yml
   tags:
     - minimal
 

@@ -11,6 +11,10 @@
           loop:
             - "{{ site_name }}"
 
+#
+# Upload new templates?
+#
+
 - name: "openstack overcloud delete {{ site_name }}"
   import_playbook: blocks/openstack-overcloud-delete.yml
   vars:

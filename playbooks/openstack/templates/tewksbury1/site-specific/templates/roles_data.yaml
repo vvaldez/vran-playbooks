@@ -1,4 +1,4 @@
 {# For each role, call the macro passing in the role name #}
-{% for role in loop_index.roles %}
+{% for role in current_site.roles %}
 {{ lookup('template', role.type.role_data_file) }}
 {% endfor %}

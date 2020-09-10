@@ -38,7 +38,7 @@ Use Python printf-style formatting for str_format variable. See:
 {# Init #}
 {%   set nic, network_trunk, physnet, output_str = "", "", "", "" %}
 {# For every nic in the network_roles.<role> #}
-{%   for k, v in network_roles[role].items() %}
+{%   for k, v in network_roles[role].items() | sort %}
 {#     If the nic is not a bond #}
 {%     if 'bond' not in k %}
 {%       set nic = k %}

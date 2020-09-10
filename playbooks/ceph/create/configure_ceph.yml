@@ -2,8 +2,8 @@
 - name: Setup Ceph
   hosts: ceph
   vars:
-    ceph_admin_node: "{{ groups['ceph_dev'].0 }}"
-    ceph_cluster: "{{ groups['ceph_dev'] }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
+    ceph_cluster: "{{ groups['ceph'] }}"
     ceph_automation_username: ceph_ansible
   tags:
     - setup
