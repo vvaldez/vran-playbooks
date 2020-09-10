@@ -1,0 +1,11 @@
+---
+- hosts: "{{ playbook_hosts | default('ceph,rhvh') }}"
+  name: Setup networks
+  become: yes
+  become_user: root
+  tasks:
+    - include_role:
+        name: linux-system-roles.network
+      tags:
+        - network
+...
