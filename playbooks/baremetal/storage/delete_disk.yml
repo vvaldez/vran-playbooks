@@ -1,4 +1,6 @@
 ---
+- import_playbook: get_volumes.yml
+
 - hosts: baremetal
   connection: local
   name: Delete disk
@@ -6,19 +8,36 @@
   collections:
     - dellemc.openmanage
   vars:
+    idrac_controller_id: "{{ oob.storage.virtual_disks.os.controller_id }}"
     idrac_volumes:
-      - name: "{{ inventory_hostname_short }}-os"
+      - name: "VD_R1_1"
+    # 'VD_R1_1' is the default name used by the iDRAC UI for the first virtual disk.
+    # A volume name is required for delete, an id will not work. Obtain this via the iDRAC UI or a full profile export
+    # 'view' state doesn't actually show the required volume name, though, it only displays an id:
+    # "view_result.storage_status.Message[idrac_controller_id].VirtualDisk": {
+    #     "VirtualDisk": {
+    #         "Disk.Virtual.0:AHCI.Slot.4-1": {
+    #             "PhysicalDisk": [
+    #                 "Disk.Direct.0-0:AHCI.Slot.4-1",
+    #                 "Disk.Direct.1-1:AHCI.Slot.4-1"
 
   tasks:
-    - name: Delete disk
-      dellemc_idrac_storage_volume:
-        idrac_ip: "{{ oob.ipaddr }}"
-        idrac_user: "{{ oob_username }}"
-        idrac_password: "{{ oob_password }}"
-        state: "delete"
-        volumes: "{{ idrac_volumes }}"
-      register: view_result
-
     - debug:
         var: view_result
+        verbosity: 1
+
+    - block:
+      - name: Delete disk
+        dellemc_idrac_storage_volume:
+          idrac_ip: "{{ oob.ipaddr }}"
+          idrac_user: "{{ oob_username }}"
+          idrac_password: "{{ oob_password }}"
+          state: "delete"
+          volumes: "{{ idrac_volumes }}"
+        register: delete_result
+
+      - debug:
+          var: delete_result
+          verbosity: 1
+      when: view_result.storage_status.Message[idrac_controller_id].VirtualDisk is defined | default(False)
 ...
