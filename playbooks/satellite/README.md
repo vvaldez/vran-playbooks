@@ -1,5 +1,6 @@
 # satellite
 
+#### Ensure you have installed the roles and collections necessary for these playbooks as define in the README.md in the ansible-playbooks folder
 To deploy a Satellite server
 
 1. Add a host to the `satellite` group in `ansible-inventory/<site>/inventory/infra.yml`:

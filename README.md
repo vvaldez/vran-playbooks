@@ -108,6 +108,12 @@ ansible-galaxy install --role-file roles/requirements.yml
 
 # Force the latest version of roles to be installed
 ansible-galaxy install --role-file roles/requirements.yml --force
+
+# Install Ansible Collections
+ansible-galaxy collection install --requirements-file collections/requirements.yaml
+
+# Run work around script for collection not published to galaxy
+./collections/install_satellite_collection.sh
 ```
 
 ### Generating Output Templates Locally
