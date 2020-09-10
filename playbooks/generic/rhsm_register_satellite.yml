@@ -13,7 +13,7 @@
     rhsm_repositories: "{{ rhsm.rhsm_repositories | default(omit) }}"
   import_role:
     name: oasis_roles.system.rhsm
-  tags:
-    - satellite
-    - rhsm
+  # tags:
+  #   - satellite
+  #   - rhsm
 ...
