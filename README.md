@@ -110,7 +110,7 @@ ansible-galaxy install --role-file roles/requirements.yml
 ansible-galaxy install --role-file roles/requirements.yml --force
 
 # Install Ansible Collections
-ansible-galaxy collection install --requirements-file collections/requirements.yaml
+ansible-galaxy collection install --requirements-file collections/requirements.yml
 
 # Run work around script for collection not published to galaxy
 ./collections/install_satellite_collection.sh
