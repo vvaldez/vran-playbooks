@@ -36,4 +36,28 @@
         firewalld_ports_open: "{{ firewalld.firewalld_ports_open }}"
       import_role:
         name: oasis_roles.system.firewalld
+
+    # Network setup needs to be done after, at least, the yum portion because
+    # this is dependent on the bridge-utils package which is installed by
+    # the rhvm-appliance package.
+    - name: Configure networking
+      vars:
+        # The network-scripts portion of the role is considered a provisioning
+        # step. By default, it is not ran unless this is override to yes. When
+        # re-running this role, it is probably not ideal to re-setup and restart
+        # networking. Which will happen when setup_nics=yes.
+        base_setup_nics: "{{ setup_nics | default('no') }}"
+      block:
+        - name: "Include network-scripts role to template /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
+          vars:
+            network_scripts_dest_path: /etc/sysconfig/network-scripts
+            network_scripts_nics: "{{ nics | mandatory }}"
+            network_scripts_clear_existing: yes
+            network_scripts_restart: yes
+          include_role:
+            name: network-scripts
+      when: base_setup_nics | bool
+      tags:
+        - network
+
 ...
