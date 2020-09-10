@@ -12,7 +12,12 @@
       tags:
         - rhsm
 
-    - name: enable required guest services
+    - name: Install ovirt-guest-agent-common
+      yum:
+        name: ovirt-guest-agent-common
+        state: installed
+
+    - name: Enable required guest services
       vars:
         services: "{{ rhsm.services }}"
       service:
@@ -44,7 +49,7 @@
         satellite_server_url:  "{{ satellite.server_url }}"
         satellite_hostname: "{{ ansible_hostname }}"
         satellite_domain: "{{ dns_domain }}"
-        satellite_hostip: "{{ ansible_default_ipv4.address }}"
+        satellite_hostip: "{{ satellite_infra.listen_address }}"
         satellite_options: "{{ satellite.options }}"
         satellite_packages: "{{ rhsm.packages}}"
       import_role:
