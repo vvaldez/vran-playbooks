@@ -31,22 +31,6 @@
       tags:
         - hostname
 
-<<<<<<< HEAD
-    - name: Inject forward DNS entry to /etc/hosts
-      lineinfile:
-        path: /etc/hosts
-        regexp: "^{{ ansible_default_ipv4.address }}"
-        line: "{{ ansible_host }} {{ ansible_fqdn }} {{ ansible_hostname }}"
-
-    - name: Set firewall
-      vars:
-        firewalld_zone: "{{ firewalld.firewalld_zone }}"
-        firewalld_ports_open: "{{ firewalld.firewalld_ports_open }}"
-      import_role:
-        name: oasis_roles.system.firewalld
-
-=======
->>>>>>> d5c189734651a0e712d6e7a37b2170e90fab12ee
   tags:
     - prereq
 
