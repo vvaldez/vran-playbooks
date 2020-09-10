@@ -4,7 +4,7 @@
   gather_facts: False
   become: True
   vars:
-    build_iso_hosts: "{{ groups['ceph'] }}"
+    build_iso_hosts: "{{ groups['ceph'] | union(groups['rhvh']) }}"
   tasks:
     - debug:
         var: build_iso_hosts
