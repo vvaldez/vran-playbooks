@@ -6,15 +6,16 @@
   collections:
     - dellemc.openmanage
   vars:
-    idrac_controller_id: "{{ oob.storage.controllers.os }}"
+    idrac_controller_id: "{{ oob.storage.virtual_disks.os.controller_id }}"
     idrac_volume_type: "RAID 1"
     idrac_volume_span_length: 2
+    idrac_volume_name: "{{ inventory_hostname_short }}-os"
     idrac_volumes:
-      - name: "{{ inventory_hostname_short }}-os"
+      - name: "{{ idrac_volume_name }}"
         drives:
           id:
-            - "Disk.Direct.0-0:{{ oob.storage.controllers.os }}"
-            - "Disk.Direct.1-1:{{ oob.storage.controllers.os }}"
+            - "Disk.Direct.0-0:{{ oob.storage.virtual_disks.os.controller_id }}"
+            - "Disk.Direct.1-1:{{ oob.storage.virtual_disks.os.controller_id }}"
 
   tasks:
     - name: Create RAID1 OS disk

@@ -6,10 +6,10 @@
   collections:
     - dellemc.openmanage
   vars:
-    # Optionally specify a controller if desired, default is all via 'null'
+    # Optionally specify a controller if desired
     # e.g. idrac_controller_id: "AHCI.Slot.4-1"
-    idrac_controller_id: null
-    idrac_volaume_id: null
+    idrac_controller_id: "{{ oob.storage.virtual_disks.os.controller_id }}"
+    idrac_volume_id: "Disk.Virtual.0:{{ idrac_controller_id }}"
 
   tasks:
     - name: View all volumes
@@ -25,4 +25,8 @@
     - debug:
         var: view_result
         verbosity: 1
+
+    - debug:
+        var: view_result.storage_status.Message[idrac_controller_id].VirtualDisk
+      when: view_result.storage_status.Message[idrac_controller_id].VirtualDisk is defined | default(False)
 ...
