@@ -20,7 +20,7 @@
       - name: Display run command for ceph-ansible
         debug:
           msg: "{{ ceph_playbook_command }}"
-        verbosity: 1
+          verbosity: 1
 
       - name: Run ceph-ansible
         command: "{{ ceph_playbook_command }}"
