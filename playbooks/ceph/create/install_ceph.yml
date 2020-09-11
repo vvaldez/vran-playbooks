@@ -1,8 +1,6 @@
 ---
 - name: Setup prerequisites for Ceph
   hosts: ceph
-  tags:
-    - prereq
   tasks:
     - name: Set hostname
       vars:
@@ -12,14 +10,13 @@
       tags:
         - hostname
 
-    - name: Register system
-      import_role:
-        name: oasis_roles.system.rhsm
-      ignore_errors: yes
-      vars:
-        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
-      tags:
-        - rhsm
+    - include_tasks: ../../generic/rhsm_register_cdn.yml
+      when: not rhsm.use_satellite | default(False)
+      name: Register with CDN
+
+    - include_tasks: ../../generic/rhsm_register_satellite.yml
+      when: rhsm.use_satellite | default(True)
+      name: Register with Satellite
 
     - name: Install packages
       vars:
@@ -37,27 +34,9 @@
       import_role:
         name: oasis_roles.system.firewalld
 
-    # Network setup needs to be done after, at least, the yum portion because
-    # this is dependent on the bridge-utils package which is installed by
-    # the rhvm-appliance package.
-    - name: Configure networking
-      vars:
-        # The network-scripts portion of the role is considered a provisioning
-        # step. By default, it is not ran unless this is override to yes. When
-        # re-running this role, it is probably not ideal to re-setup and restart
-        # networking. Which will happen when setup_nics=yes.
-        base_setup_nics: "{{ setup_nics | default('no') }}"
-      block:
-        - name: "Include network-scripts role to template /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
-          vars:
-            network_scripts_dest_path: /etc/sysconfig/network-scripts
-            network_scripts_nics: "{{ nics | mandatory }}"
-            network_scripts_clear_existing: yes
-            network_scripts_restart: yes
-          include_role:
-            name: network-scripts
-      when: base_setup_nics | bool
-      tags:
-        - network
-
+- import_playbook: ../../generic/network_setup.yml
+  vars:
+    playbook_hosts: ceph
+  tags:
+    - network
 ...
