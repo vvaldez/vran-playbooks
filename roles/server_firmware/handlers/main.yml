@@ -1,0 +1,21 @@
+---
+- name: shut down server
+  dellemc.openmanage.dellemc_change_power_state:
+    idrac_ip: "{{ oob.ipaddr }}"
+    idrac_user: "{{ oob_username }}"
+    idrac_password: "{{ oob_password }}"
+    change_power: GracefulShutdown
+  register: fw_shutdown_result
+  failed_when:
+   - fw_shutdown_result.msg.error.error['@Message.ExtendedInfo'][0].Resolution is defined
+   - fw_shutdown_result.msg.error.error['@Message.ExtendedInfo'][0].Resolution != 'No response action is required.'
+  when: fw_reboot | bool
+
+- name: power on server
+  dellemc.openmanage.dellemc_change_power_state:
+    idrac_ip: "{{ oob.ipaddr }}"
+    idrac_user: "{{ oob_username }}"
+    idrac_password: "{{ oob_password }}"
+    change_power: "On"
+  when: fw_reboot | bool
+...

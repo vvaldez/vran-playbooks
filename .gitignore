@@ -21,6 +21,7 @@ roles/*
 !roles/tor_networking*
 !roles/ceph_*
 !roles/fpga*
+!roles/server_*
 
 # Ignore virtualenv
 venv/
