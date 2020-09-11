@@ -1,0 +1,22 @@
+---
+# FOR DOCUMENTATION:
+# role expects the following non-role variables set:
+# - oob_username
+# - oob_password
+# - oob.ipaddr
+
+# supported values: dell
+fw_vendor: dell
+
+# set to 'online' or 'offline'
+fw_mode: online
+
+# set if fw_mode = offline
+# name of the directory where the FW repo lives under oob.firmware.nfs_uri
+fw_repo_name: repo_drac
+# name of the version directory under fw_repo_name
+fw_repo_ver: v1
+
+# upgrade process options
+fw_reboot: true
+...
