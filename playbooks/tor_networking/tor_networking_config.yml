@@ -3,9 +3,15 @@
   hosts: tor_networking
   connection: network_cli
   gather_facts: no
+  # the below two options are needed in
+  # simulated multi-site environment only
+  serial: 2
+  order: sorted
 
   tasks:
     - name: Create VLANs and Port Channels
+      vars:
+        ansible_command_timeout: 90
       include_role:
         name: tor_networking_config
 ...
