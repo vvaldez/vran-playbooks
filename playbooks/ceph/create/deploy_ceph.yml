@@ -1,6 +1,6 @@
 ---
 - name: Run ceph-ansible
-  hosts: ceph
+  hosts: "{{ ceph_admin_node }}"
   gather_facts: True
   vars:
     # Which cluster group to operate on
