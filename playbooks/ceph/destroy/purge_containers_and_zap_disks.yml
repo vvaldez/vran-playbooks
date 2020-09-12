@@ -1,0 +1,116 @@
+---
+# This playbook is the equivalent of these bash commands:
+# podman rm --all --force
+# podman rmi --all --force
+# for vg in $(pvs | grep ceph-block | awk '{ print $2 }'); do vgremove -f -y ${vg}; done; for pv in $(pvs | grep -v rhel_ceph | grep lvm2 | awk '{ print $1 }'); do pvremove -ff -y ${pv}; done
+# for i in $(cat /proc/partitions | grep 468851544 | awk '{ print $4 }'); do  sgdisk --zap-all /dev/$i; done ; for i in $(cat /proc/partitions | grep 1758164184 | awk '{ print $4 }'); do  sgdisk --zap-all /dev/$i; done
+
+- name: Purge and cleanup cluster
+  hosts: ceph
+  gather_facts: True
+  vars:
+    # Which cluster group to operate on
+    osd_device_size: "1758164184"
+    db_device_size: "468851544"
+  tasks:
+    - block:
+      # Stop and remove containers and images
+      - name: Remove all podman containers
+        command: podman rm --all --force
+
+      - name: Remove all podmain container images
+        command: podman rmi --all --force
+      tags:
+        - podman
+
+    # Remove Ceph lvm objects
+    - name: Get existing vgs
+      command: vgs --reportformat json
+      register: vgs
+
+    - debug:
+        var: vgs
+        verbosity: 1
+
+    - name: Get existing pvs
+      command: pvs --reportformat json
+      register: pvs
+
+    - debug:
+        var: pvs
+        verbosity: 1
+
+    - debug:
+        msg: 'vgremove --force --yes {{ vg.vg_name }}'
+      loop: "{{ (vgs.stdout | from_json).report.0.vg }}"
+      loop_control:
+        loop_var: vg
+      when: vg is search('ceph-block-')
+
+    - debug:
+        msg: 'pvremove --force --force yes {{ pv.pv_name }}'
+      loop: "{{ (pvs.stdout | from_json).report.0.pv }}"
+      loop_control:
+        loop_var: pv
+      when: pv is search('ceph-block-')
+
+    - name: Remove all Ceph device lvm volume groups
+      command: vgremove --force --yes {{ vg.vg_name }}
+      loop: "{{ (pvs.stdout | from_json).report.0.pv }}"
+      loop_control:
+        loop_var: vg
+      ignore_errors: yes
+      when: vg is search('ceph-block-')
+
+    - name: Remove all Ceph lvm physical volume labels
+      command: pvremove --force --force yes {{ pv.pv_name }}
+      loop: "{{ (pvs.stdout | from_json).report.0.pv }}"
+      loop_control:
+        loop_var: pv
+      ignore_errors: yes
+      when: pv is search('ceph-block-')
+
+    # Zap Ceph disks
+    - name: Get list of partitions
+      slurp:
+        src: /proc/partitions
+      register: partitions
+
+    - set_fact:
+        partition_list: "{{ (partitions['content'] | b64decode).split('\n') }}"
+
+    - debug:
+        var: partition_list
+        verbosity: 1
+
+    - set_fact:
+        osd_devices: []
+        db_devices: []
+
+    - set_fact:
+        osd_devices: "{{ osd_devices + [ item.split().3 ] }}"
+      loop: "{{ partition_list }}"
+      when: item is search(osd_device_size)
+
+    - debug:
+        var: osd_devices
+        verbosity: 1
+
+    - set_fact:
+        db_devices: "{{ db_devices + [ item.split().3 ] }}"
+      loop: "{{ partition_list }}"
+      when: item is search(db_device_size)
+
+    - debug:
+        var: db_devices
+        verbosity: 1
+
+    - name: Zap all Ceph disks
+      command: sgdisk --zap-all /dev/{{ disk }}
+      loop: "{{ osd_devices | union(db_devices)}}"
+      loop_control:
+        loop_var: disk
+
+    - reboot:
+      when: reboot | default(False)
+...
