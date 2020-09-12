@@ -1,0 +1,22 @@
+---
+- name: Wait for iDRAC event {{ fw_drac_event }}
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/Managers/{{ fw_drac_name }}/LogServices/Lclog/Entries?$top=30
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Accept: application/json
+  register: fw_drac_init
+  until: fw_drac_event in fw_drac_init.json | default ({'Members':[]}) | json_query('Members[*].MessageId')
+  delay: 60
+  retries: 120
+
+- debug:
+    msg: "{{ fw_drac_init.json | json_query(_query) }}"
+    verbosity: 1
+  vars:
+    _query: Members[?MessageId=='{{ fw_drac_event }}'].Message
+...
