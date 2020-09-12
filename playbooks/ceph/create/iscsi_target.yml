@@ -1,6 +1,6 @@
 ---
 - name: Add iSCSI Targets to deployed Ceph Cluster
-  hosts: ceph
+  hosts: "{{ ceph_admin_node | default(groups['ceph'].0) }}"
   gather_facts: False
   become: True
   vars:
@@ -28,24 +28,22 @@
       no_log: True
 
   tasks:
-    - when: inventory_hostname is match(ceph_admin_node)
-      block:
-        - name: Copy playbook to Ceph admin node {{ ceph_admin_node }}
-          template:
-            src: ../templates/iscsi_target_create.yml.j2
-            # variable_start_string: "<<"
-            # variable_end_string: ">>"
-            dest: ~/iscsi_target_create.yml
-        - name: Run playbook on Ceph admin node {{ ceph_admin_node }}
-          command: >
-            ansible-playbook
-              --inventory "rbd-target-api,"
-              --connection podman
-              {% if ansible_verbosity > 0 %}--verbose{% endif %}
-              {% if ansible_verbosity > 1 %}--verbose{% endif %}
-              {% if ansible_verbosity > 2 %}--verbose{% endif %}
-              {% if ansible_verbosity > 3 %}--verbose{% endif %}
-              ~/iscsi_target_create.yml
-          environment:
-            ANSIBLE_LOG_PATH: ~/iscsi_target_create.log
+    - name: Copy playbook to Ceph admin node {{ ceph_admin_node }}
+      template:
+        src: ../templates/iscsi_target_create.yml.j2
+        # variable_start_string: "<<"
+        # variable_end_string: ">>"
+        dest: ~/iscsi_target_create.yml
+    - name: Run playbook on Ceph admin node {{ ceph_admin_node }}
+      command: >
+        ansible-playbook
+          --inventory "rbd-target-api,"
+          --connection podman
+          {% if ansible_verbosity > 0 %}--verbose{% endif %}
+          {% if ansible_verbosity > 1 %}--verbose{% endif %}
+          {% if ansible_verbosity > 2 %}--verbose{% endif %}
+          {% if ansible_verbosity > 3 %}--verbose{% endif %}
+          ~/iscsi_target_create.yml
+      environment:
+        ANSIBLE_LOG_PATH: ~/iscsi_target_create.log
 ...
