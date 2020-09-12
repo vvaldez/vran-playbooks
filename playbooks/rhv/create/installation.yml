@@ -92,9 +92,7 @@
   tags:
     - install
 
-- hosts:
-    - rhvh
-    - rhvh_dev
+- hosts: "{{ rhvm_initial_host | default rhvh }}"
   name: "Install RHV Manager on {{ inventory_hostname }}"
   tags:
     - install
@@ -103,9 +101,10 @@
     # Engine size
     rhv:
       he_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
-    rhvm_initial_host: "{{ inventory_hostname }}"
+    rhvm_initial_host: "{{ groups['rhvh'].0 }}"
   tasks:
-    - block:
+    - when: inventory_hostname is match(rhm_initial_host)
+      block:
       - name: Install RHV-M Appliance
         yum:
           name: rhvm-appliance
@@ -132,5 +131,4 @@
             -e {{ k }}='{{ v }}'
             {% endfor -%}
             /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
-      when: inventory_hostname is match(groups['rhvh_dev'].0)
 ...
