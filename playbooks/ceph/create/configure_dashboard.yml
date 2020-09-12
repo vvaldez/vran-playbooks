@@ -6,7 +6,7 @@
     ceph_admin_node: "{{ groups['ceph'].0 }}"
     ceph_cluster: "{{ groups['ceph'] }}"
     ceph_automation_username: ceph_ansible
-    ceph_dashboard_host: "{{ ceph_cluster.1 }}"
+    ceph_dashboard_host: "{{ ceph_cluster.0 }}"
     podman_command: podman exec -t ceph-mgr-{{ inventory_hostname_short }} bash -c
   tags:
     - setup
