@@ -2,6 +2,19 @@ dummy:
 
 fetch_directory: << ceph.fetch_directory >>
 
+configure_firewall: << ceph.configure_firewall >>
+
+#ceph_mon_firewall_zone: public
+#ceph_mgr_firewall_zone: public
+#ceph_osd_firewall_zone: public
+#ceph_rgw_firewall_zone: public
+#ceph_mds_firewall_zone: public
+#ceph_nfs_firewall_zone: public
+#ceph_rbdmirror_firewall_zone: public
+#ceph_iscsi_firewall_zone: public
+#ceph_dashboard_firewall_zone: public
+#ceph_rgwloadbalancer_firewall_zone: public
+
 ntp_service_enabled: << ceph.ntp_service_enabled >>
 
 containerized_deployment: << ceph.containerized_deployment >>
