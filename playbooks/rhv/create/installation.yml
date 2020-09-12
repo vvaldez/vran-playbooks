@@ -16,22 +16,19 @@
         regexp: "^{{ ansible_default_ipv4.address }}"
         line: "{{ ansible_default_ipv4.address }} {{ inventory_hostname }} {{ ansible_hostname }}"
 
-    - include_tasks: ../../generic/rhsm_register_cdn.yml
-      when: not rhsm.use_satellite | default(False)
-      name: Register with CDN
-
     - include_tasks: ../../generic/rhsm_register_satellite.yml
-      when: rhsm.use_satellite | default(True)
-      name: Register with Satellite
 
+    # The following command task is not yet supported in a module, see https://github.com/ansible/ansible/issues/64852
     - name: Reset virt module
       command: yum --assumeyes module reset virt
 
+    # The following command task is not yet supported in a module, see https://github.com/ansible/ansible/issues/64852
     - name: Enable virt module
       command: yum --assumeyes module enable virt:8.2
 
     - import_tasks: ../../generic/update_system.yml
 
+    # The following command task is not yet supported in a module, see https://github.com/ansible/ansible/issues/64852
     - name: Synchronize installed packages
       command: yum --assumeyes distro-sync
 
