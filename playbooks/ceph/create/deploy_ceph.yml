@@ -1,6 +1,6 @@
 ---
 - name: Run ceph-ansible
-  hosts: "{{ ceph_admin_node }}"
+  hosts: "{{ ceph_admin_node | default(groups['ceph'].0) }}"
   gather_facts: True
   vars:
     # Which cluster group to operate on
@@ -16,22 +16,20 @@
       {{ ceph_playbook }}
   remote_user: "{{ ceph_automation_username }}"
   tasks:
-    - block:
-      - name: Display run command for ceph-ansible
-        debug:
-          msg: "{{ ceph_playbook_command }}"
-          verbosity: 1
+    - name: Display run command for ceph-ansible
+      debug:
+        msg: "{{ ceph_playbook_command }}"
+        verbosity: 1
 
-      - name: Run ceph-ansible
-        command: "{{ ceph_playbook_command }}"
-        args:
-          chdir: "{{ ceph_playbook_dir }}"
-        environment:
-          ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
-        register: ceph_ansible_playbook_run
+    - name: Run ceph-ansible
+      command: "{{ ceph_playbook_command }}"
+      args:
+        chdir: "{{ ceph_playbook_dir }}"
+      environment:
+        ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
+      register: ceph_ansible_playbook_run
 
-      - debug:
-          var: ceph_ansible_playbook_run
-          verbosity: 1
-      when: inventory_hostname is match(ceph_admin_node)
+    - debug:
+        var: ceph_ansible_playbook_run
+        verbosity: 1
 ...

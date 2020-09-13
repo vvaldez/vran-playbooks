@@ -105,17 +105,23 @@
         var: rhv
         verbosity: 1
 
+    - set_fact:
+        rhv_he_playbook_cmd: |
+          ansible-playbook
+            --inventory "localhost,"
+            --connection local
+            {% if ansible_verbosity > 0 %}--verbose{% endif %}
+            {% if ansible_verbosity > 1 %}--verbose{% endif %}
+            {% if ansible_verbosity > 2 %}--verbose{% endif %}
+            {% if ansible_verbosity > 3 %}--verbose{% endif %}
+            {% for k,v in rhv.items() -%}
+            --extra-vars {{ k }}='{{ v }}'
+            {% endfor -%}
+            /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
+
+    - debug:
+        var: rhv_he_playbook_cmd
+
     - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
-      command: >
-        ansible-playbook
-          -i "localhost,"
-          -c local
-          {% if ansible_verbosity > 0 %}--verbose{% endif %}
-          {% if ansible_verbosity > 1 %}--verbose{% endif %}
-          {% if ansible_verbosity > 2 %}--verbose{% endif %}
-          {% if ansible_verbosity > 3 %}--verbose{% endif %}
-          {% for k,v in rhv.items() -%}
-          -e {{ k }}='{{ v }}'
-          {% endfor -%}
-          /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
+      command: "{{ rhv_he_playbook_cmd }}"
 ...
