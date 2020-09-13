@@ -9,6 +9,7 @@
 # this host group, those references should be as well.
 - hosts: rhvh[0]
   remote_user: root
+  connection: local
   gather_facts: no
   vars:
     ovirt:
@@ -26,7 +27,6 @@
 
     - name: Obtain SSO token with using username/password credentials
       ovirt_auth: "{{ ovirt.auth }}"
-      delegate_to: localhost
       tags:
         - always
 
@@ -49,7 +49,6 @@
         password: redhat
         hosted_engine: deploy
       loop: "{{ groups['rhvh'] }}"
-      delegate_to: localhost
       tags:
         - host
 
@@ -74,7 +73,6 @@
         critical_space_action_blocker: 5
         warning_low_space: 10
       loop: "{{ ovirt.storage.domains }}"
-      delegate_to: localhost
       tags:
         - storage
 
@@ -99,7 +97,6 @@
             migration: "{{ item.value.migration | default(omit) }}"
             required: yes
       loop: "{{ ovirt.networks | dict2items }}"
-      delegate_to: localhost
       tags:
         - network
 
@@ -112,7 +109,6 @@
         data_center: Default
         network_filter: "{{ item.value.network_filter | default(omit) }}"
       loop: "{{ ovirt.networks | dict2items }}"
-      delegate_to: localhost
       tags:
         - network
         - vnic
@@ -120,7 +116,6 @@
     - name: Initialize host_networks to empty list
       set_fact:
         host_networks: []
-      delegate_to: localhost
       tags:
         - network
 
@@ -128,13 +123,11 @@
       set_fact:
         host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
       loop: "{{ groups['rhvh'] }}"
-      delegate_to: localhost
       tags:
         - network
 
     - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
       loop: "{{ host_networks }}"
-      delegate_to: localhost
       tags:
         - network
 ...
