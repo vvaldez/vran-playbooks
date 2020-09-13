@@ -93,42 +93,40 @@
     - install
 
 - hosts: "{{ rhvm_initial_host | default(groups['rhvh'].0) }}"
-  name: "Install RHV Manager on {{ inventory_hostname }}"
+  name: Install RHV Manager on initial RHVH host
   tags:
     - install
   vars:
-    ceph_admin_node: "{{ groups['ceph'].0 }}"
-    # Engine size
-    rhv:
-      he_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
     rhvm_initial_host: "{{ groups['rhvh'].0 }}"
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
+    rhv:
+      # Engine iSCSI LUN ID obtained in previous playbook
+      he_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
   tasks:
-    - when: inventory_hostname is match(rhm_initial_host)
-      block:
-      - name: Install RHV-M Appliance
-        yum:
-          name: rhvm-appliance
-          state: installed
+    - name: Install RHV-M Appliance
+      yum:
+        name: rhvm-appliance
+        state: installed
 
-      - debug:
-          var: hostvars[rhvm_initial_host].rhv
-          verbosity: 1
+    - debug:
+        var: hostvars[rhvm_initial_host].rhv
+        verbosity: 1
 
-      - debug:
-          var: rhv
-          verbosity: 1
+    - debug:
+        var: rhv
+        verbosity: 1
 
-      - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
-        command: >
-          ansible-playbook
-            -i "localhost,"
-            -c local
-            {% if ansible_verbosity > 0 %}--verbose{% endif %}
-            {% if ansible_verbosity > 1 %}--verbose{% endif %}
-            {% if ansible_verbosity > 2 %}--verbose{% endif %}
-            {% if ansible_verbosity > 3 %}--verbose{% endif %}
-            {% for k,v in rhv.items() -%}
-            -e {{ k }}='{{ v }}'
-            {% endfor -%}
-            /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
+    - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
+      command: >
+        ansible-playbook
+          -i "localhost,"
+          -c local
+          {% if ansible_verbosity > 0 %}--verbose{% endif %}
+          {% if ansible_verbosity > 1 %}--verbose{% endif %}
+          {% if ansible_verbosity > 2 %}--verbose{% endif %}
+          {% if ansible_verbosity > 3 %}--verbose{% endif %}
+          {% for k,v in rhv.items() -%}
+          -e {{ k }}='{{ v }}'
+          {% endfor -%}
+          /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
 ...
