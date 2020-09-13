@@ -17,7 +17,7 @@
             iscsi_target: "{{ rhv.he_iscsi_target }}"
             iscsi_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
 
-            data_center: Default
+            data_center: "{{ rhv.data_center }}"
   tasks:
     ################
     # Authenticate
@@ -85,7 +85,7 @@
         vlan_tag: "{{ item.value.vlan_tag }}"
         vm_network: yes
         mtu: "{{ item.value.mtu }}"
-        data_center: Default
+        data_center: "{{ rhv.data_center }}"
         wait: yes
         clusters:
           - name: Default
@@ -104,7 +104,7 @@
         name: "{{ item.value.name }}"
         network: "{{ item.value.name }}"
         state: present
-        data_center: Default
+        data_center: "{{ rhv.data_center }}"
         network_filter: "{{ item.value.network_filter | default(omit) }}"
       loop: "{{ ovirt.networks | dict2items }}"
       tags:
