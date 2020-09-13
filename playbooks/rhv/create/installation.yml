@@ -73,11 +73,11 @@
   tags:
     - network
 
-- import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
+- import_playbook: ../read/get_iscsi_wwid.yml
   vars:
     ceph_admin_node: "{{ groups['ceph'].0 }}"
     # Engine size
-    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.0.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.0.size }}"
   tags:
     - install
 
