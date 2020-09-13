@@ -11,7 +11,7 @@
     iscsi_discovery_password: "{{ ceph_discovery_password }}"
     iscsi_chap_username: "{{ ceph_chap_username }}"
     iscsi_chap_password: "{{ ceph_chap_password }}"
-    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size }}"
   tasks:
     - debug:
         var: "{{ item }}"
