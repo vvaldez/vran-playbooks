@@ -1,6 +1,6 @@
 ---
 - name: Retrieve WWID for given iSCSI LUN
-  hosts: iscsi_client
+  hosts: "{{ groups['iscsi_client'].0 }}"
   gather_facts: False
   become: True
   vars:
