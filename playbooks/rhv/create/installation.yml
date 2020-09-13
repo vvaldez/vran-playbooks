@@ -92,7 +92,7 @@
   tags:
     - install
 
-- hosts: "{{ rhvm_initial_host | default rhvh }}"
+- hosts: "{{ rhvm_initial_host | default(groups['rhvh'].0) }}"
   name: "Install RHV Manager on {{ inventory_hostname }}"
   tags:
     - install
