@@ -10,13 +10,7 @@
       tags:
         - hostname
 
-    - include_tasks: ../../generic/rhsm_register_cdn.yml
-      when: not rhsm.use_satellite | default(False)
-      name: Register with CDN
-
     - include_tasks: ../../generic/rhsm_register_satellite.yml
-      when: rhsm.use_satellite | default(True)
-      name: Register with Satellite
 
     - name: Install packages
       vars:

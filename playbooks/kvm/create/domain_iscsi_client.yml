@@ -1,0 +1,45 @@
+---
+# Example client definition
+# kvm_vm:
+#   name: 'iscsi_client-1'
+#   ram: 4096
+#   vcpus: 2
+#   os_variant: 'rhel8.2'
+#   disk: 'iscsi_client.qcow2'
+#   size: '50G'
+#   hostname: 'iscsi_client-1'
+#   domain: '{{ dns_domain }}'
+#   root_partition: /dev/sda1
+#   networks:
+#     management:
+#       libvirt: mgmt
+#       vm_interface: eth0
+#       ipaddr: '172.17.118.99'
+#       netmask: '255.255.255.0'
+#       gateway: '172.17.118.254'
+#       dns1: '{{ nameservers.0 }}'
+#       dns2: '{{ nameservers.1 }}'
+#   storage:
+#     libvirt: storage
+#     vm_interface: eth1
+#     ipaddr: '192.168.170..99'
+#     netmask: '255.255.255.0'
+- name: Create iSCSI Client
+  hosts: kvm_hypervisor
+  gather_facts: False
+  vars:
+    vm_to_create: "{{ groups['iscsi_client'].0 }}"
+  tasks:
+  - name: Debug | Creating KVM VM for host '{{ vm_to_create }}'
+    debug:
+      var: vm_to_create
+      verbosity: 1
+
+  - import_role:
+      name: kvm_vm
+    vars:
+      kvm_vm: "{{ hostvars[vm_to_create].kvm_vm }}"
+      kvm_vm_root_password: "{{ hostvars[vm_to_create].kvm_vm_root_password }}"
+    tags:
+      - setup
+...

@@ -1,13 +1,11 @@
 ---
-- import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
+- import_playbook: ../read/get_iscsi_wwid.yml
   vars:
     ceph_admin_node: "{{ groups['ceph'].0 }}"
     # Data domain size
-    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size }}"
 
-# groups['rhvh'][0] is also utilized within the playbook. If you update
-# this host group, those references should be as well.
-- hosts: rhvh[0]
+- hosts: rhvm[0]
   remote_user: root
   gather_facts: no
   vars:
@@ -17,8 +15,9 @@
           - name: data
             iscsi_address: "{{ rhv.he_storage_domain_addr }}"
             iscsi_target: "{{ rhv.he_iscsi_target }}"
-            iscsi_lun_id: "{{ iscsi_wwid.stdout }}"
-            data_center: Default
+            iscsi_lun_id: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
+
+            data_center: "{{ rhv.data_center }}"
   tasks:
     ################
     # Authenticate
@@ -26,7 +25,6 @@
 
     - name: Obtain SSO token with using username/password credentials
       ovirt_auth: "{{ ovirt.auth }}"
-      delegate_to: localhost
       tags:
         - always
 
@@ -49,7 +47,6 @@
         password: redhat
         hosted_engine: deploy
       loop: "{{ groups['rhvh'] }}"
-      delegate_to: localhost
       tags:
         - host
 
@@ -74,7 +71,6 @@
         critical_space_action_blocker: 5
         warning_low_space: 10
       loop: "{{ ovirt.storage.domains }}"
-      delegate_to: localhost
       tags:
         - storage
 
@@ -89,7 +85,7 @@
         vlan_tag: "{{ item.value.vlan_tag }}"
         vm_network: yes
         mtu: "{{ item.value.mtu }}"
-        data_center: Default
+        data_center: "{{ rhv.data_center }}"
         wait: yes
         clusters:
           - name: Default
@@ -99,7 +95,6 @@
             migration: "{{ item.value.migration | default(omit) }}"
             required: yes
       loop: "{{ ovirt.networks | dict2items }}"
-      delegate_to: localhost
       tags:
         - network
 
@@ -109,10 +104,9 @@
         name: "{{ item.value.name }}"
         network: "{{ item.value.name }}"
         state: present
-        data_center: Default
+        data_center: "{{ rhv.data_center }}"
         network_filter: "{{ item.value.network_filter | default(omit) }}"
       loop: "{{ ovirt.networks | dict2items }}"
-      delegate_to: localhost
       tags:
         - network
         - vnic
@@ -120,7 +114,6 @@
     - name: Initialize host_networks to empty list
       set_fact:
         host_networks: []
-      delegate_to: localhost
       tags:
         - network
 
@@ -128,13 +121,11 @@
       set_fact:
         host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
       loop: "{{ groups['rhvh'] }}"
-      delegate_to: localhost
       tags:
         - network
 
     - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
       loop: "{{ host_networks }}"
-      delegate_to: localhost
       tags:
         - network
 ...

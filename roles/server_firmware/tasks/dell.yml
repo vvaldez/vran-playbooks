@@ -1,0 +1,86 @@
+---
+- name: Purge iDRAC jobs
+  dellemc.openmanage.idrac_lifecycle_controller_jobs:
+    idrac_ip: "{{ oob.ipaddr }}"
+    idrac_user: "{{ oob_username }}"
+    idrac_password: "{{ oob_password }}"
+
+- name: Queue firmware jobs
+  dellemc.openmanage.idrac_firmware:
+    idrac_ip: "{{ oob.ipaddr }}"
+    idrac_user: "{{ oob_username }}"
+    idrac_password: "{{ oob_password }}"
+    share_name: >-
+      {% if fw_mode == 'online' -%}
+      {{ fw_online_sources.dell -}}
+      {% else -%}
+      {{ oob.firmware.nfs_uri }}/{{ fw_repo_name }}/{{ fw_repo_ver -}}
+      {% endif %}
+    apply_update: true
+    reboot: false
+    job_wait: false
+  register: fw_update_result
+  ignore_errors: true
+  changed_when:
+    - fw_update_result.update_status.job_details.PackageList is defined
+    - fw_update_result.update_status.job_details.PackageList | length > 0
+  notify:
+    - shut down server
+    - power on server
+
+- debug:
+    var: fw_update_result
+    verbosity: 1
+
+- name: Handle unexpected failure
+  vars:
+    expected_failure: Firmware versions on server match catalog
+    extended_msg: "{{ fw_update_result.update_status.error['@Message.ExtendedInfo'].0.Message | default('none') }}"
+    short_msg: "{{ fw_update_result.update_status.Message | default('none') }}"
+  fail:
+    msg: "{% if extended_msg != 'none' %}{{ extended_msg }}{% else %}{{ short_msg }}{% endif %}"
+  when:
+    - fw_update_result.failed
+    - extended_msg is not search(expected_failure)
+
+- name: Wait for jobs to schedule
+  vars:
+    _query1: PackageList[?ComponentType=='FRMW']
+    _query2: "[?RebootType=='HOST']"
+    _query3: PackageList[?ComponentType=='BIOS']
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Accept: application/json
+  register: fw_drac_sched
+  until: >
+    fw_drac_sched.json.Members | length >=
+    fw_update_result.update_status.job_details | json_query(_query1) | json_query(_query2) | length +
+    fw_update_result.update_status.job_details | json_query(_query3) | length - 1
+  delay: 20
+  retries: 30
+  when: fw_update_result.changed
+
+- meta: flush_handlers
+
+- name: Wait for firmware updates to complete
+  vars:
+    fw_drac_event: JCP037
+  include_tasks: wait_drac_event.yml
+  when:
+    - fw_update_result.changed
+    - fw_reboot | bool
+
+- name: Verify success of iDRAC update
+  vars:
+    fw_drac_event: RED063
+  include_tasks: wait_drac_event.yml
+  when:
+    - "'IDRAC' in fw_update_result.update_status.job_details | default({'PackageList': []}) | json_query('PackageList[*].RebootType')"
+    - fw_reboot | bool
+...
