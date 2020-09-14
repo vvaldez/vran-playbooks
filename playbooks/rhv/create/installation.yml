@@ -114,7 +114,9 @@
             {% if ansible_verbosity > 1 %}--verbose{% endif %}
             {% if ansible_verbosity > 2 %}--verbose{% endif %}
             {% if ansible_verbosity > 3 %}--verbose{% endif %}
+            {% for k,v in rhv.items() -%}
             --extra-vars {{ k }}='{{ v }}'
+            {% endfor -%}
             /usr/share/ovirt-hosted-engine-setup/ansible/trigger_role.yml
 
     - debug:
