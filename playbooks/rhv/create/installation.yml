@@ -106,7 +106,7 @@
         verbosity: 1
 
     - set_fact:
-        rhv_he_playbook_cmd: |
+        rhv_he_playbook_cmd: >
           ansible-playbook
             --inventory "localhost,"
             --connection local
