@@ -2,7 +2,7 @@
 # This playbook runs the purge playbook
 
 - name: Purge and cleanup cluster
-  hosts: ceph
+  hosts: "{{ ceph_admin_node | default(groups['ceph'].0) }}"
   gather_facts: True
   vars:
     # Which cluster group to operate on
@@ -19,7 +19,6 @@
       {% if ansible_verbosity > 1 %}--verbose{% endif %}
       {% if ansible_verbosity > 2 %}--verbose{% endif %}
       {% if ansible_verbosity > 3 %}--verbose{% endif %}
-      {% for k,v in rhv.items() -%}
       {{ ceph_playbook }}
   remote_user: "{{ ceph_automation_username }}"
   tasks:
@@ -35,15 +34,18 @@
         msg: "{{ ceph_playbook_command }}"
         verbosity: 1
 
-    - name: Run {{ ceph_playbook }}
-      command: "{{ ceph_playbook_command }}"
-      args:
-        chdir: "{{ ceph_playbook_dir }}"
-      environment:
-        ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
-      register: ceph_ansible_playbook_run
-
     - debug:
-        var: ceph_ansible_playbook_run
-        verbosity: 1
+        msg: "Comfirm prompt prevents automation run. Playbook ready to run."
+
+    # - name: Run {{ ceph_playbook }}
+    #   command: "{{ ceph_playbook_command }}"
+    #   args:
+    #     chdir: "{{ ceph_playbook_dir }}"
+    #   environment:
+    #     ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
+    #   register: ceph_ansible_playbook_run
+
+    # - debug:
+    #     var: ceph_ansible_playbook_run
+    #     verbosity: 1
 ...

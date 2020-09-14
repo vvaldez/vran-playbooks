@@ -13,6 +13,10 @@
       ansible-playbook
       --inventory {{ ceph_inventory }}
       --user {{ ceph_automation_username }}
+      {% if ansible_verbosity > 0 %}--verbose{% endif %}
+      {% if ansible_verbosity > 1 %}--verbose{% endif %}
+      {% if ansible_verbosity > 2 %}--verbose{% endif %}
+      {% if ansible_verbosity > 3 %}--verbose{% endif %}
       {{ ceph_playbook }}
   remote_user: "{{ ceph_automation_username }}"
   tasks:
