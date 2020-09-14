@@ -21,6 +21,14 @@
         msg: "{{ ceph_playbook_command }}"
         verbosity: 1
 
+    - name: Set Ansible logging for future debugging
+      ini_file:
+        path: /etc/ansible/ansible.cfg
+        section: defaults
+        option: log_path
+        value: /var/log/ansible.log
+      become: yes
+
     - name: Run ceph-ansible
       command: "{{ ceph_playbook_command }}"
       args:
