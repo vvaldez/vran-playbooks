@@ -1,0 +1,20 @@
+---
+- name: Destroy iSCSI Client
+  hosts: kvm_hypervisor
+  gather_facts: False
+  vars:
+    vm_to_destroy: "{{ groups['iscsi_client'].0 }}"
+  tasks:
+  - name: Debug | Creating KVM VM for host '{{ vm_to_destroy }}'
+    debug:
+      var: vm_to_destroy
+      verbosity: 1
+
+  - import_role:
+      name: kvm_vm
+    vars:
+      kvm_vm: "{{ hostvars[vm_to_destroy].kvm_vm }}"
+      teardown: True
+    tags:
+      - teardown
+...
