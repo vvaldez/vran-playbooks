@@ -1,4 +1,25 @@
 ---
+# Create a defintions for dev hosts in host_vars like this:
+# host_vars/ceph-dev-1.yml
+# ---
+# kvm_vm:
+#   name: 'ceph-dev-1'
+#   ram: 8192
+#   vcpus: 2
+#   os_variant: 'rhel8.2'
+#   disk: 'ceph-dev-1.qcow2'
+#   size: '20G'
+#   disk_vdb: 'ceph-dev-1_vdb.qcow2'
+#   size_vdb: '50G'
+#   disk_vdc: 'ceph-dev-1_vdc.qcow2'
+#   size_vdc: '50G'
+#   hostname: 'ceph-dev-1'
+#   root_partition: /dev/sda3
+#   networks:
+#     management:
+#       ipaddr: '{{ ansible_host }}'
+# storage_ip: "{{ ansible_host }}"
+# ...
 - name: Create Ceph KVM VMs
   hosts: kvm_hypervisor
   gather_facts: False
