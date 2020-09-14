@@ -1,0 +1,26 @@
+resource_registry:
+# Configure Networks
+{% for role in current_site.roles %}
+  OS::TripleO::{{ role.type.name_upper }}{{ current_site.name_upper }}::Net::SoftwareConfig:
+    ../network/nic-{{ role.type.name_lower }}-{{ current_site.name_lower }}.yaml
+{% endfor %}
+
+parameter_defaults:
+  NovaComputeAvailabilityZone: {{ current_site.name_lower }}
+  RootStackName: {{ sites[0].name_lower }}
+
+  NeutronBridgeMappings:
+    - tenant:br-tenant
+    - ovs-{{ current_site.name_lower }}:br-{{ current_site.name_lower }}
+
+{% for role in current_site.roles %}
+  #
+  # {{ role.type.name_upper }}{{ current_site.name_upper }}
+  #
+
+  {{ role.type.name_upper }}{{ current_site.name_upper }}Count: {{ role.count }}
+  Overcloud{{ role.type.name_upper }}{{ current_site.name_upper }}Flavor: {{ role.type.name_lower }}-{{ current_site.name_lower }}
+  {{ role.type.name_upper }}{{ current_site.name_upper }}ControlPlaneSubnet: {{ current_site.name_lower }}
+
+  {{ lookup('template', role.environment_file) | indent(2) }}
+{% endfor %}

@@ -1,0 +1,1 @@
+{{ lookup('template', current_site_role.type.nic_config_file) }}
