@@ -5,7 +5,7 @@
   become: True
   vars:
     ceph_admin_node: "{{ groups['ceph'].0 }}"
-    iscsi_portal: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.gateways.0.ipaddr }}"
+    iscsi_portal: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.targets.0.ipaddr }}"
     iscsi_target: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.targets.0.name }}"
     iscsi_discovery_username: "{{ ceph_discovery_username }}"
     iscsi_discovery_password: "{{ ceph_discovery_password }}"
