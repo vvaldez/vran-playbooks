@@ -1,7 +1,5 @@
 ---
-# This playbook runs the purge playbook
-
-- name: Purge and cleanup cluster
+- name: Prepare Purge playbook
   hosts: "{{ ceph_admin_node | default(groups['ceph'].0) }}"
   gather_facts: True
   vars:
