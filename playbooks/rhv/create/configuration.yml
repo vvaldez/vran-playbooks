@@ -8,9 +8,10 @@
     - iscsi
   when: iscsi_wwid is not defined | default(True)
 
-- hosts: rhvm[0]
+- hosts: rhvh[0]
   remote_user: root
   gather_facts: no
+  connection: local
   vars:
     iscsi_wwid: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
     # Optionally provide ID like this and skip the iscsi client with --skip-tags iscsi
@@ -27,6 +28,7 @@
     - block:
       - debug:
           var: ovirt
+          verbosity: 1
 
       ################
       # Authenticate
@@ -125,6 +127,7 @@
           host_networks: []
         tags:
           - network
+          - host_networks
 
       - name: Set host_networks
         set_fact:
@@ -132,9 +135,34 @@
         loop: "{{ groups['rhvh'] }}"
         tags:
           - network
+          - host_networks
+
+      - debug:
+          var: host_networks
+          verbosity: 1
+        tags:
+          - network
+          - host_networks
+
+      - debug:
+          var: hostvars[item].ovirt_host_networks
+          verbosity: 1
+        loop: "{{ groups['rhvh'] }}"
+        tags:
+          - network
+          - host_networks
+
+      - debug:
+          var: hostvars[item].ovirt.networks
+          verbosity: 1
+        loop: "{{ groups['rhvh'] }}"
+        tags:
+          - network
+          - host_networks
 
       - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
         loop: "{{ host_networks }}"
         tags:
           - network
+          - host_networks
 ...
