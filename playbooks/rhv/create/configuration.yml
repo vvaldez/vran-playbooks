@@ -131,6 +131,10 @@
   tasks:
     - delegate_to: "{{ rhvm_api_host }}"
       block:
+        - debug:
+            var: ovirt_host_networks
+            verbosity: 1
+
         - ovirt_host_network: "{{ host_network | combine({'auth': hostvars[rhvm_api_host].ovirt_auth}) }}"
           loop: "{{ ovirt_host_networks }}"
           loop_control:

@@ -1,4 +1,4 @@
-- hosts: rhvh[0]
+- hosts: rhvm[0]
   remote_user: root
   gather_facts: no
   tasks:
@@ -8,7 +8,6 @@
 
     - name: Obtain SSO token with using username/password credentials
       ovirt_auth: "{{ ovirt.auth }}"
-      delegate_to: localhost
       run_once: yes
       tags:
         - always
@@ -21,7 +20,7 @@
     # need to add the .cer cert here; otherwise upload doesn't work
     # and restart ovirt-imageio-daemon, ovirt-imageio-proxy, it seems
 
-    - name: Download images onto {{ groups['rhvh'][0] }}
+    - name: Download images onto {{ groups['rhvm'][0] }}
       get_url:
         url: "{{ item.url }}"
         dest: "{{ item.dest }}"
@@ -54,7 +53,6 @@
     - name: Create virtual machines
       ovirt_vm: "{{ item | combine({'auth': ovirt_auth}) }}"
       loop: "{{ ovirt.vms }}"
-      delegate_to: localhost
       run_once: yes
       tags:
         - vm
