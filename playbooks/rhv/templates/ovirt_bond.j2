@@ -1,0 +1,17 @@
+BONDING_OPTS="ad_actor_system=00:00:00:00:00:00 miimon=100 mode=802.3ad"
+TYPE=Bond
+BONDING_MASTER=yes
+PROXY_METHOD=none
+BROWSER_ONLY=no
+IPV6INIT=yes
+NAME={{ nic_bond }}
+UUID={{ nic_uuid }}
+DEVICE={{ nic_bond }}
+ONBOOT=yes
+HWADDR=
+MTU=1500
+IPV6_AUTOCONF=no
+DHCPV6_DUID=ll
+DHCPV6_IAID=mac
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
