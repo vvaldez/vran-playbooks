@@ -94,7 +94,7 @@
           vlan_tag: "{{ item.value.vlan_tag }}"
           vm_network: yes
           mtu: "{{ item.value.mtu }}"
-          data_center: "{{ rhv.data_center }}"
+          data_center: "{{ rhv_infra.datacenter }}"
           wait: yes
           clusters:
             - name: "{{ rhv_infra.cluster }}"
@@ -113,7 +113,7 @@
           name: "{{ item.value.name }}"
           network: "{{ item.value.name }}"
           state: present
-          data_center: "{{ rhv.data_center }}"
+          data_center: "{{ rhv_infra.datacenter }}"
           network_filter: "{{ item.value.network_filter | default(omit) }}"
         loop: "{{ ovirt.networks | dict2items }}"
         tags:
