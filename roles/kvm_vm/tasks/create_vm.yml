@@ -65,6 +65,7 @@
         dest: /tmp/ifcfg-{{ interface }}
       loop:
         - "{{ kvm_vm.networks.management.vm_interface }}"
+        - "{{ kvm_vm.networks.storage.vm_interface }}"
       loop_control:
         loop_var: interface
 
@@ -83,6 +84,7 @@
           --ssh-inject {{ ansible_user }}:string:"{{ ssh_keys.0 }}"
           --copy-in /tmp/resolv.conf:/etc/
           --copy-in /tmp/ifcfg-{{ kvm_vm.networks.management.vm_interface }}:/etc/sysconfig/network-scripts/
+          --copy-in /tmp/ifcfg-{{ kvm_vm.networks.storage.vm_interface }}:/etc/sysconfig/network-scripts/
           --run-command "restorecon -Rv /root/.ssh/"
           --selinux-relabel
 
@@ -117,6 +119,7 @@
           --hvm
           --vnc
           --network network={{ kvm_vm.networks.management.libvirt }}
+          --network network={{ kvm_vm.networks.storage.libvirt }}
           --name {{ kvm_vm.name }}
 
     - name: Wait for target KVM VM to be reachable over SSH
