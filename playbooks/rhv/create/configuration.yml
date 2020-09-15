@@ -8,10 +8,9 @@
     - iscsi
   when: iscsi_wwid is not defined | default(True)
 
-- hosts: rhvh[0]
+- hosts: rhvm[0]
   remote_user: root
   gather_facts: no
-  connection: local
   vars:
     iscsi_wwid: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
     # Optionally provide ID like this and skip the iscsi client with --skip-tags iscsi
@@ -25,144 +24,115 @@
             iscsi_lun_id: "{{ iscsi_wwid }}"
             data_center: "{{ rhv_infra.datacenter }}"
   tasks:
-    - block:
-      - debug:
-          var: ovirt
-          verbosity: 1
+    - debug:
+        var: ovirt
+        verbosity: 1
 
-      ################
-      # Authenticate
-      ################
+    ################
+    # Authenticate
+    ################
 
-      - name: Obtain SSO token with using username/password credentials
-        ovirt_auth: "{{ ovirt.auth }}"
-        tags:
-          - always
+    - name: Obtain SSO token with using username/password credentials
+      ovirt_auth: "{{ ovirt.auth }}"
+      tags:
+        - always
 
-      ################
-      # Add hosts
-      ################
+    ################
+    # Add hosts
+    ################
 
-      # This will fail to add hosts to an existing installation. The Error will be
-      # "Host * does not comply with the cluster Default networks..."
-      # The host_networks need to be added at this point, then this step re-ran;
-      # this will set the host into operational mode.
-      # Because of the special logic, we should probably make a playbook for this.
+    # This will fail to add hosts to an existing installation. The Error will be
+    # "Host * does not comply with the cluster Default networks..."
+    # The host_networks need to be added at this point, then this step re-ran;
+    # this will set the host into operational mode.
+    # Because of the special logic, we should probably make a playbook for this.
 
-      - name: Add hosts
-        ovirt_host:
-          auth: "{{ ovirt_auth }}"
-          cluster: "{{ rhv_infra.cluster }}"
-          name: "{{ item }}"
-          address: "{{ item }}"
-          password: redhat
-          hosted_engine: deploy
-        loop: "{{ groups['rhvh'] }}"
-        tags:
-          - host
+    - name: Add hosts
+      ovirt_host:
+        auth: "{{ ovirt_auth }}"
+        cluster: "{{ rhv_infra.cluster }}"
+        name: "{{ item }}"
+        address: "{{ item }}"
+        password: redhat
+        hosted_engine: deploy
+      loop: "{{ groups['rhvh'] }}"
+      tags:
+        - host
 
-      ################
-      # Attach storage
-      ################
+    ################
+    # Attach storage
+    ################
 
-      - name: Attach storage domains
-        ovirt_storage_domain:
-          auth: "{{ ovirt_auth }}"
-          name: "{{ item.name }}"
-          host: "{{ groups['rhvh'][0] }}"
-          data_center: "{{ item.data_center }}"
-          iscsi:
-            target: "{{ item.iscsi_target }}"
-            lun_id:
-            - "{{ item.iscsi_lun_id }}"
-            address: "{{ item.iscsi_address }}"
-            override_luns: yes
-          discard_after_delete: True
-          backup: False
-          critical_space_action_blocker: 5
-          warning_low_space: 10
-        loop: "{{ ovirt.storage.domains }}"
-        tags:
-          - storage
+    - name: Attach storage domains
+      ovirt_storage_domain:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+        host: "{{ groups['rhvh'][0] }}"
+        data_center: "{{ item.data_center }}"
+        iscsi:
+          target: "{{ item.iscsi_target }}"
+          lun_id:
+          - "{{ item.iscsi_lun_id }}"
+          address: "{{ item.iscsi_address }}"
+          override_luns: yes
+        discard_after_delete: True
+        backup: False
+        critical_space_action_blocker: 5
+        warning_low_space: 10
+      loop: "{{ ovirt.storage.domains }}"
+      tags:
+        - storage
 
-      ################
-      # Create networks
-      ################
+    ################
+    # Create networks
+    ################
 
-      - name: Create ovirt networks
-        ovirt_network:
-          auth: "{{ ovirt_auth }}"
-          name: "{{ item.value.name }}"
-          vlan_tag: "{{ item.value.vlan_tag }}"
-          vm_network: yes
-          mtu: "{{ item.value.mtu }}"
-          data_center: "{{ rhv_infra.datacenter }}"
-          wait: yes
-          clusters:
-            - name: "{{ rhv_infra.cluster }}"
-              assigned: yes
-              display: no
-              gluster: no
-              migration: "{{ item.value.migration | default(omit) }}"
-              required: yes
-        loop: "{{ ovirt.networks | dict2items }}"
-        tags:
-          - network
+    - name: Create ovirt networks
+      ovirt_network:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.value.name }}"
+        vlan_tag: "{{ item.value.vlan_tag }}"
+        vm_network: yes
+        mtu: "{{ item.value.mtu }}"
+        data_center: "{{ rhv_infra.datacenter }}"
+        wait: yes
+        clusters:
+          - name: "{{ rhv_infra.cluster }}"
+            assigned: yes
+            display: no
+            gluster: no
+            migration: "{{ item.value.migration | default(omit) }}"
+            required: yes
+      loop: "{{ ovirt.networks | dict2items }}"
+      tags:
+        - network
 
-      - name: Create ovirt vnic profiles
-        ovirt_vnic_profile:
-          auth: "{{ ovirt_auth }}"
-          name: "{{ item.value.name }}"
-          network: "{{ item.value.name }}"
-          state: present
-          data_center: "{{ rhv_infra.datacenter }}"
-          network_filter: "{{ item.value.network_filter | default(omit) }}"
-        loop: "{{ ovirt.networks | dict2items }}"
-        tags:
-          - network
-          - vnic
+    - name: Create ovirt vnic profiles
+      ovirt_vnic_profile:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.value.name }}"
+        network: "{{ item.value.name }}"
+        state: present
+        data_center: "{{ rhv_infra.datacenter }}"
+        network_filter: "{{ item.value.network_filter | default(omit) }}"
+      loop: "{{ ovirt.networks | dict2items }}"
+      tags:
+        - network
+        - vnic
 
-      - name: Initialize host_networks to empty list
-        set_fact:
-          host_networks: []
-        tags:
-          - network
-          - host_networks
-
-      - name: Set host_networks
-        set_fact:
-          host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
-        loop: "{{ groups['rhvh'] }}"
-        tags:
-          - network
-          - host_networks
-
-      - debug:
-          var: host_networks
-          verbosity: 1
-        tags:
-          - network
-          - host_networks
-
-      - debug:
-          var: hostvars[item].ovirt_host_networks
-          verbosity: 1
-        loop: "{{ groups['rhvh'] }}"
-        tags:
-          - network
-          - host_networks
-
-      - debug:
-          var: hostvars[item].ovirt.networks
-          verbosity: 1
-        loop: "{{ groups['rhvh'] }}"
-        tags:
-          - network
-          - host_networks
-
-      - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
-        loop: "{{ host_networks }}"
-        tags:
-          - network
-          - host_networks
+- hosts: rhvh
+  remote_user: root
+  gather_facts: no
+  tags:
+    - network
+    - host_networks
+  vars:
+    rhvm_api_host: "{{ groups['rhvm'].0 }}"
+  tasks:
+    - delegate_to: "{{ rhvm_api_host }}"
+      block:
+        - ovirt_host_network: "{{ host_network | combine({'auth': hostvars[rhvm_api_host].ovirt_auth}) }}"
+          loop: "{{ ovirt_host_networks }}"
+          loop_control:
+            loop_var: host_network
 ...
