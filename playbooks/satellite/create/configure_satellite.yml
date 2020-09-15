@@ -58,7 +58,7 @@
         - manifest
 
     #########################
-    # Create osp16_containers product
+    # Create  products
     #########################
 
     - name: Create product for OpenStack containers
@@ -74,6 +74,40 @@
       delegate_to: localhost
       tags:
         - products
+
+    - name: Create product for EPEL
+      theforeman.foreman.product:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        name: "EPEL8"
+        state: present
+      delegate_to: localhost
+      tags:
+        - products
+        - epel
+      when:
+        - satellite.enable_epel is defined
+        - satellite.enable_epel|bool == True
+
+    - name: "Create EPEL GPG key"
+      theforeman.foreman.content_credential:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        organization: "{{ satellite.organization }}"
+        validate_certs: no
+        name: "EPEL8"
+        content_type: gpg_key
+        content: "{{ lookup('url', 'http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8') }}"
+      delegate_to: localhost
+      tags:
+        - epel
+      when:
+        - satellite.enable_epel is defined
+        - satellite.enable_epel|bool == True
 
     #########################
     # Create container repositories defined in each content view
@@ -101,9 +135,9 @@
       notify: sync products
 
 
-    #########################
-    # Create repository sets
-    #########################
+        #########################
+        # Create repository sets
+        #########################
 
     - name: Enable repository sets with releasevers and basearch
       theforeman.foreman.repository_set:
@@ -154,6 +188,26 @@
       delegate_to: localhost
       tags:
         - repository-sets
+
+    - name: Enable EPEL
+      theforeman.foreman.repository:
+        username: "{{ satellite.admin_username }}"
+        password: "{{ satellite.admin_password }}"
+        server_url: "{{ satellite.server_url }}"
+        validate_certs: no
+        organization: "{{ satellite.organization }}"
+        product: EPEL8
+        name: EPEL8
+        content_type: yum
+        url: https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64
+        gpg_key: EPEL8
+      when:
+        - satellite.enable_epel is defined
+        - satellite.enable_epel|bool == True
+      delegate_to: localhost
+      tags:
+        - repository-sets
+        - epel
 
     #########################
     # Create sync plan and assign the created repository sets above to it
@@ -293,20 +347,6 @@
       meta: flush_handlers
       tags:
         - content-views
-
-    #########################
-    # Default content view publish??
-    #########################
-
-    # - name: "Publish a content view, not idempotent"
-    #   theforeman.foreman.content_view_version:
-    #     username: "{{ satellite.admin_username }}"
-    #     password: "{{ satellite.admin_password }}"
-    #     server_url: "{{ satellite.server_url }}"
-    #     validate_certs: no
-    #     organization: "{{ satellite.organization }}"
-    #     content_view: "{{ item.name }}"
-    #   loop:
 
 
 
