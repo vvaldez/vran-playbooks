@@ -73,6 +73,10 @@
   tags:
     - network
 
+- import_playbook: fix_hosted_engine_network.yml
+  tags:
+    - network
+
 - import_playbook: ../read/get_iscsi_wwid.yml
   vars:
     ceph_admin_node: "{{ groups['ceph'].0 }}"
