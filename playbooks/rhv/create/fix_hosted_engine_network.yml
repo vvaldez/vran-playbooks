@@ -1,0 +1,29 @@
+---
+- hosts: rhvh
+  remote_user: root
+  gather_facts: no
+  vars:
+    nic_bond: bond2
+  tasks:
+    - name: Obtain bond {{ nic_bond }} UUID
+      slurp:
+          src: /etc/sysconfig/network-scripts/ifcfg-{{ nic_bond }}
+      register: nic_bond_result
+
+    - debug:
+        var: nic_bond_result['content'] | b64decode
+        verbosity: 1
+
+    - set_fact:
+        nic_uuid: "{{ item.split('=').1 }}"
+      loop: "{{ (nic_bond_result['content'] | b64decode).split('\n') }}"
+      when: item is search('UUID=')
+
+    - debug:
+        var: nic_uuid
+        verbosity: 1
+
+    - name: Generate nic config that ovirt expects
+      template:
+        src: ../templates/ovirt_bond.j2
+        dest: /etc/sysconfig/network-scripts/ifcfg-{{ nic_bond }}
