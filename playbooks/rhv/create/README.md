@@ -116,8 +116,9 @@
 9. Run `playbooks/rhv/create/configuration.yml` to configure hosts, storage, disks, networks, etc for RHV:
 
     ```sh
+    # Note we include the inventory directory and not a specific host file
     ansible-playbook \
-      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+      -i ../ansible-inventory/tewksbury1/inventory \
       playbooks/rhv/create/configuration.yml
     ```
 
