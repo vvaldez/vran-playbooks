@@ -6,6 +6,7 @@
     iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size }}"
   tags:
     - iscsi
+  when: iscsi_wwid is not defined | default(True)
 
 - hosts: rhvm[0]
   remote_user: root
