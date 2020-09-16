@@ -11,13 +11,13 @@
           loop:
             - "{{ site_name }}"
 
-- import_playbook: blocks/add-director-to-site-group.yml
+- import_playbook: ../blocks/add-director-to-site-group.yml
 
 - name: Upload ansible-generated templates
   import_playbook: ../ansible-generated-templates-upload.yml
 
 - name: "openstack undercloud deploy {{ site_name }}"
-  import_playbook: blocks/openstack-overcloud-deploy.yml
+  import_playbook: ../blocks/openstack-overcloud-deploy.yml
   vars:
     dcn_export: no
     tripleo_overcloud_deploy_stack: "{{ site_name }}"

@@ -16,6 +16,6 @@
 #
 
 - name: "openstack overcloud delete {{ site_name }}"
-  import_playbook: blocks/openstack-overcloud-delete.yml
+  import_playbook: ../blocks/openstack-overcloud-delete.yml
   vars:
     tripleo_overcloud_delete_name: "{{ site_name }}"
