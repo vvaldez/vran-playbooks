@@ -1,7 +1,6 @@
 - name: Configure Satellite
   hosts: satellite
   gather_facts: yes
-
   tasks:
     #########################
     # Import manifest
@@ -454,4 +453,3 @@
       until: sync_status.changed == true
       retries: 10
       listen: sync products
-

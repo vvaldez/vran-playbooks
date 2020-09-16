@@ -2,7 +2,8 @@
 - name: Prerequisites for installing overcloud
   hosts: director
   gather_facts: no
-  remote_user: root
+  become: yes
+  become_user: root
   tasks:
     - name: Remove cloud-init
       dnf:
@@ -57,10 +58,11 @@
             line: "{{ ip }}  {{ hostname_output.ansible_facts.ansible_fqdn }} {{ hostname_output.ansible_facts.ansible_hostname }}"
 
         - name: 3.1. Install katello package
-          yum:
+          dnf:
             name: "https://{{ undercloud.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
             state: installed
             validate_certs: no
+            disable_gpg_check: yes
           tags:
             - rhsm
 
@@ -155,13 +157,11 @@
 
     - name: Disable appstream for container-tools:rhel8
       dnf:
-        name: 'container-tools:rhel8'
-        state: disabled
+        disablerepo: 'container-tools:rhel8'
 
     - name: Enable appstream for container-tools:2.0
       dnf:
-        name: 'container-tools:2.0'
-        state: enabled
+        enablerepo: 'container-tools:2.0'
 
     - name: Add useful aliases for OpenStack
       become: yes
@@ -269,5 +269,14 @@
     - name: Create realtime image
       become: yes
       become_user: stack
-      shell: /home/stack/ansible-generated/scripts/3.3-create-upload-rt-image.sh
+      block:
+        # Only run this in the dev "vagrant" environment
+        # This package is coming from Satellite otherwise
+        - name: Copy in config-fpga-2.0-1.el8.x86_64.rpm
+          copy:
+            src: files/config-fpga-2.0-1.el8.x86_64.rpm
+            dest: /home/stack/config-fpga-2.0-1.el8.x86_64.rpm
+          when: datacenter == 'vagrant'
+
+        - shell: /home/stack/ansible-generated/scripts/3.3-create-upload-rt-image.sh
 ...

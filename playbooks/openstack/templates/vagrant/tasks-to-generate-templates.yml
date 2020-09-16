@@ -1,0 +1,89 @@
+- set_fact:
+    jinja_macros_dir: "{{ relative_path_to_templates }}/jinja-macros/"
+    role_specific_dir: "{{ relative_path_to_templates }}/role-specific/"
+    shared_dir: "{{ relative_path_to_templates }}/shared/"
+    site_specific_dir: "{{ relative_path_to_templates }}/site-specific/"
+    tmp_dir: "/tmp/ansible-generated"
+    # output_dir should always be passed in
+    quick: no
+
+# Define a `site_groups` list that will hold all the groups which
+# localhost should be added to `sites`/`overcloud` variable access for
+# template generation.
+# Initially, we hard code joining the `openstack` group.
+- set_fact:
+    site_groups: ['openstack']
+
+# Add every group with a name matching `site_*` in `groups` to the
+# `site_groups` list.
+- set_fact:
+    site_groups: "{{ site_groups + [item.key] }}"
+  loop: "{{ groups | dict2items }}"
+  when: "'site_' in item.key"
+
+# Add localhost to each group in `site_groups`
+- add_host:
+    name: "{{ inventory_hostname }}"
+    groups: "{{ site_groups }}"
+
+- name: Ensure {{ tmp_dir }} doesn't already exist
+  file:
+    path: "{{ tmp_dir }}"
+    state: absent
+  changed_when: false
+
+# Template $shared_dir into $tmp_dir
+- include_role:
+    name: template-directory
+  vars:
+    template_directory_input_dir: "{{ shared_dir }}"
+    template_directory_output_dir: "{{ tmp_dir }}"
+    template_directory_changed_when: false
+    template_directory_quick_mode: "{{ quick|bool }}"
+  no_log: false
+
+# Template $sites_dir into $tmp_dir
+# loop_index is the site dictionary
+- include_role:
+    name: template-directory
+  vars:
+    template_directory_input_dir: "{{ site_specific_dir }}"
+    template_directory_output_dir: "{{ tmp_dir }}"
+    template_directory_changed_when: false
+    template_directory_quick_mode: "{{ quick|bool }}"
+    template_directory_filename_affix: "-{{ loop_index.name_lower }}"
+    current_site: "{{ loop_index }}"
+  loop: "{{ sites }}"
+  loop_control:
+    label: "{{ loop_index.name_upper }}"
+    loop_var: loop_index
+    index_var: my_idx
+  no_log: false
+
+# Template $roles_dir into $tmp_dir
+# loop_index[0] is the site dictionary
+# loop_index[1].type is the role dictionary
+- include_role:
+    name: template-directory
+  vars:
+    template_directory_input_dir: "{{ role_specific_dir }}"
+    template_directory_output_dir: "{{ tmp_dir }}"
+    template_directory_changed_when: false
+    template_directory_quick_mode: "{{ quick|bool }}"
+    template_directory_filename_affix: "-{{ loop_index[1].type.name_lower }}-{{ loop_index[0].name_lower }}"
+    current_site: "{{ loop_index[0] }}"
+    current_site_role: "{{ loop_index[1] }}"
+  loop: "{{ sites | subelements('roles') }}"
+  loop_control:
+    label: "{{ loop_index[0].name_upper }}/{{ loop_index[1].type.name_upper }}"
+    loop_var: loop_index
+    index_var: my_idx
+  no_log: false
+
+# Copy $tmp_dir into $output_dir
+- include_role:
+    name: template-directory
+  vars:
+    template_directory_input_dir: "{{ tmp_dir }}"
+    template_directory_output_dir: "{{ output_dir }}"
+    template_directory_copy_only: true
