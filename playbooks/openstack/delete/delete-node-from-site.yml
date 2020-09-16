@@ -16,7 +16,7 @@
   tags:
     - always
 
-- import_playbook: ansible-generated-templates-upload.yml
+- import_playbook: ../ansible-generated-templates-upload.yml
   tags:
     - templates
 
