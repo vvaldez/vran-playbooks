@@ -1,8 +1,0 @@
-- hosts: test
-  become: yes
-  become_user: root
-  tasks:
-    - ping:
-
-    - include_role:
-        name: linux-system-roles.network
