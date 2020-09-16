@@ -6,11 +6,14 @@
     iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size }}"
   tags:
     - iscsi
+    - config
   when: iscsi_wwid is not defined | default(True)
 
 - hosts: rhvm[0]
   remote_user: root
   gather_facts: no
+  tags:
+    - config
   vars:
     iscsi_wwid: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
     # Optionally provide ID like this and skip the iscsi client with --skip-tags iscsi

@@ -50,6 +50,24 @@
         var: scsi_devices_prelogin
         verbosity: 1
 
+    # Check if too many devices are discovered. This could lead to confusion in which wwid to use. However, this can be improved by capturing the ID into this prelogin var and improving the logic to filter out known ids later on.
+    - when: scsi_devices_prelogin | length > 0
+      block:
+        - debug:
+            msg:
+              - "WARN: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ scsi_devices_prelogin }}."
+              - "      Attempting remediation, system will logout of all iscsi portals and reboot"
+        - name: Logout of iscsi target
+          command: >
+            iscsiadm --mode node
+              {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+              {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+              {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+              {% if ansible_verbosity == 0 %}--debug=0{% endif %}
+              --logoutall=all
+
+        - reboot:
+
     - name: Attempt to discover iSCSI targets on given portal
       open_iscsi:
         auto_node_startup: no
@@ -148,22 +166,25 @@
     - set_fact:
         iscsi_device_list: "{{ scsi_devices_postlogin | default({}) | difference(scsi_devices_prelogin) }}"
 
-    - fail:
-        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ iscsi_device_list }}"
-      when: iscsi_device_list | length > 1
+    # Check if too many devices are discovered. This could lead
+    - when: iscsi_device_list | length > 1
+      block:
+        - debug:
+            msg:
+              - "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found: {{ iscsi_device_list }}."
+              - "      Attempting remediation, retry after {{ inventory_hostname }} completes this process ..."
+        - set_fact:
+            iscsi_too_many: True
 
-    - fail:
-        msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found none."
-      when: iscsi_device_list | length == 0
+    - name: Ensure 1 new iSCSI LUN with size {{ iscsi_size }} is found
+      assert:
+        that:
+          - iscsi_device_list | length == 0
+        fail_msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found none."
+        success_msg: "INFO: Discovered 1 new iSCSI LUN with size {{ iscsi_size }}."
 
-    - set_fact:
-        iscsi_device: "{{ iscsi_device_list.0 }}"
-
-    - name: Gather WWID from {{ iscsi_device }}
-      command: /lib/udev/scsi_id --page=0x83 --whitelisted --device=/dev/{{ iscsi_device }}
-      register: iscsi_wwid
-
-    - name: Logout of iscsi target
+    - when: iscsi_too_many | default(False)
+      name: Logout of iscsi target
       command: >
         iscsiadm --mode node
           {% if ansible_verbosity == 3 %}--debug=8{% endif %}
@@ -172,12 +193,30 @@
           {% if ansible_verbosity == 0 %}--debug=0{% endif %}
           --logoutall=all
 
-    - debug:
-        msg:
-          - "INFO: iSCSI LUN gathered facts"
-          - "  Target: {{ iscsi_target }}"
-          - "  Portal: {{ iscsi_portal }}"
-          - "  Size: {{ iscsi_size }}"
-          - "  OS Device: {{ iscsi_device }}"
-          - "  OS WWID: {{ iscsi_wwid.stdout }}"
+    - when: not iscsi_too_many | default(True)
+      block:
+        - set_fact:
+            iscsi_device: "{{ iscsi_device_list.0 }}"
+
+        - name: Gather WWID from {{ iscsi_device }}
+          command: /lib/udev/scsi_id --page=0x83 --whitelisted --device=/dev/{{ iscsi_device }}
+          register: iscsi_wwid
+
+        - name: Logout of iscsi target
+          command: >
+            iscsiadm --mode node
+              {% if ansible_verbosity == 3 %}--debug=8{% endif %}
+              {% if ansible_verbosity == 2 %}--debug=4{% endif %}
+              {% if ansible_verbosity == 1 %}--debug=1{% endif %}
+              {% if ansible_verbosity == 0 %}--debug=0{% endif %}
+              --logoutall=all
+
+        - debug:
+            msg:
+              - "INFO: iSCSI LUN gathered facts"
+              - "  Target: {{ iscsi_target }}"
+              - "  Portal: {{ iscsi_portal }}"
+              - "  Size: {{ iscsi_size }}"
+              - "  OS Device: {{ iscsi_device }}"
+              - "  OS WWID: {{ iscsi_wwid.stdout }}"
 ...
