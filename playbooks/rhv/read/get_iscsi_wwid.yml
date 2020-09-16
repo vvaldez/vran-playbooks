@@ -68,6 +68,26 @@
 
         - reboot:
 
+        - name: Determine existing block devices
+          command: lsblk --noheadings --nodeps --output NAME,SIZE
+          register: lsblk_output
+
+        - debug:
+            var: lsblk_output
+            verbosity: 1
+
+        - set_fact:
+            scsi_devices_prelogin: {}
+
+        - set_fact:
+            scsi_devices_prelogin: "{{ scsi_devices_prelogin | combine( { item.split().0 : item.split().1 } ) }}"
+          loop: "{{ lsblk_output.stdout_lines }}"
+          when: item is search(iscsi_size)
+
+        - debug:
+            var: scsi_devices_prelogin
+            verbosity: 1
+
     - name: Attempt to discover iSCSI targets on given portal
       open_iscsi:
         auto_node_startup: no
@@ -167,6 +187,8 @@
         iscsi_device_list: "{{ scsi_devices_postlogin | default({}) | difference(scsi_devices_prelogin) }}"
 
     # Check if too many devices are discovered. This could lead
+    - set_fact:
+        iscsi_too_many: False
     - when: iscsi_device_list | length > 1
       block:
         - debug:
