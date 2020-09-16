@@ -1,0 +1,7 @@
+ControllerExtraConfig:
+  nova::cpu_allocation_ratio: 1
+  nova::pci::aliases:
+    - name: vc_fpga
+      vendor_id: '1172'
+      product_id: '5050'
+      device_type: 'type-VF'

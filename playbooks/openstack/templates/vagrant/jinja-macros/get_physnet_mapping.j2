@@ -1,0 +1,51 @@
+{#
+This macro will lookup a single physnet associated with the passed in role and nic.
+according to the `network_roles` dictionary.
+
+Parameters:
+  network_roles: The `network_roles` dictionary found in group_vars/site_<name>_tor/vars.yml
+  role: The name of key to lookup within `networks_roles`
+  nic: The name of the nic key to lookup with `network_roles[role]`
+  site: (optional) The name of the site to optionally be used in str_format
+  str_format: (optional) The format for the output_str
+
+Use Python printf-style formatting for str_format variable. See:
+  - https://jinja.palletsprojects.com/en/2.11.x/templates/#format
+  - https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
+#}
+{% macro get_single_physnet_mapping(network_roles, role, nic, site='', str_format='%(physnet)s') %}
+{%   set network_trunk = network_roles[role][nic].trunk_networks | first %}
+{%   set physnet = network_trunk.split('_')[1:] | join('-') %}
+{%   set output_str = str_format % {'site': site, 'nic': nic, 'physnet': physnet} %}
+{{ output_str }}
+{%- endmacro %}
+
+{#
+This macro will lookup all the physnets associated with the passed in role.
+according to the `network_roles` dictionary.
+
+Parameters:
+  network_roles: The `network_roles` dictionary found in group_vars/site_<name>_tor/vars.yml
+  role: The name of key to lookup within `networks_roles`
+  site: (optional) The name of the site to optionally be used in str_format
+  str_format: (optional) The format for the output_str
+
+Use Python printf-style formatting for str_format variable. See:
+  - https://jinja.palletsprojects.com/en/2.11.x/templates/#format
+  - https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
+#}
+{% macro get_all_physnet_mappings(network_roles, role, site='', str_format='%(physnet)s') %}
+{# Init #}
+{%   set nic, network_trunk, physnet, output_str = "", "", "", "" %}
+{# For every nic in the network_roles.<role> #}
+{%   for k, v in network_roles[role].items() | sort %}
+{#     If the nic is not a bond #}
+{%     if 'bond' not in k %}
+{%       set nic = k %}
+{%       set network_trunk = v.trunk_networks | first %}
+{%       set physnet = network_trunk.split('_')[1:] | join('-') %}
+{%       set output_str = str_format % {'site': site, 'nic': nic, 'physnet': physnet} %}
+{{ output_str }}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
