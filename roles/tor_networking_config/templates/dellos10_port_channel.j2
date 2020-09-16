@@ -9,7 +9,7 @@ interface port-channel{{ interface.port_channel_id }}
 {% else %}
 {% set allowed_vlans_diff = [] %}
 {% endif %}
- switchport trunk allowed vlan {{ network_roles[interface.network_role][interface.host_interface]['trunk_networks'] | difference(allowed_vlans_diff) | map('extract', site_networks) | list | json_query('[*].vlan') | join(',') | replace(':', '-') }}
+ switchport trunk allowed vlan {{ network_roles[interface.network_role][interface.host_interface]['trunk_networks'] | difference(allowed_vlans_diff) | map('extract', site_networks) | list | json_query('[*].vlan') | sort | join(',') | replace(':', '-') }}
 {% if network_roles[interface.network_role][interface.host_interface]['access_network'] is defined %}
  switchport access vlan {{ site_networks[network_roles[interface.network_role][interface.host_interface]['access_network']]['vlan'] }}
 {% endif %}

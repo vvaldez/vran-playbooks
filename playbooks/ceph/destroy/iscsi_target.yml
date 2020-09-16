@@ -1,6 +1,6 @@
 ---
 - name: Destroy iSCSI Targets on deployed Ceph Cluster
-  hosts: ceph
+  hosts: "{{ ceph_admin_node | default(groups['ceph'].0) }}"
   gather_facts: False
   become: True
   vars:

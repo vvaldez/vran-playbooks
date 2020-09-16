@@ -1,5 +1,5 @@
 ---
-- name: Run ceph-ansible
+- name: Prepare Purge playbook
   hosts: "{{ ceph_admin_node | default(groups['ceph'].0) }}"
   gather_facts: True
   vars:
@@ -7,7 +7,7 @@
     ceph_automation_username: ceph_ansible
     ceph_admin_node: "{{ groups['ceph'].0 }}"
     ceph_playbook_dir: /usr/share/ceph-ansible
-    ceph_playbook: site-container.yml
+    ceph_playbook: purge-container-cluster.yml
     ceph_inventory: /etc/ansible/hosts
     ceph_playbook_command: >
       ansible-playbook
@@ -20,28 +20,30 @@
       {{ ceph_playbook }}
   remote_user: "{{ ceph_automation_username }}"
   tasks:
+    - name: Ensure playbooks are in place
+      copy:
+        dest: /usr/share/ceph-ansible/{{ ceph_playbook }}
+        src: /usr/share/ceph-ansible/infrastructure-playbooks/{{ ceph_playbook }}
+        remote_src: yes
+      become: yes
+
     - name: Display run command for ceph-ansible
       debug:
         msg: "{{ ceph_playbook_command }}"
         verbosity: 1
 
-    - name: Set Ansible logging for future debugging
-      ini_file:
-        path: /etc/ansible/ansible.cfg
-        section: defaults
-        option: log_path
-        value: /var/log/ansible.log
-      become: yes
-
-    - name: Run ceph-ansible
-      command: "{{ ceph_playbook_command }}"
-      args:
-        chdir: "{{ ceph_playbook_dir }}"
-      environment:
-        ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
-      register: ceph_ansible_playbook_run
-
     - debug:
-        var: ceph_ansible_playbook_run
-        verbosity: 1
+        msg: "Comfirm prompt prevents automation run. Playbook ready to run."
+
+    # - name: Run {{ ceph_playbook }}
+    #   command: "{{ ceph_playbook_command }}"
+    #   args:
+    #     chdir: "{{ ceph_playbook_dir }}"
+    #   environment:
+    #     ANSIBLE_CONFIG: "{{ ceph_playbook_dir }}/ansible.cfg"
+    #   register: ceph_ansible_playbook_run
+
+    # - debug:
+    #     var: ceph_ansible_playbook_run
+    #     verbosity: 1
 ...

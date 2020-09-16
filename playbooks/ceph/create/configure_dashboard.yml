@@ -1,0 +1,73 @@
+---
+- name: Setup Ceph
+  hosts: ceph
+  gather_facts: no
+  vars:
+    ceph_admin_node: "{{ groups['ceph'].0 }}"
+    ceph_cluster: "{{ groups['ceph'] }}"
+    ceph_automation_username: ceph_ansible
+    ceph_dashboard_host: "{{ ceph_cluster.0 }}"
+    podman_command: podman exec -t ceph-mgr-{{ inventory_hostname_short }} bash -c
+  tags:
+    - setup
+  tasks:
+    - debug:
+        var: podman_command
+        verbosity: 1
+
+    - debug:
+        var: ceph_dashboard_host
+        verbosity: 1
+
+    - name: Restart and display service configuration
+      command: "{{ podman_command }} 'ceph mgr services'"
+      register: ceph_mgr_services_result
+
+    - debug:
+        var: ceph_mgr_services_result
+        verbosity: 1
+
+    - name: Set dashboard to redirect
+      command: "{{ podman_command }} 'ceph config set mgr mgr/dashboard/server_addr {{ ceph_dashboard_host }}'"
+      register: ceph_config_set_result
+
+    - debug:
+        var: ceph_config_set_result
+        verbosity: 1
+
+    - name: Set dashboard to redirect
+      command: "{{ podman_command }} 'ceph config set mgr mgr/dashboard/{{ inventory_hostname_short }}/server_addr {{ ceph_dashboard_host }}'"
+      register: ceph_config_set_result
+
+    - debug:
+        var: ceph_config_set_result
+        verbosity: 1
+
+    - name: Disable dashboard
+      command: "{{ podman_command }} 'ceph mgr module disable dashboard'"
+      register: ceph_mgr_disable_result
+
+    - debug:
+        var: ceph_mgr_disable_result
+        verbosity: 1
+
+    - name: Enable dashboard
+      command: "{{ podman_command }} 'ceph mgr module enable dashboard'"
+      register: ceph_mgr_enable_result
+
+    - debug:
+        var: ceph_mgr_enable_result
+        verbosity: 1
+
+    - name: Wait for dashboard to enable
+      pause:
+        seconds: 5
+
+    - name: Display service configuration
+      command: "{{ podman_command }} 'ceph mgr services'"
+      register: ceph_mgr_services_after_result
+
+    - debug:
+        var: ceph_mgr_services_after_result
+        verbosity: 1
+...

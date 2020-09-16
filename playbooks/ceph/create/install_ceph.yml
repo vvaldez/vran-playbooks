@@ -1,8 +1,6 @@
 ---
 - name: Setup prerequisites for Ceph
   hosts: ceph
-  tags:
-    - prereq
   tasks:
     - name: Set hostname
       vars:
@@ -12,14 +10,7 @@
       tags:
         - hostname
 
-    - name: Register system
-      import_role:
-        name: oasis_roles.system.rhsm
-      ignore_errors: yes
-      vars:
-        rhsm_repositories: "{{ rhsm.rhsm_repositories }}"
-      tags:
-        - rhsm
+    - include_tasks: ../../generic/rhsm_register_satellite.yml
 
     - name: Install packages
       vars:
@@ -36,4 +27,10 @@
         firewalld_ports_open: "{{ firewalld.firewalld_ports_open }}"
       import_role:
         name: oasis_roles.system.firewalld
+
+- import_playbook: ../../generic/network_setup.yml
+  vars:
+    playbook_hosts: ceph
+  tags:
+    - network
 ...

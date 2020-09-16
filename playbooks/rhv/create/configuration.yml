@@ -1,32 +1,42 @@
 ---
-- import_playbook: ../get_ceph_facts/get_iscsi_wwid.yml
+- import_playbook: ../read/get_iscsi_wwid.yml
   vars:
     ceph_admin_node: "{{ groups['ceph'].0 }}"
     # Data domain size
-    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size | upper }}"
+    iscsi_size: "{{ hostvars[ceph_admin_node].ceph.iscsi_targets.images.1.size }}"
+  tags:
+    - iscsi
+    - config
+  when: iscsi_wwid is not defined | default(True)
 
-# groups['rhvh'][0] is also utilized within the playbook. If you update
-# this host group, those references should be as well.
-- hosts: rhvh[0]
+- hosts: rhvm[0]
   remote_user: root
   gather_facts: no
+  tags:
+    - config
   vars:
+    iscsi_wwid: "{{ hostvars[groups['iscsi_client'].0].iscsi_wwid.stdout }}"
+    # Optionally provide ID like this and skip the iscsi client with --skip-tags iscsi
+    # iscsi_wwid: "360014055972e88b045b4db08816a8e02"
     ovirt:
       storage:
         domains:
           - name: data
             iscsi_address: "{{ rhv.he_storage_domain_addr }}"
             iscsi_target: "{{ rhv.he_iscsi_target }}"
-            iscsi_lun_id: "{{ iscsi_wwid.stdout }}"
-            data_center: Default
+            iscsi_lun_id: "{{ iscsi_wwid }}"
+            data_center: "{{ rhv_infra.datacenter }}"
   tasks:
+    - debug:
+        var: ovirt
+        verbosity: 1
+
     ################
     # Authenticate
     ################
 
     - name: Obtain SSO token with using username/password credentials
       ovirt_auth: "{{ ovirt.auth }}"
-      delegate_to: localhost
       tags:
         - always
 
@@ -43,13 +53,12 @@
     - name: Add hosts
       ovirt_host:
         auth: "{{ ovirt_auth }}"
-        cluster: Default
+        cluster: "{{ rhv_infra.cluster }}"
         name: "{{ item }}"
         address: "{{ item }}"
         password: redhat
         hosted_engine: deploy
       loop: "{{ groups['rhvh'] }}"
-      delegate_to: localhost
       tags:
         - host
 
@@ -74,7 +83,6 @@
         critical_space_action_blocker: 5
         warning_low_space: 10
       loop: "{{ ovirt.storage.domains }}"
-      delegate_to: localhost
       tags:
         - storage
 
@@ -89,17 +97,16 @@
         vlan_tag: "{{ item.value.vlan_tag }}"
         vm_network: yes
         mtu: "{{ item.value.mtu }}"
-        data_center: Default
+        data_center: "{{ rhv_infra.datacenter }}"
         wait: yes
         clusters:
-          - name: Default
+          - name: "{{ rhv_infra.cluster }}"
             assigned: yes
             display: no
             gluster: no
             migration: "{{ item.value.migration | default(omit) }}"
             required: yes
       loop: "{{ ovirt.networks | dict2items }}"
-      delegate_to: localhost
       tags:
         - network
 
@@ -109,32 +116,30 @@
         name: "{{ item.value.name }}"
         network: "{{ item.value.name }}"
         state: present
-        data_center: Default
+        data_center: "{{ rhv_infra.datacenter }}"
         network_filter: "{{ item.value.network_filter | default(omit) }}"
       loop: "{{ ovirt.networks | dict2items }}"
-      delegate_to: localhost
       tags:
         - network
         - vnic
 
-    - name: Initialize host_networks to empty list
-      set_fact:
-        host_networks: []
-      delegate_to: localhost
-      tags:
-        - network
+- hosts: rhvh
+  remote_user: root
+  gather_facts: no
+  tags:
+    - network
+    - host_networks
+  vars:
+    rhvm_api_host: "{{ groups['rhvm'].0 }}"
+  tasks:
+    - delegate_to: "{{ rhvm_api_host }}"
+      block:
+        - debug:
+            var: ovirt_host_networks
+            verbosity: 1
 
-    - name: Set host_networks
-      set_fact:
-        host_networks: "{{ host_networks + hostvars[item].ovirt_host_networks }}"
-      loop: "{{ groups['rhvh'] }}"
-      delegate_to: localhost
-      tags:
-        - network
-
-    - ovirt_host_network: "{{ item | combine({'auth': ovirt_auth}) }}"
-      loop: "{{ host_networks }}"
-      delegate_to: localhost
-      tags:
-        - network
+        - ovirt_host_network: "{{ host_network | combine({'auth': hostvars[rhvm_api_host].ovirt_auth}) }}"
+          loop: "{{ ovirt_host_networks }}"
+          loop_control:
+            loop_var: host_network
 ...

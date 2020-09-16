@@ -1,0 +1,21 @@
+---
+- name: Extend root logical volume
+  hosts: "{{ playbook_hosts | default('all') }}"
+  tasks:
+    - debug:
+        var: ansible_lvm.vgs[ansible_lvm.lvs.root.vg]
+        verbosity: 1
+
+    - name: Extend the root logical volume to consume all remaining space in the volume group
+      lvol:
+        vg: "{{ ansible_lvm.lvs.root.vg }}"
+        lv: root
+        size: +100%FREE
+        resizefs: true
+      register: lvol_extend
+
+    - debug:
+        var: ansible_lvm.vgs[ansible_lvm.lvs.root.vg]
+        verbosity: 1
+      when: lvol_extend is changed
+...

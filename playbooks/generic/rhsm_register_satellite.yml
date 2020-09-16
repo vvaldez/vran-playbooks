@@ -4,6 +4,9 @@
     name: "https://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
     state: installed
     validate_certs: no
+  tags:
+    - satellite
+    - rhsm
 
 - name: Register to Satellite
   vars:

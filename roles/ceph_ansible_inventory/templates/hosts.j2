@@ -1,22 +1,22 @@
 [grafana-server]
-{{ ceph_cluster.0 }}
+{{ ceph_cluster.0 }} ansible_host={{ hostvars[ceph_cluster.0].ansible_host }}
 
 [mons]
 {% for ceph_member in ceph_cluster %}
-{{ ceph_member }}
+{{ ceph_member }} ansible_host={{ hostvars[ceph_member].ansible_host }}
 {% endfor %}
 
 [osds]
 {% for ceph_member in ceph_cluster %}
-{{ ceph_member }}
+{{ ceph_member }} ansible_host={{ hostvars[ceph_member].ansible_host }}
 {% endfor %}
 
 [mgrs]
 {% for ceph_member in ceph_cluster %}
-{{ ceph_member }}
+{{ ceph_member }} ansible_host={{ hostvars[ceph_member].ansible_host }}
 {% endfor %}
 
 [iscsigws]
 {% for ceph_member in ceph_cluster %}
-{{ ceph_member }}
+{{ ceph_member }} ansible_host={{ hostvars[ceph_member].ansible_host }}
 {% endfor %}

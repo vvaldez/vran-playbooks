@@ -72,13 +72,13 @@
       -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
       -e iscsi_target="iqn.2020-08.com.ceph:rhv-igw" \
       -e iscsi_size=200G \
-      playbooks/rhv/get_ceph_facts/get_iscsi_wwid.yml
+      playbooks/rhv/read/get_iscsi_wwid.yml
 
     ansible-playbook \
       -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
       -e iscsi_target="iqn.2020-08.com.ceph:rhv-igw" \
       -e iscsi_size=2T \
-      playbooks/rhv/get_ceph_facts/get_iscsi_wwid.yml
+      playbooks/rhv/read/get_iscsi_wwid.yml
     ```
 
     ```yml
@@ -116,8 +116,9 @@
 9. Run `playbooks/rhv/create/configuration.yml` to configure hosts, storage, disks, networks, etc for RHV:
 
     ```sh
+    # Note we include the inventory directory and not a specific host file
     ansible-playbook \
-      -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+      -i ../ansible-inventory/tewksbury1/inventory \
       playbooks/rhv/create/configuration.yml
     ```
 
