@@ -179,7 +179,7 @@
     - name: Ensure 1 new iSCSI LUN with size {{ iscsi_size }} is found
       assert:
         that:
-          - iscsi_device_list | length == 0
+          - iscsi_device_list | length == 1
         fail_msg: "ERROR: Expected exactly 1 new iSCSI LUN with size {{ iscsi_size }} but found none."
         success_msg: "INFO: Discovered 1 new iSCSI LUN with size {{ iscsi_size }}."
 
