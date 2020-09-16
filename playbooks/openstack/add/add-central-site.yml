@@ -1,6 +1,6 @@
 ---
 - name: Upload ansible-generated templates
-  import_playbook: ansible-generated-templates-upload.yml
+  import_playbook: ../ansible-generated-templates-upload.yml
 
 - name: openstack overcloud node import
   import_playbook: blocks/openstack-overcloud-node-import.yml
