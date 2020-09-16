@@ -3,7 +3,7 @@
   import_playbook: ../ansible-generated-templates-upload.yml
 
 - name: openstack overcloud node import
-  import_playbook: blocks/openstack-overcloud-node-import.yml
+  import_playbook: ../blocks/openstack-overcloud-node-import.yml
   vars:
     tripleo_overcloud_node_import_environment_file: /home/stack/ansible-generated/instackenv.yaml
   tags:
@@ -22,7 +22,7 @@
     - map neutron ports
 
 - name: openstack overcloud node introspect
-  import_playbook: blocks/openstack-overcloud-node-introspect.yml
+  import_playbook: ../blocks/openstack-overcloud-node-introspect.yml
   tags:
     - openstack overcloud node introspect
 
@@ -41,7 +41,7 @@
     - create roles
 
 - name: openstack overcloud deploy central
-  import_playbook: blocks/openstack-overcloud-deploy.yml
+  import_playbook: ../blocks/openstack-overcloud-deploy.yml
   vars:
     dcn_export: no
     tripleo_overcloud_deploy_stack: central
@@ -52,7 +52,7 @@
     - openstack overcloud deploy central
 
 - name: openstack aggregate create central
-  import_playbook: blocks/openstack-aggregate-create.yml
+  import_playbook: ../blocks/openstack-aggregate-create.yml
   vars:
     aggregate_name: central
     zone_name: central
@@ -60,7 +60,7 @@
     - openstack aggregate create
 
 # - name: tempest run central
-#   import_playbook: blocks/tempest-run.yml
+#   import_playbook: ../blocks/tempest-run.yml
 #   vars:
 #     tempest_workspace: central
 #   tags:

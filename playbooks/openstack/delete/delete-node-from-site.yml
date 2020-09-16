@@ -12,7 +12,7 @@
             - "{{ server_name }}"
             - "{{ site_name }}"
 
-- import_playbook: blocks/add-director-to-site-group.yml
+- import_playbook: ../blocks/add-director-to-site-group.yml
   tags:
     - always
 
@@ -58,7 +58,7 @@
     - node-delete
 
 - name: "openstack overcloud deploy {{ site_name }} --update-plan-only"
-  import_playbook: blocks/openstack-overcloud-deploy.yml
+  import_playbook: ../blocks/openstack-overcloud-deploy.yml
   vars:
     dcn_export: no
     tripleo_overcloud_deploy_stack: "{{ site_name }}"
@@ -70,7 +70,7 @@
     - deploy
 
 - name: "openstack overcloud node delete {{ site_name }}"
-  import_playbook: blocks/openstack-overcloud-node-delete.yml
+  import_playbook: ../blocks/openstack-overcloud-node-delete.yml
   vars:
     dcn_export: no
     tripleo_overcloud_node_delete_stack: "{{ site_name }}"
