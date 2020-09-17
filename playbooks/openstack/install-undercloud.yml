@@ -279,4 +279,6 @@
           when: datacenter == 'vagrant'
 
         - shell: /home/stack/ansible-generated/scripts/3.3-create-upload-rt-image.sh
+      tags:
+        - realtime-image
 ...
