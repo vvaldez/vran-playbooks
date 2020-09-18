@@ -1,0 +1,10 @@
+---
+- name: Apply server settings
+  hosts: baremetal
+  connection: local
+  gather_facts: False
+
+  tasks:
+  - include_role:
+      name: server_settings
+...

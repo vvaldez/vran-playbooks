@@ -1,0 +1,13 @@
+---
+ss_has_os: False
+oob:
+  resource_ids:
+    system: System.Embedded.1
+    manager: iDRAC.Embedded.1
+  SystemManufacturer: Dell
+  config:
+    bios:
+      SetBootOrderEn: "HardDisk.List.1-1"
+    idrac: null
+    pxe_allow: null
+...

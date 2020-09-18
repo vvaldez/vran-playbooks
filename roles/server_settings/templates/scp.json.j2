@@ -1,0 +1,14 @@
+{% set components = []  %}
+{% set attrib_pxe = [{ 'Name': 'LegacyBootProto', 'Value': 'PXE', 'Set On Import': 'True' }] %}
+{% set attrib_no_pxe = [{ 'Name': 'LegacyBootProto', 'Value': 'NONE', 'Set On Import': 'True' }] %}
+{% for nic in ss_nic_ports %}
+{% set nic_short = nic | regex_search('[^/]+$') %}
+{% if nic_short == oob.config.pxe_allow %}
+{% set nic_dict = { 'FQDD': nic_short, 'Attributes': attrib_pxe } %}
+{% else %}
+{% set nic_dict = { 'FQDD': nic_short, 'Attributes': attrib_no_pxe } %}
+{% endif %}
+{% set components = components.append(nic_dict) %}
+{% endfor %}
+{% set payload = {'SystemConfiguration': {'Components': components } } %}
+{{ payload | to_nice_json }}
