@@ -25,7 +25,7 @@
 
 - name: Update the node object with the found MAC address
   set_fact:
-    node_with_mac: "{{ node.value | combine({ 'mac': [result.ovirt_nics[0].mac.address] }) }}"
+    node_with_mac: "{{ node.value | combine({ 'mac': [result.ovirt_nics[0].mac.address | lower] }) }}"
 
 - name: Add the updated node to instackenv
   set_fact:

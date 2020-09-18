@@ -2,6 +2,28 @@
     msg: "pxe_drac driver: {{ node.value.name }}"
     verbosity: 1
 
+- name: Get provisioning network adapter detail
+  vars:
+    _nic_base: "{{ oob.config.pxe_allow | regex_search('^.*?(?=-)') }}"
+  uri:
+    url: https://{{ node.value.pm_addr }}/redfish/v1/Chassis/{{ oob.resource_ids.system }}/NetworkAdapters/{{ _nic_base }}/NetworkDeviceFunctions/{{ oob.config.pxe_allow }}
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: true
+  register: _nic_data
+  delegate_to: localhost
+
+- debug:
+    msg: "{{ node.value.name }}: {{ _nic_data.json.Ethernet.MACAddress }}"
+    verbosity: 1
+
+- name: Update the node object with the found MAC address
+  set_fact:
+    node_with_mac: "{{ node.value | combine({ 'mac': [_nic_data.json.Ethernet.MACAddress | lower] }) }}"
+
 - name: Add the node to instackenv without changes
   set_fact:
-    instackenv: "{{ instackenv + [node.value] }}"
+    instackenv: "{{ instackenv + [node_with_mac] }}"

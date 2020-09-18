@@ -3,3 +3,9 @@ ovirt_auth_url: https://example/ovirt-engine/api
 ovirt_auth_username: admin@internal
 ovirt_auth_password: password
 ovirt_auth_insecure: no
+
+oob:
+  config:
+    pxe_allow: NIC.Integrated.1-1-1
+oob_username: username
+oob_password: password
