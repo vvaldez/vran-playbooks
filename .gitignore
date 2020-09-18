@@ -22,6 +22,7 @@ roles/*
 !roles/ceph_*
 !roles/fpga*
 !roles/server_*
+!roles/discover
 
 # Ignore virtualenv
 venv/

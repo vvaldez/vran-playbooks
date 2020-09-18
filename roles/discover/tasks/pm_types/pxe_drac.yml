@@ -1,0 +1,7 @@
+- debug:
+    msg: "pxe_drac driver: {{ node.value.name }}"
+    verbosity: 1
+
+- name: Add the node to instackenv without changes
+  set_fact:
+    instackenv: "{{ instackenv + [node.value] }}"

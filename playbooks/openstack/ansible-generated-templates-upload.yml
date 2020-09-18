@@ -1,4 +1,6 @@
 ---
+- import_playbook: blocks/generate-instackenv.yml
+
 - hosts: director
   connection: local
   gather_facts: no

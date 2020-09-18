@@ -1,0 +1,20 @@
+---
+- hosts: director
+  gather_facts: no
+  remote_user: root
+  vars:
+    rhv_admin_username: admin
+    rhv_admin_password: redhat
+  tasks:
+    - add_host:
+        name: "{{ inventory_hostname }}"
+        groups: rhv
+
+    - import_role:
+        name: discover
+      vars:
+        ovirt_auth_url: "{{ ovirt.auth.url }}"
+        ovirt_auth_username: "{{ ovirt.auth.username }}"
+        ovirt_auth_password: "{{ ovirt.auth.password }}"
+        ovirt_auth_insecure: "{{ ovirt.auth.insecure }}"
+...
