@@ -12,3 +12,5 @@ https://github.com/dell/iDRAC-Redfish-Scripting
 
 Firmware:
 Step-by-step using curl: https://github.com/dell/iDRAC-Redfish-Scripting/issues/32
+
+Dell Repository Manager: https://www.dell.com/support/article/en-us/sln283183/support-for-dell-emc-repository-manager-drm?lang=en
