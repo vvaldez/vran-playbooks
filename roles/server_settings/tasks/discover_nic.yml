@@ -1,0 +1,22 @@
+---
+- name: Discover network adapters
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/Systems/{{ oob.resource_ids.system }}/NetworkAdapters?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: yes
+  register: ss_nic_all
+
+- name: Register ports
+  vars:
+    _query: Members[*].Controllers[0].Links.NetworkDeviceFunctions[*]["@odata.id"][0]
+  set_fact:
+    ss_nic_ports: "{{ ss_nic_all.json | json_query(_query) | flatten }}"
+
+- debug:
+    var: ss_nic_ports
+    verbosity: 1
+...

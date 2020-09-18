@@ -1,0 +1,31 @@
+---
+- name: Get active jobs
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: yes
+  register: ss_jobs_result
+
+- debug:
+    msg: Will poll {{ ss_jobs_result.json.Members[-1]['@odata.id'] }}
+    verbosity: 1
+
+- name: Wait for latest job to complete
+  uri:
+    url: https://{{ oob.ipaddr }}{{ ss_jobs_result.json.Members[-1]['@odata.id'] }}
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+  register: ss_newjob_result
+  until: ss_newjob_result | json_query('json.JobState') == 'Completed'
+  delay: 30
+  retries: 60
+...

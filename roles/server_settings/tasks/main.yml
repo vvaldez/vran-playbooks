@@ -1,0 +1,15 @@
+---
+- name: Run vendor-specific tasks
+  include_tasks: "{{ oob.SystemManufacturer | lower }}.yml"
+
+- meta: flush_handlers
+
+- name: Wait for latest job to complete
+  include_tasks: wait_latest_job.yml
+  when: ss_bios_set.changed
+
+- name: Wait for OS to become available
+  wait_for_connection:
+    timeout: 900
+  when: ss_has_os | bool
+...
