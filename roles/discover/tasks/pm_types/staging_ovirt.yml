@@ -1,0 +1,32 @@
+- debug:
+    msg: "staging_ovirt driver: {{ node.value.name }}"
+    verbosity: 1
+
+- name: Authenticate with rhv-m
+  ovirt_auth:
+    url: "{{ ovirt_auth_url }}"
+    username: "{{ ovirt_auth_username }}"
+    password: "{{ ovirt_auth_password }}"
+    insecure: "{{ ovirt_auth_insecure }}"
+  delegate_to: localhost
+  when: ovirt_auth is undefined
+
+- name: Grab the eth0 information for the current node
+  ovirt_nic_info:
+    auth: "{{ ovirt_auth }}"
+    vm: "{{ node.value.pm_vm_name }}"
+    name: eth0
+  delegate_to: localhost
+  register: result
+
+- debug:
+    msg: "{{ node.value.pm_vm_name }}: {{ result.ovirt_nics[0].mac.address }}"
+    verbosity: 1
+
+- name: Update the node object with the found MAC address
+  set_fact:
+    node_with_mac: "{{ node.value | combine({ 'mac': [result.ovirt_nics[0].mac.address] }) }}"
+
+- name: Add the updated node to instackenv
+  set_fact:
+    instackenv: "{{ instackenv + [node_with_mac] }}"

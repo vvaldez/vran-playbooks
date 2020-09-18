@@ -1,0 +1,52 @@
+---
+# Build dictionaries to hold instackenv node grouped by pm_type
+
+- name: Init
+  set_fact:
+    dict_pxe_drac: {}
+    dict_staging_ovirt: {}
+
+- name: Create a dictionary to hold pxe_drac nodes
+  set_fact:
+    dict_pxe_drac: "{{ dict_pxe_drac | combine({ item.name: item }) }}"
+  loop: "{{ instackenv }}"
+  when: item.pm_type == 'pxe_drac'
+
+- name: Create a dictionary to hold staging-ovirt nodes
+  set_fact:
+    dict_staging_ovirt: "{{ dict_staging_ovirt | combine({ item.name: item }) }}"
+  loop: "{{ instackenv }}"
+  when: item.pm_type == 'staging-ovirt'
+
+- debug:
+    var: dict_staging_ovirt
+    verbosity: 1
+
+- debug:
+    var: dict_pxe_drac
+    verbosity: 1
+
+# Loop the dictionaries to find the MAC address for each node using the
+# appropriate tasks file
+
+- name: Empty instackenv
+  set_fact:
+    instackenv: []
+
+- name: Include pxe_drac tasks
+  include_tasks: pm_types/pxe_drac.yml
+  loop: "{{ dict_pxe_drac | dict2items }}"
+  loop_control:
+    loop_var: node
+  when: dict_pxe_drac != {}
+
+- name: Include staging_ovirt tasks
+  include_tasks: pm_types/staging_ovirt.yml
+  loop: "{{ dict_staging_ovirt | dict2items }}"
+  loop_control:
+    loop_var: node
+  when: dict_staging_ovirt != {}
+
+- debug:
+    var: instackenv
+    verbosity: 1
