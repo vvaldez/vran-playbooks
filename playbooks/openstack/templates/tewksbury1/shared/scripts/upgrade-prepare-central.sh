@@ -19,8 +19,8 @@ time openstack overcloud update prepare --templates \
     -e /usr/share/openstack-tripleo-heat-templates/environments/ceph-ansible/ceph-ansible.yaml \
     -e ~/dell-lab/templates/containers-prepare-parameter.yaml \
     -e ~/dell-lab/templates/environments/storage-config.yaml \
-    -e ~/dell-lab/templates/environments/lab-environment-common.yaml \
-    -e ~/dell-lab/templates/environments/lab-environment-central.yaml \
+    -e ~/dell-lab/templates/environments/environment-common.yaml \
+    -e ~/dell-lab/templates/environments/environment-central.yaml \
     --log-file deployment.log
 
 # now we run the individual role updates, then come back and continue on
@@ -39,6 +39,6 @@ time openstack overcloud update converge --templates \
     -e /usr/share/openstack-tripleo-heat-templates/environments/ceph-ansible/ceph-ansible.yaml \
     -e ~/dell-lab/templates/containers-prepare-parameter.yaml \
     -e ~/dell-lab/templates/environments/storage-config.yaml \
-    -e ~/dell-lab/templates/environments/lab-environment-common.yaml \
-    -e ~/dell-lab/templates/environments/lab-environment-central.yaml \
+    -e ~/dell-lab/templates/environments/environment-common.yaml \
+    -e ~/dell-lab/templates/environments/environment-central.yaml \
     --log-file deployment.log
