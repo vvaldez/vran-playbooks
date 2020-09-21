@@ -2,13 +2,21 @@
     msg: "pxe_drac driver: {{ node.value.name }}"
     verbosity: 1
 
+# If the values are defined in per node, use those.
+# If not, then use values coming from secrets.
+- name: Set credential facts
+  set_fact:
+    pm_addr: "{{ (node.value.pm_addr is defined) | ternary(node.value.pm_addr, hostvars[node.value.name].ansible_host) }}"
+    pm_user: "{{ (node.value.pm_username is defined) | ternary(node.value.pm_username, oob_username) }}"
+    pm_password: "{{ (node.value.pm_password is defined) | ternary(node.value.pm_password, oob_password) }}"
+
 - name: Get provisioning network adapter detail
   vars:
     _nic_base: "{{ oob.config.pxe_allow | regex_search('^.*?(?=-)') }}"
   uri:
-    url: https://{{ node.value.pm_addr }}/redfish/v1/Chassis/{{ oob.resource_ids.system }}/NetworkAdapters/{{ _nic_base }}/NetworkDeviceFunctions/{{ oob.config.pxe_allow }}
-    url_username: "{{ oob_username }}"
-    url_password: "{{ oob_password }}"
+    url: https://{{ pm_addr }}/redfish/v1/Chassis/{{ oob.resource_ids.system }}/NetworkAdapters/{{ _nic_base }}/NetworkDeviceFunctions/{{ oob.config.pxe_allow }}
+    url_username: "{{ pm_user }}"
+    url_password: "{{ pm_password }}"
     headers:
       Accept: application/json
     validate_certs: false
@@ -21,9 +29,16 @@
     verbosity: 1
 
 - name: Update the node object with the found MAC address
+  vars:
+    update:
+      mac:
+        - "{{ _nic_data.json.Ethernet.MACAddress | lower }}"
+      pm_addr: "{{ pm_addr }}"
+      pm_user: "{{ pm_user }}"
+      pm_password: "{{ pm_password }}"
   set_fact:
-    node_with_mac: "{{ node.value | combine({ 'mac': [_nic_data.json.Ethernet.MACAddress | lower] }) }}"
+    node_with_mac: "{{ node.value | combine(update) }}"
 
-- name: Add the node to instackenv without changes
+- name: Add the updated node to instackenv
   set_fact:
     instackenv: "{{ instackenv + [node_with_mac] }}"
