@@ -10,7 +10,7 @@
           when: item is undefined
           loop:
             - "{{ site_name }}"
-            - "{{ role }}"
+            - "{{ role_name }}"
 
 - import_playbook: ../blocks/add-director-to-site-group.yml
 
