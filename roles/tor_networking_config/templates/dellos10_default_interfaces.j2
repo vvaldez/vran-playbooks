@@ -1,0 +1,8 @@
+{% set run_commands = ['configure terminal'] %}
+{% for interface in tor_interfaces %}
+{% if interface.port_channel_id %}
+{% do run_commands.append('no interface port-channel' ~ interface.port_channel_id) %}
+{% endif %}
+{% do run_commands.append('default interface ' ~ interface.interface_name) %}
+{% endfor %}
+{{ run_commands }}
