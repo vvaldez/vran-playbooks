@@ -1,4 +1,5 @@
 ---
 tor_mtu: 9216
 tor_lacp_fallback_timeout: 10
+tor_remove_config: false
 ...

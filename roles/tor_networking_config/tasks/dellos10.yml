@@ -1,4 +1,21 @@
 ---
+- name: Remove existing configuration
+  cli_command:
+    command: "{{ item }}"
+    prompt: "Proceed to cleanup the interface config"
+    answer: "yes"
+  loop: "{{ lookup('template', 'dellos10_default_interfaces.j2') }}"
+  when:
+    - tor_remove_config | bool
+    - not ansible_check_mode
+  register: networking_default_out
+  changed_when: item != 'configure terminal'
+
+- debug:
+    msg: "{{ networking_default_out | json_query('results[*].item') }}"
+    verbosity: 1
+  when: networking_default_out.results is defined
+
 - name: Create VLANs
   dellos10_config:
     src: dellos10_vlan.j2

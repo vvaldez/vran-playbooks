@@ -21,6 +21,7 @@ Defaults are found at `defaults/main.yml` and they consist of the following:
 | -------- | ---- | ----------- |
 | `tor_mtu`                   | integer | The MTU volue to set on port channels and single interfaces (but not VLAN interfaces).
 | `tor_lacp_fallback_timeout` | integer | The LACP fallback timeout value to include in port channel definitions.
+| `tor_remove_config`         | boolean | Toggles on/off behavior that removes port-channel interfaces and defaults ethernet interfaces before applying the defined config.
 
  Port channels, and physical interfaces not belonging to a port channel, will have the value of `tor_mtu` set as their MTU value. VLAN interfaces will use an MTU value if specified in the source data, but otherwise will not have am MTU specified. Member interfaces of a port channel will not ever have a MTU value set explicitly.
 
