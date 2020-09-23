@@ -1,3 +1,4 @@
+---
 - name: Check for required variables
   hosts: director
   connection: local
@@ -92,4 +93,11 @@
         NETWORK_AGENT_IDS=$(openstack network agent list --host {{ server_name }}.{{ undercloud.overcloud_domain_name }} -c ID -f value)
         openstack network agent delete ${NETWORK_AGENT_IDS}
 
-# Run tempest
+- name: Tempest run
+  import_playbook: ../misc/tempest-run.yml
+  vars:
+    site_name: central
+    network_name: management-central-net
+  tags:
+    - tempest run
+...

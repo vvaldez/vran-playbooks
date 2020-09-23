@@ -95,18 +95,11 @@
     - minimal
     - openstack aggregate create
 
-# - name: tempest run central
-#   import_playbook: ../blocks/tempest-run.yml
-#   vars:
-#     tempest_workspace: central
-#   tags:
-#     - tempest run central
-
-# - name: tempest run {{ site_name }}
-#   import_playbook: ../blocks/tempest-run.yml
-#   vars:
-#     tempest_workspace: "{{ site_name }}"
-#   tags:
-#     - minimal
-#     - tempest run site_name
+- name: Tempest run
+  import_playbook: ../misc/tempest-run.yml
+  vars:
+    site_name: central
+    network_name: management-central-net
+  tags:
+    - tempest run
 ...

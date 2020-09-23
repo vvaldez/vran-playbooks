@@ -19,3 +19,12 @@
   import_playbook: ../blocks/openstack-overcloud-delete.yml
   vars:
     tripleo_overcloud_delete_name: "{{ site_name }}"
+
+- name: Tempest run
+  import_playbook: ../misc/tempest-run.yml
+  vars:
+    site_name: central
+    network_name: management-central-net
+  tags:
+    - tempest run
+...
