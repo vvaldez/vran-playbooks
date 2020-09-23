@@ -39,7 +39,7 @@
           vars:
             tripleo_overcloud_deploy_debug: true
             tripleo_overcloud_deploy_home_dir: /home/stack
-            tripleo_overcloud_deploy_log: "/home/stack/automated-generated-logs/overcloud-deploy-{{ tripleo_overcloud_deploy_stack }}.log"
+            tripleo_overcloud_deploy_log: "/home/stack/ansible-generated-logs/overcloud-deploy-{{ tripleo_overcloud_deploy_stack }}.log"
             tripleo_overcloud_deploy_log_output: true
             tripleo_overcloud_deploy_timeout: 18000
             tripleo_overcloud_deploy_timeout_arg: 300
