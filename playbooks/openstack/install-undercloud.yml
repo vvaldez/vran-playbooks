@@ -42,7 +42,6 @@
             mode: 0755
           with_items:
             - ~/images
-            - ~/templates
 
         - name: 3.1. Setting the undercloud hostname
           hostname:
