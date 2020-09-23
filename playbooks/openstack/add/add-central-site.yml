@@ -59,10 +59,11 @@
   tags:
     - openstack aggregate create
 
-# - name: tempest run central
-#   import_playbook: ../blocks/tempest-run.yml
-#   vars:
-#     tempest_workspace: central
-#   tags:
-#     - tempest run central
+- name: Tempest run
+  import_playbook: ../misc/tempest-run.yml
+  vars:
+    site_name: central
+    network_name: management-central-net
+  tags:
+    - tempest run
 ...

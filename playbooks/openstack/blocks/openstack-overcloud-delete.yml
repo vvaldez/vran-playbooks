@@ -18,6 +18,12 @@
     - setup:
         gather_subset: '!all'
 
+    - name: Create folder to hold log output
+      file:
+        path: /home/stack/ansible-generated-logs
+        state: directory
+        mode: '0755'
+
     # Attempt to delete the overcloud.
     # If success, print the stack status
     # If failure, print the failures
@@ -28,7 +34,7 @@
           vars:
             tripleo_overcloud_delete_debug: true
             tripleo_overcloud_delete_home_dir: /home/stack
-            tripleo_overcloud_delete_log: "/home/stack/automated_delete_{{ tripleo_overcloud_delete_name }}.log"
+            tripleo_overcloud_delete_log: "/home/stack/ansible-generated-logs/overcloud-delete-{{ tripleo_overcloud_delete_name }}.log"
             tripleo_overcloud_delete_log_output: true
 
         - debug:

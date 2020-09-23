@@ -46,4 +46,12 @@
 
 # Add all nodes for site being add to the AZ
 # openstack aggregate add host edge1vdu edge1-computevdu-0.lab.local || true
+
+- name: Tempest run
+  import_playbook: ../misc/tempest-run.yml
+  vars:
+    site_name: central
+    network_name: management-central-net
+  tags:
+    - tempest run
 ...
