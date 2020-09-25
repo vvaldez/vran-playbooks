@@ -4,9 +4,7 @@
 # - oob_username
 # - oob_password
 # - oob.ipaddr
-
-# supported values: dell
-fw_vendor: dell
+# - oob.SystemManufacturer
 
 # set to 'online' or 'offline'
 fw_mode: online

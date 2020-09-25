@@ -25,8 +25,7 @@
     - fw_update_result.update_status.job_details.PackageList is defined
     - fw_update_result.update_status.job_details.PackageList | length > 0
   notify:
-    - shut down server
-    - power on server
+    - restart server
 
 - debug:
     var: fw_update_result

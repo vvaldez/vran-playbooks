@@ -1,0 +1,4 @@
+---
+- include_tasks: "{{ oob.SystemManufacturer | lower }}.yml"
+- include_tasks: check_job_status.yml
+...

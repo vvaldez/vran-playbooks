@@ -1,7 +1,7 @@
 ---
 - name: Wait for iDRAC event {{ fw_drac_event }}
   uri:
-    url: https://{{ oob.ipaddr }}/redfish/v1/Managers/{{ fw_drac_name }}/LogServices/Lclog/Entries?$top=30
+    url: https://{{ oob.ipaddr }}/redfish/v1/Managers/{{ oob.resource_ids.manager }}/LogServices/Lclog/Entries?$top=30
     url_username: "{{ oob_username }}"
     url_password: "{{ oob_password }}"
     validate_certs: false

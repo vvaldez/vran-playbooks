@@ -83,7 +83,7 @@ tor_networking:
     site_edge_tor:
 ```
 
-The role also expects to find `switch_config` in each TOR switch host's host_vars. This is a list, with each item containing the following keys:
+The role also expects to find `tor_interfaces` in each TOR switch host's host_vars. This is a list, with each item containing the following keys:
 
 * `network_role`: The role of the connected endpoint, as found in `network_roles`.
 * `host_interface`: The name of the connected endpoint's interface, as found in `network_roles`.
@@ -93,7 +93,7 @@ The role also expects to find `switch_config` in each TOR switch host's host_var
 
 For example:
 ```
-switch_config:
+tor_interfaces:
 -   host_interface: bond0
     host_name: compute-1.example.com
     interface_name: ethernet1/1/4:4
