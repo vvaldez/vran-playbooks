@@ -1,3 +1,6 @@
 ---
-- include_tasks: "{{ fw_vendor }}.yml"
+- import_tasks: job_wrapper.yml
+  vars:
+    _query: json.Members[?JobStatus=='Critical']
+  until: fw_job_stat | json_query(_query) | length == 0
 ...

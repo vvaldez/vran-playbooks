@@ -1,0 +1,22 @@
+---
+- name: Wait for running jobs to finish
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Accept: application/json
+  register: fw_job_stat
+  vars:
+    _query1: json.Members[?JobState=='Starting']
+    _query2: json.Members[?JobState=='Running']
+  until:
+    - fw_job_stat | json_query(_query1) | length == 0
+    - fw_job_stat | json_query(_query2) | length == 0
+  ignore_errors: true
+  retries: 120
+  delay: 60
+...
