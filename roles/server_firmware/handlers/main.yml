@@ -5,10 +5,28 @@
     idrac_user: "{{ oob_username }}"
     idrac_password: "{{ oob_password }}"
     change_power: GracefulShutdown
-  register: fw_shutdown_result
+  register: _shutdown_result
   failed_when:
-   - fw_shutdown_result.msg.error.error['@Message.ExtendedInfo'][0].Resolution is defined
-   - fw_shutdown_result.msg.error.error['@Message.ExtendedInfo'][0].Resolution != 'No response action is required.'
+   - _shutdown_result.msg.error.error['@Message.ExtendedInfo'][0].Resolution is defined
+   - _shutdown_result.msg.error.error['@Message.ExtendedInfo'][0].Resolution != 'No response action is required.'
+  listen: restart server
+  when: fw_reboot | bool
+
+- name: wait for power off
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/Systems/{{ oob.resource_ids.system }}
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: true
+    return_content: true
+  register: _power_result
+  until: _power_result | json_query('json.PowerState') == 'Off'
+  delay: 30
+  retries: 60
+  listen: restart server
   when: fw_reboot | bool
 
 - name: power on server
@@ -17,5 +35,6 @@
     idrac_user: "{{ oob_username }}"
     idrac_password: "{{ oob_password }}"
     change_power: "On"
+  listen: restart server
   when: fw_reboot | bool
 ...
