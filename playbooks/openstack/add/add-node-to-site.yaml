@@ -10,7 +10,6 @@
           when: item is undefined
           loop:
             - "{{ site_name }}"
-            - "{{ role_name }}"
 
 - import_playbook: ../blocks/add-director-to-site-group.yml
 
@@ -43,9 +42,6 @@
     tripleo_overcloud_deploy_networks_file: "{{ site[site_name].deploy_networks_file }}"
     tripleo_overcloud_deploy_roles_file: "{{ site[site_name].deploy_roles_file }}"
     tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
-
-# Add all nodes for site being add to the AZ
-# openstack aggregate add host edge1vdu edge1-computevdu-0.lab.local || true
 
 - name: Tempest run
   import_playbook: ../misc/tempest-run.yml
