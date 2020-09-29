@@ -70,7 +70,6 @@
             rhsm_org_id: "{{ undercloud.rhsm_org_id }}"
             rhsm_activationkey: "{{ undercloud.rhsm_activationkey }}"
             rhsm_server_hostname: "{{ undercloud.rhsm_server_hostname }}"
-            rhsm_repositories: "{{ undercloud.rhsm_repositories }}"
           import_role:
             name: oasis_roles.system.rhsm
           tags:
