@@ -8,6 +8,6 @@
         # This relative path **has** to be in the current directory or a subdirectory.
         # It **cannot** lead thru a parent directory. This is due to the
         # jinja2 macro import being used within the templates, no current workaround exists.
-        relative_path_to_templates: "templates/{{ datacenter }}"
+        relative_path_to_templates: "templates/{{ template_pack }}"
         output_dir: "{{ inventory_dir }}/.."
 ...
