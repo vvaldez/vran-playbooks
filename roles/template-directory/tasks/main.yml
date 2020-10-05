@@ -1,0 +1,77 @@
+---
+- name: Make sure {{ template_directory_output_dir }} exists
+  file:
+    path: "{{ template_directory_output_dir }}"
+    state: directory
+  changed_when: false
+
+
+- name: "Match {{ template_directory_input_dir }} folder structure in {{ template_directory_output_dir }}"
+  file:
+    path: "{{ template_directory_output_dir }}/{{ item.path }}"
+    state: directory
+  with_filetree: "{{ template_directory_input_dir }}"
+  when: item.state == 'directory' and not template_directory_copy_only
+  changed_when: false
+
+
+# Standard mode: template all files
+- block:
+    - name: "Generate all templates from {{ template_directory_input_dir }} into {{ template_directory_output_dir }}"
+      template:
+        src: "{{ item.src }}"
+        dest: |-
+          {%- if template_directory_filename_affix == '' -%}
+          {{ template_directory_output_dir }}/{{ item.path }}
+          {%- else -%}
+          {{ template_directory_output_dir }}/{{ (item.path | splitext)[0] }}{{ template_directory_filename_affix }}{{ (item.path | splitext)[1] }}
+          {%- endif -%}
+        mode: "{{ item.mode }}"
+        variable_start_string: "{{ template_directory_variable_start_string }}"
+        variable_end_string: "{{ template_directory_variable_end_string }}"
+      with_filetree: "{{ template_directory_input_dir }}"
+      when: item.state == 'file'
+      register: template_output
+      changed_when: template_output.changed and template_directory_changed_when
+  when: >
+    not template_directory_quick_mode
+    and not template_directory_copy_only
+
+
+# Quick mode: template only changed templates as reported by git status
+- block:
+    - name: "cd {{ template_directory_input_dir }}; git status --short . | grep -v '^\\sD' | awk '{print $2}'"
+      shell: "cd {{ template_directory_input_dir }}; git status --short . | grep -v '^\\sD' | awk '{print $2}'"
+      register: shell_output
+      changed_when: false
+
+    - debug:
+        msg: "{{ shell_output.stdout_lines }}"
+
+    - name: "Template {{ item }} to {{ template_directory_output_dir }}/{{ item }}"
+      template:
+        src: "{{ template_directory_input_dir }}/{{ item }}"
+        dest: "{{ template_directory_output_dir }}/{{ item }}"
+        variable_start_string: "{{ template_directory_variable_start_string }}"
+        variable_end_string: "{{ template_directory_variable_end_string }}"
+      with_items: "{{ shell_output.stdout_lines }}"
+      register: template_output
+      changed_when: false
+  when: template_directory_quick_mode and not template_directory_copy_only
+
+
+- name: "Copy all templates from {{ template_directory_input_dir }} to {{ template_directory_output_dir }}"
+  synchronize:
+    src: "{{ template_directory_input_dir }}"
+    dest: "{{ template_directory_output_dir }}"
+    checksum: yes
+    archive: no
+    recursive: yes
+  when: template_directory_copy_only
+  register: sync_output
+
+
+- debug:
+    var: sync_output
+  changed_when: sync_output.changed
+  when: template_directory_copy_only and sync_output.changed

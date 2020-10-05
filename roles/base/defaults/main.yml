@@ -1,0 +1,19 @@
+base:
+  hostname: example.local
+
+  # Setup network-scripts files
+  setup_nics: no
+
+  # Run a `yum update`
+  yum_update: no
+
+  ## optional
+  # nics:
+  #   - filename: ifcfg-em1
+  #     TYPE: "Ethernet"
+  #     BOOTPROTO: "dhcp"
+  #     DEFROUTE: "yes"
+  #     IPV6INIT: "no"
+  #     NAME: "em1"
+  #     DEVICE: "em1"
+  #     ONBOOT: "yes"

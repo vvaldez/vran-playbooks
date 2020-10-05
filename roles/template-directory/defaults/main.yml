@@ -1,0 +1,7 @@
+---
+template_directory_changed_when: true
+template_directory_copy_only: false
+template_directory_quick_mode: false
+template_directory_variable_start_string: "{% raw %}{{{% endraw %}"
+template_directory_variable_end_string: "{% raw %}}}{% endraw %}"
+template_directory_filename_affix: ''
