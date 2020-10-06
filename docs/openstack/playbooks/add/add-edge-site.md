@@ -1,37 +1,51 @@
-# Adding an edge site
+# Ansible Playbook: Add Edge Site
 
-The following variables will be referenced throughout these steps
+This role will:
+
+- Add `director` host to the `site_{{ site_name }}` group
+- Upload ansible-generated templates
+- Run `openstack undercloud install`
+- Update the `central` site by running `openstack overcloud deploy central`
+- Import **all** overcloud nodes
+- Map neutron ports for **all** overcloud nodes
+- Introspect all baremetal nodes in a `manageable` state
+- Create roles for all overcloud nodes, if they don't already exist
+- Deploy the `{{ site_name }}` site
+- Create an aggregate called `central` in the `central` availabilty zone
+- Run tempest smoke tests
+
+## Usage
+
+The following is an example run of the playbook using Ansible CLI.
+
+**Note:** Always run the playbook from the top level directory of `ansible-playbook`
 
 ```sh
-site_name="edge2"
+ansible-playbook \
+  -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+  -e site_name=edge1
+  playbooks/openstack/add/add-edge-site.yml
 ```
 
-1. Run the playbook to add the edge site
+## Requirements
 
-    ```sh
-    ansible-playbook \
-        -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
-        -e site_name=${site_name} \
-        -e node_name=${node_name} \
-        playbooks/openstack/remove-node-from-site.yml
-    ```
+This playbook has the following collection requirements:
 
-2. Make manual modifications to `ansible-inventory/inventory/group_vars` and generate new templates
+- `tripleo.operator`
 
-    - Remove references from `ansible-inventory`
+## Playbook variables
 
-        ```sh
-        # Remove reference in `instackenv.nodes`
-        vim ansible-inventory/inventory/group_vars/openstack/openstack.yml
+| Variable | Type | Description |
+| -------- | ---- | ----------- |
+| `site_name` | string | The name of the site to deploy. There must be a corresponding group called `site_{{ site_name }}`
 
-        # Decrease count and/or remove role object in `site.roles.<role>.count
-        vim ansible-inventory/inventory/group_vars/site_${site_name}>/site.yml`
-        ```
+## Inventory requirements
 
-    - Generate new templates
-
-        ```sh
-        # Generate new templates locally
-        cd ansible-inventory/
-        ./generate-all-envs.sh
-        ```
+- There is a `site_{{ site_name }}` group
+- The above group contains the following dictionaries:
+  - `site.{{ site_name }}`
+- There is an `openstack` group
+- The above group contains the following dictionaries:
+  - `undercloud`
+  - `overcloud`
+  - `instackenv`
