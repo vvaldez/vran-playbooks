@@ -59,15 +59,16 @@
         command: qemu-img create -f qcow2 {{ kvm_vm_dir }}/{{ kvm_vm.disk_vdc }} {{ kvm_vm.size_vdc }}
       when: create_ceph_secondry_disks | default(False)
 
-    - name: Copy interface configuration files
+    - name: Copy management interface configuration file
       template:
-        src: ifcfg-{{ interface }}.j2
-        dest: /tmp/ifcfg-{{ interface }}
-      loop:
-        - "{{ kvm_vm.networks.management.vm_interface }}"
-        - "{{ kvm_vm.networks.storage.vm_interface | default(omit) }}"
-      loop_control:
-        loop_var: interface
+        src: ifcfg-{{ kvm_vm.networks.management.vm_interface }}.j2
+        dest: /tmp/ifcfg-{{ kvm_vm.networks.management.vm_interface }}
+
+    - name: Copy storage interface configuration file
+      template:
+        src: ifcfg-{{ kvm_vm.networks.storage.vm_interface }}.j2
+        dest: /tmp/ifcfg-{{ kvm_vm.networks.storage.vm_interface }}
+      when: kvm_vm.networks.storage is defined
 
     - name: Copy resolv.conf files
       template:
