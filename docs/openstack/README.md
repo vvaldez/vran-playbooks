@@ -1,57 +1,33 @@
-# Playbooks
+# Ansible Playbooks
 
-### pb-apply-kvm.yml
+## Add
 
-Assumptions made:
+- [add-central-site](playbooks/add/add-central-site.md)
+- add-edge-site
+- add-node-to-site
 
-- Can SSH in as root using private address.
-- DNS is configured so redhat.com resolves.
+## Delete
 
-### pb-apply-director.yml
+- delete-edge-site
+- delete-node-from-site
 
-Assumptions made:
+## Update
 
-- Can SSH in as root using private address.
-- DNS is configured so redhat.com resolves.
+- update-site
 
-# `ansible-inventory` Structure
+## Blocks
 
-```
-ansible-inventory/
-├── ansible-generated/
-│   └── green-dev/
-│   │   └── ...     # Output OSP templates
-│   └── green-test/
-│   │   └── ...     # Output OSP templates
-│   └── ibm-piggy/
-│   │   └── ...     # Output OSP templates
-│   └── ibm-kermit/
-│       └── ...     # Output OSP templates
-├── ibm/
-│   ├── group_vars/
-│   │   ├── all.yml
-│   │   ├── piggy.yml
-│   │   ├── kermit.yml
-│   │   └── overcloud.yml
-│   ├── hosts-piggy
-│   ├── hosts-kermit
-│   └── templates/
-│       ├── shared/  # Datacenter specific input OSP templates
-│       ├── gonzo/   # Environment specific input OSP templates. These take precedence over shared/
-│       └── kermit/  # Environment specific input OSP templates. These take precedence over shared/
-└── green/
-    ├── group_vars/
-    │   ├── all.yml
-    │   ├── dev.yml
-    │   ├── test.yml
-    │   └── overcloud.yml
-    ├── hosts-dev
-    ├── hosts-test
-    └── templates/
-        ├── shared/  # Datacenter specific input OSP templates
-        ├── dev/     # Environment specific input OSP templates. These take precedence over shared/
-        └── test/    # Environment specific input OSP templates. These take precedence over shared/
-```
+- add-director-to-site-group
+- generate-instackenv
+- openstack-aggregate-create
+- openstack-overcloud-delete
+- openstack-overcloud-deploy
+- openstack-overcloud-node-delete
+- openstack-overcloud-node-import
+- openstack-overcloud-node-introspect
+- openstack-undercloud-install
+- openstack-undercloud-upgrade
+- tempest-run
 
 # `ansible-playbooks` Structure
 
