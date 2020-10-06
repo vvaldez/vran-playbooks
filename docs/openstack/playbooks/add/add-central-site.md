@@ -7,7 +7,7 @@ This role will:
 - Map Neutron ports for **all** overcloud nodes
 - Introspect all baremetal nodes in a `manageable` state
 - Create roles for all overcloud nodes, if they don't already exist
-- Deploy the `central` site
+- Deploy the `central` stack
 - Create an aggregate called `central` in the `central` availabilty zone, if it doesn't already exist
 - Run Tempest smoke tests
 

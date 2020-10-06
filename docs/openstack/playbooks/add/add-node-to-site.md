@@ -7,7 +7,7 @@ This role will:
 - Import **all** overcloud nodes
 - Map Neutron ports for **all** overcloud nodes
 - Introspect all baremetal nodes in a `manageable` state
-- Deploy the `{{ site_name }}` site
+- Deploy the `{{ site_name }}` stack
 - Run Tempest smoke tests
 
 ## Usage
@@ -20,7 +20,7 @@ The following is an example run of the playbook using Ansible CLI.
 ansible-playbook \
   -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
   -e site_name=edge1
-  playbooks/openstack/add/add-edge-site.yml
+  playbooks/openstack/add/add-node-to-site.yml
 ```
 
 ## Requirements

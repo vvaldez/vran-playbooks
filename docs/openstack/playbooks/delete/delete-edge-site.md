@@ -1,29 +1,37 @@
-# Deleting an edge site
+# Ansible Playbook: Delete edge site
 
-1. Run the playbook to remove the site
+This role will:
 
-    ```sh
-    ansible-playbook \
-        -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
-        playbooks/openstack/delete-edge-site.yml
-    ```
+- Delete the `{{ site_name }}` stack
+- Run Tempest smoke tests
 
-2. Make manual modifications to `ansible-inventory/inventory/group_vars` and generate new templates
+## Usage
 
-    <!-- - Remove references from `ansible-inventory`
+The following is an example run of the playbook using Ansible CLI.
 
-        ```sh
-        # Remove reference in `instackenv.nodes`
-        vim ansible-inventory/inventory/group_vars/openstack/openstack.yml
+**Note:** Always run the playbook from the top level directory of `ansible-playbook`
 
-        # Decrease count and/or remove role object in `site.roles.<role>.count
-        vim ansible-inventory/inventory/group_vars/site_${site_name}>/site.yml`
-        ```
+```sh
+ansible-playbook \
+  -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+  -e site_name=edge1
+  playbooks/openstack/add/delete-edge-site.yml
+```
 
-    - Generate new templates
+## Requirements
 
-        ```sh
-        # Generate new templates locally
-        cd ansible-inventory/
-        ./generate-all-envs.sh
-        ``` -->
+This playbook has the following collection requirements:
+
+- `tripleo.operator`
+
+## Playbook variables
+
+The following variables are required to be set.
+
+| Variable | Type | Description |
+| -------- | ---- | ----------- |
+| `site_name` | string | The name of the site to deploy. There must be a corresponding group called `site_{{ site_name }}`
+
+## Inventory requirements
+
+There are no inventory requirements.

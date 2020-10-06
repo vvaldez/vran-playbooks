@@ -5,12 +5,12 @@ This role will:
 - Add the `director` host to the `site_{{ site_name }}` group
 - Upload ansible-generated templates
 - Run `openstack undercloud install`
-- Update the `central` site by running `openstack overcloud deploy central`
+- Update the `central` stack by running `openstack overcloud deploy central`
 - Import **all** overcloud nodes
 - Map Neutron ports for **all** overcloud nodes
 - Introspect all baremetal nodes in a `manageable` state
 - Create roles for all overcloud nodes, if they don't already exist
-- Deploy the `{{ site_name }}` site
+- Deploy the `{{ site_name }}` stack
 - Create an aggregate called `central` in the `central` availabilty zone, if it doesn't already exist
 - Run Tempest smoke tests
 
