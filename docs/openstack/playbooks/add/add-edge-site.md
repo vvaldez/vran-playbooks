@@ -1,18 +1,18 @@
-# Ansible Playbook: Add Edge Site
+# Ansible Playbook: Add edge site
 
 This role will:
 
-- Add `director` host to the `site_{{ site_name }}` group
+- Add the `director` host to the `site_{{ site_name }}` group
 - Upload ansible-generated templates
 - Run `openstack undercloud install`
 - Update the `central` site by running `openstack overcloud deploy central`
 - Import **all** overcloud nodes
-- Map neutron ports for **all** overcloud nodes
+- Map Neutron ports for **all** overcloud nodes
 - Introspect all baremetal nodes in a `manageable` state
 - Create roles for all overcloud nodes, if they don't already exist
 - Deploy the `{{ site_name }}` site
-- Create an aggregate called `central` in the `central` availabilty zone
-- Run tempest smoke tests
+- Create an aggregate called `central` in the `central` availabilty zone, if it doesn't already exist
+- Run Tempest smoke tests
 
 ## Usage
 
@@ -34,6 +34,8 @@ This playbook has the following collection requirements:
 - `tripleo.operator`
 
 ## Playbook variables
+
+The following variables are required to be set.
 
 | Variable | Type | Description |
 | -------- | ---- | ----------- |

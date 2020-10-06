@@ -1,15 +1,15 @@
-# Ansible Playbook: Add Central Site
+# Ansible Playbook: Add central site
 
 This role will:
 
 - Upload ansible-generated templates
 - Import **all** overcloud nodes
-- Map neutron ports for **all** overcloud nodes
+- Map Neutron ports for **all** overcloud nodes
 - Introspect all baremetal nodes in a `manageable` state
 - Create roles for all overcloud nodes, if they don't already exist
 - Deploy the `central` site
-- Create an aggregate called `central` in the `central` availabilty zone
-- Run tempest smoke tests
+- Create an aggregate called `central` in the `central` availabilty zone, if it doesn't already exist
+- Run Tempest smoke tests
 
 ## Usage
 

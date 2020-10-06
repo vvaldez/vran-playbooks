@@ -29,6 +29,11 @@
 - [openstack-undercloud-upgrade](playbooks/blocks/openstack-undercloud-upgrade.md)
 - [tempest-run](playbooks/blocks/tempest-run.md)
 
+## To-document
+
+- How to add sites and nodes w.r.t. inventory changes
+- How to add new compute roles w.r.t inventory changes
+
 # Goals
 
 Refactor and demo out the structure to be used for `ansible-playbooks.git` and `ansible-inventory.git` for OpenStack deployments. Some key points to achieve:
