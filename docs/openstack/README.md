@@ -3,46 +3,31 @@
 ## Add
 
 - [add-central-site](playbooks/add/add-central-site.md)
-- add-edge-site
-- add-node-to-site
+- [add-edge-site](playbooks/add/add-edge-site.md)
+- [add-node-to-site](playbooks/add/add-node-to-site.md)
 
 ## Delete
 
-- delete-edge-site
-- delete-node-from-site
+- [delete-edge-site](playbooks/delete/delete-edge-site.md)
+- [delete-node-from-site](playbooks/delete/delete-node-from-site.md)
 
 ## Update
 
-- update-site
+- [update-site](playbooks/update-site.md)
 
 ## Blocks
 
-- add-director-to-site-group
-- generate-instackenv
-- openstack-aggregate-create
-- openstack-overcloud-delete
-- openstack-overcloud-deploy
-- openstack-overcloud-node-delete
-- openstack-overcloud-node-import
-- openstack-overcloud-node-introspect
-- openstack-undercloud-install
-- openstack-undercloud-upgrade
-- tempest-run
-
-# `ansible-playbooks` Structure
-
-```
-ansible-playbooks/
-├── .vault_secret
-├── .vault_secret.sample
-├── ansible.cfg
-├── generate-all-envs.sh
-├── pb-generate-templates-locally.yml
-├── pb-*.yml #### Client specific playbooks
-├── README.md
-└── roles/
-    └── requirements.yml
-```
+- [add-director-to-site-group](playbooks/blocks/add-director-to-site-group.md)
+- [generate-instackenv](playbooks/blocks/generate-instackenv.md)
+- [openstack-aggregate-create](playbooks/blocks/openstack-aggregate-create.md)
+- [openstack-overcloud-delete](playbooks/blocks/openstack-overcloud-delete.md)
+- [openstack-overcloud-deploy](playbooks/blocks/openstack-overcloud-deploy.md)
+- [openstack-overcloud-node-delete](playbooks/blocks/openstack-overcloud-node-delete.md)
+- [openstack-overcloud-node-import](playbooks/blocks/openstack-overcloud-node-import.md)
+- [openstack-overcloud-node-introspect](playbooks/blocks/openstack-overcloud-node-introspect.md)
+- [openstack-undercloud-install](playbooks/blocks/openstack-undercloud-install.md)
+- [openstack-undercloud-upgrade](playbooks/blocks/openstack-undercloud-upgrade.md)
+- [tempest-run](playbooks/blocks/tempest-run.md)
 
 # Goals
 
@@ -71,74 +56,6 @@ Envisioned developer workflow goes as follows:
 # Notes
 
 Generate playbook won't be added to Tower ... it's a developer action, not something that should/needs to be ran from Tower. `pb-install.yml`, etc,  can be added to Tower but it should use pre-generated templates from `ansible-generated/`. OpenStack Day-2 playbooks should be what becomes ran thru Tower.
-
-# Known Issues
-
-# Usage
-
-### Installation
-
-```sh
-# Install Ansible Roles
-ansible-galaxy install --role-file roles/requirements.yml
-
-# Force the latest version of roles to be installed
-ansible-galaxy install --role-file roles/requirements.yml --force
-
-# Install Ansible Collections
-ansible-galaxy collection install --requirements-file collections/requirements.yml
-
-# Run work around script for collection not published to galaxy
-./collections/install_satellite_collection.sh
-```
-
-### Generating Output Templates Locally
-
-```sh
-# Include the inventory file of the environment to generate templates for using `-i path/to/hosts/file`
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-generate-templates-locally.yml
-
-# Helper script to generate the templates for all environments
-./generate-all-envs.sh
-```
-
-### Running KVM installation
-
-```sh
-# Include the inventory file of the environment to install using `-i path/to/hosts/file
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy --vault-password-file .vault_secret pb-apply-kvm.yml
-
-# Enforce nic configration as well
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy --vault-password-file .vault_secret pb-apply-kvm.yml -e setup_nics=yes
-```
-
-### Running Director Installation
-
-```sh
-# Include the inventory file of the environment to install using `-i path/to/hosts/file`
-# Until SSL/TLS is being used on the Overcoud, use `--skip-tags A.7`
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --skip-tags A.7
-
-# Run only a certain numbered section(s) of the installation guide
-# https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/director_installation_and_usage/
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1,4.2,4.3
-
-# Enable debug mode for more verbose output
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --tags 4.1 -e debug=true
-```
-
-### Syncing latest templates in `ansible-generated/<env>` to Director
-
-```sh
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-apply-director.yml --vault-password-file .vault_secret --tags templates
-```
-
-### Tearing down existing Director
-
-```sh
-# Unregister Director from Satellite, destroy and undefine libvirt domain
-ansible-playbook -i ../ansible-inventory/ibm/hosts-piggy pb-tear-down-env.yml --vault-password-file .vault_secret
-```
 
 # Ansible Vault
 

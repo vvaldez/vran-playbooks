@@ -11,6 +11,18 @@ This role will:
 - Create an aggregate called `central` in the `central` availabilty zone
 - Run tempest smoke tests
 
+## Usage
+
+The following is an example run of the playbook using Ansible CLI.
+
+**Note:** Always run the playbook from the top level directory of `ansible-playbook`
+
+```sh
+ansible-playbook \
+  -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
+  playbooks/openstack/add/add-central-site.yml
+```
+
 ## Requirements
 
 This playbook has the following collection requirements:
