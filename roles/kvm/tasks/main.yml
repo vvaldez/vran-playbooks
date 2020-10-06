@@ -1,0 +1,18 @@
+---
+- name: Install packages and update
+  become: yes
+  become_user: root
+  block:
+    - name: Install needed packages
+      yum:
+        name:
+          - libguestfs-tools
+          - libguestfs-xfs
+          - libvirt
+          - qemu-kvm
+          - virt-install
+          - virt-manager
+          - virt-viewer
+          - xauth
+          - xorg-x11-apps
+        state: present
