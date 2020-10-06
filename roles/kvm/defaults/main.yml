@@ -1,0 +1,54 @@
+---
+named_env: datacenter-env
+
+# The network-scripts portion of the role is considered a provisioning step. By
+# default, it is not ran unless this is override to yes. When re-rerunning this
+# role, it is probably not ideal to re-setup and restart networking. Which will
+# happen when kvm_provision=yes.
+kvm_provision: no
+
+kvm:
+  hostname: kvm.example.com
+
+  ## optional
+  # subscription:
+  #   method: portal
+  #   username: user
+  #   password: password
+  #   pool_ids:
+  #     - 0123456789
+
+  ## optional
+  # nics:
+  #   - filename: ifcfg-bond0
+  #     DEVICE: bond0
+  #     BOOTPROTO: none
+  #     ONBOOT: !!str yes
+  #     USERCTL: !!str no
+  #     BONDING_OPTS: "mode=4 miimon=100 downdelay=0 updelay=0 lacp_rate=fast \
+  #       xmit_hash_policy=1"
+  #     IPADDR: 10.56.187.94
+  #     NETMASK: 255.255.255.192
+  #     NM_CONTROLLED: !!str no
+
+director:
+  nics:
+    - filename:
+      DEVICE: eth0
+      ONBOOT: !!str yes
+      TYPE: Ethernet
+      PEERDNS: !!str no
+      IPADDR: 192.168.10.10
+      NETMASK: 255.255.255.0
+
+  root_user_password: "$6$CkwkQ1cfc8123RNv$m/slFZ0znULcRddfgfdgfdCPBv4okk5cqZI\
+  CnW2/Xy1/fdgsfdgfdgfsdgfsdgfsdg/49vRIMT3U4AHfy0"
+  ssh_pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAdfgsdffgsfdgfdCRSJ6cT+rN/k+F3YFmrAQaW\
+    cLH3EDvD9/XUdfgdfgdfgfdgfdgfdgfdgfdCorjoj/xyzJLqCBcwgyDUTUA1513rIEUdw7kuOI\
+    INsvesed10gszBsxBYt6bQQBDkgdsfgdfgfdgsfdgfdgdfgZNJ7MSN9d1mcdvkksZVNgCEC6lT\
+    xlsB5e3eV+NMZUdUN5revDJXMh18dfgfdgdfgfdgfdgdfgsfdgBPI9jSrC1+PImspVYyss71A3\
+    V4g+/hc6CaPBRvA1KLdfgsfdgfdgfgsfdgsdgsfdgsdfgsfdgdfsgsfdgWH0favaf0hpO4vGMw\
+    RA57M4d1Dpwv3d"
+
+  ram: 1024
+  vcpus: 1

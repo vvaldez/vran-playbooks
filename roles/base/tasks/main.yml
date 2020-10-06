@@ -1,0 +1,132 @@
+- name: Configure networking
+  vars:
+    # The network-scripts portion of the role is considered a provisioning
+    # step. By default, it is not ran unless this is override to yes. When
+    # re-running this role, it is probably not ideal to re-setup and restart
+    # networking. Which will happen when setup_nics=yes.
+    base_setup_nics: "{{ setup_nics | default('no') }}"
+  block:
+    - name: "Include network-scripts role to template
+        /etc/sysconfig/network-scripts. Use `-e setup_nics=yes` to run."
+      vars:
+        network_scripts_dest_path: /etc/sysconfig/network-scripts
+        network_scripts_nics: "{{ base.nics }}"
+        network_scripts_clear_existing: yes
+        network_scripts_restart: yes
+      include_role:
+        name: network-scripts
+      when: "'nics' in base"
+  when: base_setup_nics | bool
+  tags:
+    - network
+
+
+
+- name: Common configurations part-1
+  block:
+    - name: Set hostname
+      hostname:
+        name: "{{ base.hostname }}"
+      tags:
+        - hostname
+
+    - name: Set timezone
+      timezone:
+        name: UTC
+      tags:
+        - timezone
+
+  tags:
+    - base-configs
+
+
+
+- name: Subscribe to Satellite
+  block:
+    - name: Install katello package
+      yum:
+        name: "https://{{ base.subscription.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+        state: installed
+        validate_certs: no
+
+    - vars:
+        rhsm_server_hostname: "{{ base.subscription.rhsm_server_hostname }}"
+        rhsm_org_id: "{{ base.subscription.rhsm_org_id }}"
+        rhsm_activationkey: "{{ base.subscription.rhsm_activationkey }}"
+        rhsm_repositories: "{{ base.subscription.rhsm_repositories }}"
+      import_role:
+        name: oasis_roles.system.rhsm
+  when: "base is defined and 'subscription' in base"
+  tags:
+    - subscription
+
+
+
+- block:
+    - name: Install common packages
+      yum:
+        name: "{{ packages }}"
+        state: installed
+      vars:
+        packages:
+          - bash-completion
+          - chrony
+          - git
+          - tmux
+          - tree
+          - vim
+          - wget
+  tags:
+    - base-packages
+
+
+
+- name: Common configurations part-2
+  block:
+    - name: Set chrony
+      vars:
+        chrony_servers: "{{ base.chrony_servers }}"
+      import_role:
+        name: oasis_roles.system.chrony
+      notify:
+        - restart chronyd
+
+    - name: Disable ntpd
+      systemd:
+        name: ntpd
+        enabled: no
+      # ntpd isn't installed on RHEL8 by default
+      when: ansible_distribution_major_version == 7
+
+    - name: Disable SSHD password authentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        state: present
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+      notify:
+        - restart sshd
+
+  tags:
+    - base-configs
+
+
+
+- name: tmux configuration
+  block:
+    - name: Add useful aliases for tmux
+      lineinfile:
+        path: ~/.bashrc
+        regexp: "^{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+          - { regexp: '^alias tlst=', line: 'alias tlst="tmux ls"' }
+          - { regexp: '^alias tmat=', line: 'alias tmat="tmux attach -t"' }
+          - { regexp: '^alias tnew=', line: 'alias tnew="tmux new -s"' }
+
+    - name: Place .tmux.conf
+      copy:
+        src: .tmux.conf
+        dest: ~/.tmux.conf
+  tags:
+    - tmux

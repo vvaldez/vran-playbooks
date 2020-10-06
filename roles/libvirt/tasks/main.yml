@@ -1,0 +1,47 @@
+- name: Setup libvirt and domains
+  become: yes
+  become_user: root
+  vars:
+    template_name: setup-domain.sh.j2
+    tmp_nic_config_folder: /tmp/network-scripts
+  block:
+    - name: Start and enable libvirt
+      systemd:
+        name: libvirtd
+        state: started
+        enabled: yes
+
+    - name: Copy the backing image to /var/lib/libvirt/images
+      copy:
+        src: "{{ domain.img_name }}"
+        dest: /var/lib/libvirt/images/
+        force: no
+      register: copy_result
+
+    - name: Create directory to hold domain nic-configs
+      file:
+        path: "{{ tmp_nic_config_folder }}"
+        state: directory
+        mode: 0755
+
+    - name: Include network-scripts role to create domain NIC configs
+      vars:
+        network_scripts_dest_path: "{{ tmp_nic_config_folder }}"
+        network_scripts_nics: "{{ domain.nics }}"
+        network_scripts_restart: no
+      include_role:
+        name: network-scripts
+
+    - name: Place setup-domain.sh in place
+      template:
+        src: "{{ template_name }}"
+        dest: "/tmp/{{ template_name }}"
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Run domain install script
+      shell: "/tmp/{{ template_name }}"
+      register: shell_output
+      changed_when: shell_output.rc == 2
+      failed_when: shell_output.rc == 1

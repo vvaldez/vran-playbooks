@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+# exit 0 = success, no changes
+# exit 1 = error
+# exit 2 = success, changes
+
+director_domain_name=director-{{ named_env }}
+
+if [[ $(virsh domid ${director_domain_name}) ]]; then
+	exit 0
+fi
+
+cd /var/lib/libvirt/images
+
+# Create an empty qcow2 file for a base image
+qemu-img create -f qcow2 director.qcow2 230G
+
+# Use virt-resize to dump the guest image into the qcow2 file we just created.
+virt-resize \
+  --expand /dev/sda1 {{ copy_result.dest }} \
+  director.qcow2
+
+# - Remove cloud-init (causes delays and problems when not used on a cloud)
+# - Set UseDNS=no for initial login
+# - Set root user password
+# - Inject root user SSH key
+# - Copy in templated director NIC configs
+virt-customize \
+  -a director.qcow2 \
+  --run-command "yum remove cloud-init* -y; sed -i 's/^#UseDNS.*\$/UseDNS no/g' /etc/ssh/sshd_config" \
+  --root-password password:'{{ director.root_user_password }}' \
+  --ssh-inject root:string:"{{ director.ssh_pub_key | mandatory }}" \
+  --copy-in {{ tmp_nic_config_folder }}:/etc/sysconfig/ \
+  --selinux-relabel
+
+virt-install \
+  --ram {{ director.ram | mandatory }} \
+  --vcpus {{ director.vcpus | mandatory }} \
+  --os-variant rhel7 \
+  --disk path=/var/lib/libvirt/images/director.qcow2,device=disk,bus=virtio,format=qcow2 \
+  --import \
+  --noautoconsole \
+  --vnc \
+  --bridge virbr0 \
+  --bridge br-provision \
+  --bridge br-publicapi \
+  --autostart \
+  --name ${director_domain_name}
+
+exit 2

@@ -23,6 +23,10 @@ roles/*
 !roles/fpga*
 !roles/server_*
 !roles/discover
+!roles/base
+!roles/kvm
+!roles/libvirt
+!roles/template-directory
 
 # Ignore virtualenv
 venv/

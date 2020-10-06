@@ -1,30 +1,5 @@
 ---
 roles:
-  - name: base
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-base.git
-    scm: git
-    version: '1.2'
-
-  - name: kvm
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-kvm.git
-    scm: git
-    version: '1.0'
-
-  - name: libvirt
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-libvirt.git
-    scm: git
-    version: '1.0'
-
-  - name: template-directory
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-template-directory.git
-    scm: git
-    version: '1.1'
-
-  - name: vars-prompt
-    src: ssh://git@gitlab.consulting.redhat.com:2222/openstack-cop/ansible-bundle/role-vars-prompt.git
-    scm: git
-    version: '1.1'
-
   - name: linux-system-roles.network
     version: 'v1.2.0'
 ...

@@ -1,0 +1,16 @@
+---
+- become: yes
+  become_user: root
+  name: restart sshd
+  service:
+    name: sshd
+    enabled: yes
+    state: restarted
+
+- become: yes
+  become_user: root
+  name: restart chronyd
+  service:
+    name: chronyd
+    enabled: yes
+    state: restarted
