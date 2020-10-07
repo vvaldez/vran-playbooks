@@ -6,9 +6,9 @@ This role will:
 - Upload ansible-generated templates
 - Disable the overcloud compute service for `{{ server_name }}`
 - Discover the UUID of the overcloud server `{{ server_name }}`
-- Update the overcloud plan for `site_name`
-- Delete the overcloud node `server_name`
-- Delete the overcloud network agents for `server_name`
+- Update the overcloud plan for `{{ site_name }}`
+- Delete the overcloud node `{{ server_name }}`
+- Delete the overcloud network agents for `{{ server_name }}`
 - Run Tempest smoke tests
 
 ## Usage
