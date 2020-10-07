@@ -30,7 +30,7 @@ The following variables are required to be set.
 
 | Variable | Type | Description |
 | -------- | ---- | ----------- |
-| `site_name` | string | The name of the site to deploy. There must be a corresponding group called `site_{{ site_name }}`
+| `site_name` | string | The name of the site to delete.
 
 ## Inventory requirements
 
