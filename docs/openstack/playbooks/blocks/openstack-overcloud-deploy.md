@@ -51,4 +51,4 @@ The following variables can be optionally set, and have default values, if not s
 
 ## Inventory requirements
 
-No inventory requirements.
+There are no inventory requirements.

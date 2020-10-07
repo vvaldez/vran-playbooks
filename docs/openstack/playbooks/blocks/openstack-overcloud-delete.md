@@ -35,4 +35,4 @@ The following variables are required to be set.
 
 ## Inventory requirements
 
-No inventory requirements.
+There are no inventory requirements.
