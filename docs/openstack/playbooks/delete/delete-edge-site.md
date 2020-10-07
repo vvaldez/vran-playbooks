@@ -15,7 +15,7 @@ The following is an example run of the playbook using Ansible CLI.
 ansible-playbook \
   -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
   -e site_name=edge1
-  playbooks/openstack/add/delete-edge-site.yml
+  playbooks/openstack/delete/delete-edge-site.yml
 ```
 
 ## Requirements

@@ -13,7 +13,7 @@
 
 ## Update
 
-- [update-site](playbooks/update-site.md)
+- [update-site](playbooks/update/update-site.md)
 
 ## Blocks
 

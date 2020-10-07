@@ -22,7 +22,7 @@ ansible-playbook \
   -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
   -e site_name=edge1
   -e server_name=edge1-compute-virtual-0
-  playbooks/openstack/add/delete-node-from-site.yml
+  playbooks/openstack/delete/delete-node-from-site.yml
 ```
 
 ## Requirements
