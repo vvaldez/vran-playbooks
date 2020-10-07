@@ -10,5 +10,6 @@ collections:
   - ovirt.ovirt
   - theforeman.foreman
   - tripleo.operator
-  - dellemc.openmanage
+  - name: dellemc.openmanage
+    version: 2.1.1
 ...
