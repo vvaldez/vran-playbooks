@@ -5,8 +5,6 @@
   become_user: stack
   gather_facts: no
   remote_user: root
-  vars:
-    dcn_export: no
   tasks:
     # Check for required variables
     - block:

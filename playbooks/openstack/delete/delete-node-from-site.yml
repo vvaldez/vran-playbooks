@@ -73,7 +73,6 @@
 - name: "openstack overcloud node delete {{ site_name }}"
   import_playbook: ../blocks/openstack-overcloud-node-delete.yml
   vars:
-    dcn_export: no
     tripleo_overcloud_node_delete_stack: "{{ site_name }}"
     tripleo_overcloud_node_delete_nodes: "{{ node_uuid }}"
   tags:

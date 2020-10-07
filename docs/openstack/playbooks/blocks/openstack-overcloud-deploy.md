@@ -41,7 +41,7 @@ The following variables are required to be set.
 | `tripleo_overcloud_deploy_stack` | string | The name of the overcloud stack to deploy
 | `tripleo_overcloud_deploy_networks_file` | string | The path on the `director` host to the TripleO networks file to use during deployment
 | `tripleo_overcloud_deploy_roles_file` | string | The path on the `director` host to the TripleO roles file to use during deployment
-| `tripleo_overcloud_deploy_environment_files` | list | A list of strings. Each list item is the path on the `director` host to an TripleO environment file to use during deployment. **Note** The order of the list items is respected
+| `tripleo_overcloud_deploy_environment_files` | list | A list of strings. Each list item is the path on the `director` host to an TripleO environment file to use during deployment. **Note:** The order of the list items is respected
 
 The following variables can be optionally set, and have default values, if not set.
 
