@@ -2,11 +2,11 @@
 
 This playbook will:
 
-- Generate the `instackenv` dictionary by retrieving the MAC addresses of nodes of pm_type:
+- Generate the `instackenv` dictionary by retrieving the MAC addresses of nodes of `pm_type`:
   - `pxe_drac`
   - `staging_ovirt`
 
-The playbook does not actually write the file. It takes the existing `instackenv` dictionary and modifies it's list items (if the item has on of the `pm_types` listed above) to add several fields:
+The playbook does not actually write the file. It takes the existing `instackenv` dictionary and modifies it's list items (if the item has one of the `pm_types` listed above) to add several fields to each list item:
 
 - `mac`
 - `pm_address`
