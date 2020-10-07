@@ -26,7 +26,7 @@
     tripleo_overcloud_deploy_environment_files: "{{ site[site_name].deploy_environment_files }}"
 
 - name: Tempest run
-  import_playbook: ../misc/tempest-run.yml
+  import_playbook: ../blocks/tempest-run.yml
   vars:
     site_name: central
     network_name: management-central-net

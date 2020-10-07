@@ -93,7 +93,7 @@
         openstack network agent delete ${NETWORK_AGENT_IDS}
 
 - name: Tempest run
-  import_playbook: ../misc/tempest-run.yml
+  import_playbook: ../blocks/tempest-run.yml
   vars:
     site_name: central
     network_name: management-central-net
