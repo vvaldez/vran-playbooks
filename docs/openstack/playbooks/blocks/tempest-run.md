@@ -2,7 +2,7 @@
 
 This playbook will:
 
-- If `remove` is `true` then delete any existing Tempest workspace found at `/home/stack/tempest/tempest-{{ site_name }}`
+- If `{{ remove }}` is `true` then delete any existing Tempest workspace found at `/home/stack/tempest/tempest-{{ site_name }}`
 - If there is not an existing Tempest workspace named `tempest-{{ site_name }}`, then:
   - Initialize the Tempest workspace named `tempest-{{ site_name }}`
   - Source `/home/stack/{{ site_name }}rc` and grab the Neutron network UUID of `{{ network_name }}`
@@ -23,8 +23,11 @@ The following is an example run of the playbook using Ansible CLI.
 **Note:** Always run the playbook from the top level directory of `ansible-playbook`
 
 ```yml
-- name: openstack undercloud upgrade
-  import_playbook: blocks/openstack-undercloud-upgrade.yml
+- name: Tempest run
+  import_playbook: ../blocks/tempest-run.yml
+  vars:
+    site_name: central
+    network_name: management-central-net
 ```
 
 ## Requirements
@@ -45,7 +48,7 @@ The following variables are required to be set.
 
 The following variables can be optionally set, and have default values, if not set.
 
-| Variable | Type | Default | Description |concu
+| Variable | Type | Default | Description |
 | -------- | ---- | ------- | ----------- |
 | `remove` | bool | `false` | If this is set to true, remove any existing tempest workspace named `tempest-{{ site_name }}` and also remove any directory existing at `/home/stack/tempest-{{ site_name }}`
 | `concurrency` | int | `0` | The value to use for concurrency of tests ran. When the value is set to 0, Tempest uses it's default value which is the number of system CPUs
