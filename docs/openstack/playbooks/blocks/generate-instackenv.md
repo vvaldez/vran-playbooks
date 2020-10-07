@@ -1,4 +1,4 @@
-# Ansible Playbook: Add director to site group
+# Ansible Playbook: Generate instackenv
 
 This playbook will:
 
@@ -17,7 +17,7 @@ The playbook does not actually write the file. It takes the existing `instackenv
 
 This playbook is meant to be imported by another playbook. The following is an `import_playbook` example usage.
 
-```sh
+```yml
 - import_playbook: blocks/generate-instackenv.yml
 ```
 

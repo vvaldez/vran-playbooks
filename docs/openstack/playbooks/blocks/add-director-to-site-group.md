@@ -8,7 +8,7 @@ This playbook will:
 
 This playbook is meant to be imported by another playbook. The following is an `import_playbook` example usage.
 
-```sh
+```yml
 - import_playbook: ../blocks/add-director-to-site-group.yml
 ```
 
