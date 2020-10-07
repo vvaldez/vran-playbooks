@@ -1,4 +1,4 @@
-# Ansible Playbook: opensack overcloud delete
+# Ansible Playbook: openstack overcloud delete
 
 This playbook will:
 
