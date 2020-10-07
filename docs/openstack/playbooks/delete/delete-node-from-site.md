@@ -1,6 +1,6 @@
 # Ansible Playbook: Add node to site
 
-This role will:
+This playbook will:
 
 - Add the `director` host to the `site_{{ site_name }}` group
 - Upload ansible-generated templates
@@ -20,8 +20,8 @@ The following is an example run of the playbook using Ansible CLI.
 ```sh
 ansible-playbook \
   -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
-  -e site_name=edge1
-  -e server_name=edge1-compute-virtual-0
+  -e site_name=edge1 \
+  -e server_name=edge1-compute-virtual-0 \
   playbooks/openstack/delete/delete-node-from-site.yml
 ```
 

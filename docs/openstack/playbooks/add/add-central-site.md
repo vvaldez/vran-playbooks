@@ -1,6 +1,6 @@
 # Ansible Playbook: Add central site
 
-This role will:
+This playbook will:
 
 - Upload ansible-generated templates
 - Import **all** overcloud nodes

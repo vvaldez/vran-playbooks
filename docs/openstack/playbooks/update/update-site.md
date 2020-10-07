@@ -1,6 +1,6 @@
 # Ansible Playbook: Update site
 
-This role will:
+This playbook will:
 
 - Add the `director` host to the `site_{{ site_name }}` group
 - Upload ansible-generated templates

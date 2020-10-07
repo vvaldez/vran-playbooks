@@ -1,6 +1,6 @@
 # Ansible Playbook: Delete edge site
 
-This role will:
+This playbook will:
 
 - Delete the `{{ site_name }}` stack
 - Run Tempest smoke tests
@@ -14,7 +14,7 @@ The following is an example run of the playbook using Ansible CLI.
 ```sh
 ansible-playbook \
   -i ../ansible-inventory/tewksbury1/inventory/hosts.yml \
-  -e site_name=edge1
+  -e site_name=edge1 \
   playbooks/openstack/delete/delete-edge-site.yml
 ```
 
