@@ -5,6 +5,41 @@
     idrac_user: "{{ oob_username }}"
     idrac_password: "{{ oob_password }}"
 
+- name: Set BIOS attributes
+  community.general.redfish_config:
+    category: Systems
+    command: SetBiosAttributes
+    bios_attributes: "{{ oob.config.bios }}"
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+  register: ss_bios_set
+  notify:
+    - restart server
+
+- name: Create BIOS config job
+  community.general.idrac_redfish_command:
+    category: Systems
+    command: CreateBiosConfigJob
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+  when: ss_bios_set.changed
+
+- name: Set iDRAC configuration items
+  community.general.idrac_redfish_config:
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+    category: Manager
+    command: SetSystemAttributes
+    resource_id: "{{ oob.resource_ids.manager }}"
+    manager_attributes: "{{ oob.config.idrac }}"
+
+- meta: flush_handlers
+
+- include_tasks: wait_latest_job.yml
+
 - name: Discover NICs
   include_tasks: discover_nic.yml
 
@@ -39,49 +74,5 @@
   delegate_to: localhost
   changed_when: False
 
-- name: Wait until redfish is available
-  uri:
-    url: https://{{ oob.ipaddr }}/redfish/v1/Systems
-    url_username: "{{ oob_username }}"
-    url_password: "{{ oob_password }}"
-    headers:
-      Accept: application/json
-    validate_certs: false
-    force_basic_auth: yes
-  register: ss_redfish_result
-  ignore_errors: true
-  until: ss_redfish_result.status is match('200')
-  delay: 10
-  retries: 30
-
-- name: Set BIOS attributes
-  community.general.redfish_config:
-    category: Systems
-    command: SetBiosAttributes
-    bios_attributes: "{{ oob.config.bios }}"
-    baseuri: "{{ oob.ipaddr }}"
-    username: "{{ oob_username }}"
-    password: "{{ oob_password }}"
-  register: ss_bios_set
-  notify:
-    - restart server
-
-- name: Create BIOS config job
-  community.general.idrac_redfish_command:
-    category: Systems
-    command: CreateBiosConfigJob
-    baseuri: "{{ oob.ipaddr }}"
-    username: "{{ oob_username }}"
-    password: "{{ oob_password }}"
-  when: ss_bios_set.changed
-
-- name: Set iDRAC configuration items
-  community.general.idrac_redfish_config:
-    baseuri: "{{ oob.ipaddr }}"
-    username: "{{ oob_username }}"
-    password: "{{ oob_password }}"
-    category: Manager
-    command: SetSystemAttributes
-    resource_id: "{{ oob.resource_ids.manager }}"
-    manager_attributes: "{{ oob.config.idrac }}"
+- include_tasks: wait_latest_job.yml
 ...
