@@ -39,6 +39,7 @@
 - meta: flush_handlers
 
 - include_tasks: wait_latest_job.yml
+  when: ss_bios_set.changed
 
 - name: Discover NICs
   include_tasks: discover_nic.yml
@@ -66,6 +67,7 @@
     scp_file: scp_{{ inventory_hostname }}.json
     scp_components: ALL
     job_wait: True
+  register: ss_scp_set
 
 - name: Remove temporary file
   file:
@@ -74,5 +76,8 @@
   delegate_to: localhost
   changed_when: False
 
+- include_tasks: wait_redfish_avail.yml
+
 - include_tasks: wait_latest_job.yml
+  when: ss_scp_set.changed
 ...
