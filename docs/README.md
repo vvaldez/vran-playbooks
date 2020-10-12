@@ -5,10 +5,6 @@
 1. [Setup](setup.md) a development environment.
 2. [ansible-inventory](ansible-inventory.md) structure and documentation.
 3. [ansible-playbook](ansible-playbook.md) structure and documentation.
-4. Management
-    - [Bootstrapping](server-management.md) a RHEL server.
-    - [Deployment](openstack-management.md) and management of an OpenStack cluster.
-5. [Contributing](contributing.md) code.
 
 ## What is this
 
