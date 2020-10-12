@@ -2,32 +2,32 @@
 
 ## Add
 
-- [add-central-site](playbooks/add/add-central-site.md)
-- [add-edge-site](playbooks/add/add-edge-site.md)
-- [add-node-to-site](playbooks/add/add-node-to-site.md)
+- [add-central-site](add/add-central-site.md)
+- [add-edge-site](add/add-edge-site.md)
+- [add-node-to-site](add/add-node-to-site.md)
 
 ## Delete
 
-- [delete-edge-site](playbooks/delete/delete-edge-site.md)
-- [delete-node-from-site](playbooks/delete/delete-node-from-site.md)
+- [delete-edge-site](delete/delete-edge-site.md)
+- [delete-node-from-site](delete/delete-node-from-site.md)
 
 ## Update
 
-- [update-site](playbooks/update/update-site.md)
+- [update-site](update/update-site.md)
 
 ## Blocks
 
-- [add-director-to-site-group](playbooks/blocks/add-director-to-site-group.md)
-- [generate-instackenv](playbooks/blocks/generate-instackenv.md)
-- [openstack-aggregate-create](playbooks/blocks/openstack-aggregate-create.md)
-- [openstack-overcloud-delete](playbooks/blocks/openstack-overcloud-delete.md)
-- [openstack-overcloud-deploy](playbooks/blocks/openstack-overcloud-deploy.md)
-- [openstack-overcloud-node-delete](playbooks/blocks/openstack-overcloud-node-delete.md)
-- [openstack-overcloud-node-import](playbooks/blocks/openstack-overcloud-node-import.md)
-- [openstack-overcloud-node-introspect](playbooks/blocks/openstack-overcloud-node-introspect.md)
-- [openstack-undercloud-install](playbooks/blocks/openstack-undercloud-install.md)
-- [openstack-undercloud-upgrade](playbooks/blocks/openstack-undercloud-upgrade.md)
-- [tempest-run](playbooks/blocks/tempest-run.md)
+- [add-director-to-site-group](blocks/add-director-to-site-group.md)
+- [generate-instackenv](blocks/generate-instackenv.md)
+- [openstack-aggregate-create](blocks/openstack-aggregate-create.md)
+- [openstack-overcloud-delete](blocks/openstack-overcloud-delete.md)
+- [openstack-overcloud-deploy](blocks/openstack-overcloud-deploy.md)
+- [openstack-overcloud-node-delete](blocks/openstack-overcloud-node-delete.md)
+- [openstack-overcloud-node-import](blocks/openstack-overcloud-node-import.md)
+- [openstack-overcloud-node-introspect](blocks/openstack-overcloud-node-introspect.md)
+- [openstack-undercloud-install](blocks/openstack-undercloud-install.md)
+- [openstack-undercloud-upgrade](blocks/openstack-undercloud-upgrade.md)
+- [tempest-run](blocks/tempest-run.md)
 
 ## To-document
 
