@@ -134,8 +134,7 @@
 - import_playbook: ../../generic/add_ssh_keys.yml
   vars:
     playbook_hosts: rhvm[0]
-    ansible_ssh_pass: "{{ he_appliance_password }}"
+    ansible_ssh_pass: "{{ rhv_admin_password }}"
   tags:
-    - install
-    - setup
+    - post_install
 ...
