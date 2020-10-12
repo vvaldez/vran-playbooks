@@ -1,21 +1,37 @@
-# Ansible Playbooks
+## Ansible Playbooks
 
-## Add
+Each playbook is documented with the following information:
+
+- Tasks
+- Usage
+- Requirements
+- Playbook variables
+- Inventory requirements
+
+Playbooks are currently grouped by usage. There are 3 main groups: **Add**, **Delete**, and **Update**. These are meant to be playbooks that perform a set of tasks that are needed to complete a day-2 operation.
+
+Another group, **Blocks**, has more playbooks. These playbooks are to be thought of as functions. They each have playbook variables that need to be defined to be ran. They are consumed as `import_playbook` tasks in any of the 3 playbook groups above.
+
+- [ansible-generated-templates-generate-locally](ansible-generated-templates-generate-locally.md)
+- [ansible-generated-templates-upload](ansible-generated-templates-upload.md)
+- [install-undercloud](install-undercloud.md)
+
+#### Add
 
 - [add-central-site](add/add-central-site.md)
 - [add-edge-site](add/add-edge-site.md)
 - [add-node-to-site](add/add-node-to-site.md)
 
-## Delete
+#### Delete
 
 - [delete-edge-site](delete/delete-edge-site.md)
 - [delete-node-from-site](delete/delete-node-from-site.md)
 
-## Update
+#### Update
 
 - [update-site](update/update-site.md)
 
-## Blocks
+#### Blocks
 
 - [add-director-to-site-group](blocks/add-director-to-site-group.md)
 - [generate-instackenv](blocks/generate-instackenv.md)
