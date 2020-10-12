@@ -1,7 +1,7 @@
 ---
 - name: Install katello package
   yum:
-    name: "https://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+    name: "http://{{ rhsm.rhsm_server_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
     state: installed
     validate_certs: no
   tags:
