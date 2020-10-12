@@ -1,14 +1,20 @@
 ---
 collections:
-  - community.general
-  - oasis_roles.system
+  - name: community.general
+    version: '1.2.0'
+  - name: oasis_roles.system
+    version: '1.1.2'
   # the satellite collection doesn't seem to be published to galaxy yet, and we don't have support
   # for cloning git repos for collections, for now use the install_satellite_collection.sh
   #- oasis_roles.satellite
   #- name: https://github.com/oasis-roles/ansible_collection_satellite/tree/main
   #  type: git
-  - ovirt.ovirt
-  - theforeman.foreman
-  - tripleo.operator
-  - dellemc.openmanage
+  - name: ovirt.ovirt
+    version: '1.1.4'
+  - name: theforeman.foreman
+    version: '1.3.0'
+  - name: tripleo.operator
+    version: '0.4.0'
+  - name: dellemc.openmanage
+    version: '2.1.2'
 ...
