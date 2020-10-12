@@ -27,12 +27,12 @@ interface port-channel{{ interface.port_channel_id }}
  mtu {{ tor_mtu }}
  lacp fallback enable
  lacp fallback timeout {{ tor_lacp_fallback_timeout }}
- lacp port-priority {{ tor_lacp_port_priority }}
  vlt-port-channel {{ interface.port_channel_id }}
 interface {{ interface.interface_name }}
  no shutdown
  no switchport
  description "{{ interface.host_name }} {{ interface.host_interface }}"
  channel-group {{ interface.port_channel_id }} mode active
+ lacp port-priority {{ tor_lacp_port_priority }}
 {% endif %}
 {% endfor %}

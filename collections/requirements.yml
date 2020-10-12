@@ -16,5 +16,5 @@ collections:
   - name: tripleo.operator
     version: '0.4.0'
   - name: dellemc.openmanage
-    version: '2.1.2'
+    version: '2.1.1'
 ...

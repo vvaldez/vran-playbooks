@@ -32,6 +32,7 @@
         option: log_path
         value: /var/log/ansible.log
       become: yes
+      become_user: root
 
     - name: Run ceph-ansible
       command: "{{ ceph_playbook_command }}"

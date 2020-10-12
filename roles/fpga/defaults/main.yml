@@ -9,7 +9,6 @@ fpga_packages:
   epel:
     - dkms
   opae_tools:
-    - opae
     - opae-tools
     - opae-tools-extra
     - opae.admin
