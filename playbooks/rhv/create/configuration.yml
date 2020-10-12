@@ -9,6 +9,7 @@
     - config
   when: iscsi_wwid is not defined | default(True)
 
+# Target the first member of rhvm group
 - hosts: rhvm[0]
   remote_user: root
   gather_facts: no

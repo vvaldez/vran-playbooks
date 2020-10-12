@@ -1,0 +1,13 @@
+- hosts: "{{ playbook_hosts | default('all') }}"
+  remote_user: "{{ playbook_user | default('root') }}"
+  gather_facts: False
+  tasks:
+    - name: Add authorized key
+      authorized_key:
+        user: "{{ playbook_user | default('root') }}"
+        state: present
+        key: "{{ ssh_key }}"
+      loop: "{{ ssh_keys }}"
+      loop_control:
+        loop_var: ssh_key
+...
