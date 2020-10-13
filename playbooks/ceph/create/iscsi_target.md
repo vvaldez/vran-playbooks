@@ -2,6 +2,7 @@
 
 This playbook will:
 
+- Copy iSCSI Target Create playbook from template that does the following:
 - Create rbd disk images
 - Create iSCSI Targets
 - Add ceph nodes as gateways to first iSCSI Target
@@ -9,6 +10,7 @@ This playbook will:
 - Disable host-based authentication
 - Set CHAP authentication on first iSCSI Target
 - Set discovery authentication on first iSCSI Target
+
 ## Usage
 
 The following is an example run of the playbook using Ansible CLI.
@@ -45,3 +47,4 @@ The following variables are required to be set.
 - Group: `ceph`
 - The above group contains the following dictionaries:
   - `ceph`
+- The `ceph` group also contains a definition for `iscsi_targets`
