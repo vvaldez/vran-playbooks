@@ -12,7 +12,8 @@ It does not aim to be an all-in-one deployment tool though. Infrastructure, stor
 
 - **[ansible-inventory](_docs/ansible-inventory.md)**: This is implentation specific code. This holds your variables, secrets, host configuration, etc.
 - **[ansible-playbooks](_docs/ansible-playbooks.md)**: This is the Ansible code doing the work. Here you find playbooks, roles, collections, that are generalized enough to be freely shared and contributed to. Everything in here consumes the configuration as code defined within `ansible-inventory`.
-- **[Template Packs](templates/README.md)**: OOO templates bundled into "packs" of static and parameterized jinja2 templates. These packs act as "input" templates. Each pack contains an Ansible task file that is ran to do the template generation. This file should be named `tasks-to-generate-templates.yml`. Template packs can be very tightly coupled to the variables and data structures that they consume, which are held within `ansible-inventory`, so it may be necessary to have access to correlating inventory host files, group_vars, and variables that go along with a template pack to fully understand what is expected.
+- **[Template Packs](templates/README.md)**: "Template packs" are OOO templates bundled into "packs" of static and parameterized jinja2 templates. These packs act as sets of OOO templates that are parameterized and used to generate the final templates eventually placed onto the `director` host. The link provided has more information.
+
 
 #### Template packs
 
