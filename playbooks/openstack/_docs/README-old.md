@@ -10,8 +10,6 @@
 
 At a high level, a reference architecture for deploying and managing the lifecycle of Red Hat OpenStack Platform director deployed OpenStack cloud using Red Hat Ansible.
 
-What makes this more than a reference architecture? This is all code to be cloned, forked, contributed to, etc.
-
 This framework has been created to be generic enough to be used to jumpstart deploying and managing OpenStack clusters using Ansible. It does not aim to be an all-in-one deployment tool though. Infrastructure, storage, networking, architectures, etc. are always unique across, that's why consulting services are in need, for the individualized problem solving. That does not mean that we cannot distill the actions that are typically taken to deploy and manage OpenStack infrastructure into a framework, which is what this is.
 
 ## Components

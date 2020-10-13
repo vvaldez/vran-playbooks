@@ -1,3 +1,22 @@
+## What is this
+
+At a high level, a reference architecture for deploying and managing the lifecycle of Red Hat OpenStack Platform director deployed OpenStack cloud using Red Hat Ansible.
+
+This framework has been created to be generic enough to be used to jumpstart deploying and managing OpenStack clusters using Ansible. It does not aim to be an all-in-one deployment tool though. Infrastructure, storage, networking, architectures, etc. are always unique across, that's why consulting services are in need, for the individualized problem solving. That does not mean that we cannot distill the actions that are typically taken to deploy and manage OpenStack infrastructure into a framework, which is what this is.
+
+## Components
+
+- **[ansible-inventory](ansible-inventory.md)**: This is implentation specific code. This holds your variables, secrets, host configuration, etc.
+- **[ansible-playbooks](ansible-playbooks.md)**: This is the Ansible code doing the work. Here you find playbooks, roles, collections, that are generalized enough to be freely shared and contributed to. Everything in here consumes the configuration as code defined within `ansible-inventory`.
+
+## How to use
+
+Please read in order the documents provided above. They aim to walk a user through settting up a development environment, understanding the structure of the two main components above, and using the framework.
+
+Want to incorporate an existing deployment into using this framework? Read the documentation above.
+
+Want to try out this framework in a sample environment? Provided within `ansible-inventory` is code to spin up virtual OpenStack environments using Vagrant, as long as you have meeting some minimal hardware requirements with [qemu](https://www.qemu.org/)/[libvirt](https://libvirt.org/) installed. Again, the above documents cover how to setup and use the included samples.
+
 ## Ansible Playbooks
 
 Each playbook is documented with the following information:
@@ -45,21 +64,17 @@ Another group, **Blocks**, has more playbooks. These playbooks are to be thought
 - [openstack-undercloud-upgrade](blocks/openstack-undercloud-upgrade.md)
 - [tempest-run](blocks/tempest-run.md)
 
-## To-document
+## User documentation
 
-- How to add sites and nodes w.r.t. inventory changes
-- How to add new compute roles w.r.t inventory changes
+There is more documentation within the `_docs` folder. These docs will refer to operational docs on how to perform certain tasks. For ease, we'll point to them here:
 
-# Goals
-
-Refactor and demo out the structure to be used for `ansible-playbooks.git` and `ansible-inventory.git` for OpenStack deployments. Some key points to achieve:
-
-- Allow for "standard" set of templates provided by `ansible-inventory/<datacenter>/templates/shared/`
-- "standard" set of templates should be overridable by environment specific templates in `ansible-inventory/<datacenter>/templates/<environment>/`
-- Apply `director` role to Director server. This will configure from zero to `deploy.sh`
-- Branching on the `ansible-playbooks.git` repository can be used to achieve `master`, `osp10`, `osp13`, `osp14` differences
-- Only `master` branch is utilized on `ansible-inventory.git` repository. Different environments are contained to sub-folders.
-- Configure a `test` environment in `ansible-inventory.git` that can be ran against a packaged Docker/Vagrant virtualized environment.
+- [Setup a local development environment](setup.md)
+- [ansible-inventory structure and documentation](ansible-inventory.md)
+- [How to add an edge site](_docs/add-site.md)
+- [How to add a node to a site](_docs/add-node.md)
+- [How to add a new compute role](_docs/add-role.md)
+- [How to delete an edge site](_docs/delete-site.md)
+- [How to delete a node from a site](_docs/delete-node.md)
 
 # Developer Workflow
 
@@ -74,10 +89,6 @@ Envisioned developer workflow goes as follows:
 7. Lead approves/rejects pull requests. Repeat until steps 4 - 7 until necessary.
 8. Master is always referenced as current, working, code.
 
-# Notes
-
-Generate playbook won't be added to Tower ... it's a developer action, not something that should/needs to be ran from Tower. `pb-install.yml`, etc,  can be added to Tower but it should use pre-generated templates from `ansible-generated/`. OpenStack Day-2 playbooks should be what becomes ran thru Tower.
-
 # Ansible Vault
 
 Ansible Vault is used to encrypt sensitive strings in the `ansible-inventory/` repository. `./vault_secret` in the `ansible-playbooks/` repository must contain the secret string to decrypt the sensitive strings:
@@ -89,7 +100,7 @@ echo '<secret string>' > ./vault_secret
 The playbooks must be ran with `--vault-password-file ./vault_secret` as arguments
 
 ```sh
-ansible-playbook -i ../ansible-inventory/blue/hosts-test pb-install-director.yml --vault-password-file ./vault_secret
+... --vault-password-file ./vault_secret
 ```
 
 ### Generate a new vault string
@@ -175,108 +186,3 @@ Example of the final generated file on the directory within `/home/stack/ansible
 ```
 
 Because decryption is only performed in **step 3**, that is the only step when it is necessary to pass in the decryption password using ``--vault-password-file ./vault_secret``.
-
-# Coding Styleguide
-
-## Ansible Variable Names
-
-Use underscores for variable names. The Ansible docs explain what are [valid variable names](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#creating-valid-variable-names)
-
-```yaml
-# Words seperated by underscores (_)
-my_variable: foo
-foo_bar_foo: bar
-```
-
-## `"` and `'`
-
-```yml
-key: 'static string'
-key: "string with string interpolation {{ variable }}"
-```
-
-## Ansible Playbooks/Roles
-
-- **Tasks** within **plays** or **blocks** are seperated by a single newline
-- The last **task** in a play is followed by a single newline
-
-- `hosts:` is always the first property defined for a **play**
-- `tags:`, if used, is always placed as the last property defined for **plays**, **tasks**, or **blocks**
-
-```yaml
-- hosts: director
-  name: 4.4 Registering and updating your undercloud
-  vars:
-    activation_key: "{{ redhat_satellite_director_ak }}"
-  tasks:
-    - name: Subscribe the system
-      include_role:
-        name: subscribe
-
-    - name: yum update
-      yum:
-        name: '*'
-        state: latest
-      register: yum_output
-
-    - name: Reboot
-      reboot:
-      when: yum_output.changed
-
-  tags:
-    - '4.4'
-```
-
-For readability, **plays** or **blocks** are always separated by 3 newlines:
-
-```yaml
-- hosts: director
-  name: 4.5. Installing the director packages
-  tasks:
-    - name: Install python-tripleoclient
-      shell: foo
-
-  tags:
-    - '4.5'
-
-
-
-- hosts: director
-  name: 4.6. Installing ceph-ansible
-  tasks:
-    - name: Enable the Ceph Tools repository
-      shell: foo
-
-  tags:
-    - '4.6'
-
-
-
-- hosts: director
-  name: 4.6. Installing ceph-ansible
-  tasks:
-    - name: Enable the Ceph Tools repository
-      shell: foo
-
-  tags:
-    - '4.7'
-```
-
-## YAML Indentation:
-
-Indentation is always 2 spaces:
-
-```yaml
-overcloud:
-  hostname: overcloud.exmaple.com
-```
-
-Always indent sequences:
-
-```yaml
-tasks:
-  - foo: bar
-  - bar:
-    - item1
-    - item2
-```
