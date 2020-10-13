@@ -9,7 +9,6 @@
   hosts: ceph
   gather_facts: True
   vars:
-    # Which cluster group to operate on
     osd_device_size: "1758164184"
     db_device_size: "468851544"
   tasks:
