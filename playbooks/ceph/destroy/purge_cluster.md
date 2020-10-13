@@ -42,4 +42,3 @@ The following variables are required to be set.
 - Group: `ceph`
 - The above group contains the following dictionaries:
   - `ceph`
-- The `ceph` group also contains a definition for `network_connections`
