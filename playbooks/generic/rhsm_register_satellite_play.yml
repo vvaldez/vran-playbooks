@@ -1,0 +1,3 @@
+- hosts: "{{ playbook_hosts | default('all') }}"
+  tasks:
+    - include_tasks: rhsm_register_satellite.yml

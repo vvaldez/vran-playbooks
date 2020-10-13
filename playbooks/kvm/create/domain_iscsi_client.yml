@@ -43,10 +43,10 @@
     tags:
       - setup
 
-- import_playbook: ../../generic/rhsm_register_satellite_play.yml
-  vars:
-    playbook_hosts: iscsi_client
-    rhsm_activationkey: Ceph
-  tags:
-    - setup
+  - include_tasks: ../../generic/rhsm_register_satellite.yml
+    vars:
+      playbook_hosts: iscsi_client
+      rhsm_activationkey: Ceph
+    tags:
+      - setup
 ...

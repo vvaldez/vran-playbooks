@@ -130,4 +130,11 @@
 
     - name: Run hosted-engine-setup using ovirt-ansible-hosted-engine-setup RPM
       command: "{{ rhv_he_playbook_cmd }}"
+
+- import_playbook: ../../generic/add_ssh_keys.yml
+  vars:
+    playbook_hosts: rhvm[0]
+    ansible_ssh_pass: "{{ rhv_admin_password }}"
+  tags:
+    - post_install
 ...

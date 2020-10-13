@@ -1,35 +1,47 @@
 ---
-- name: tempest run {{ tempest_workspace }}
+- name: Remove existing workspace. Set `-e remove=yes` to run.
   hosts: director
   become: yes
   become_user: stack
-  gather_facts: no
   remote_user: root
+  gather_facts: no
   vars:
     remove: no
-    concurrency: 0
   tasks:
-    # Check for required variables
     - block:
         - fail:
             msg: "{{ item }} is not defined"
           when: item is undefined
           loop:
-            - "{{ tempest_workspace }}"
+            - "{{ site_name }}"
+            - "{{ network_name }}"
 
     - block:
         - name: Remove existing tempest workspace
           shell: |
             tempest workspace list
-            tempest workspace remove --name {{ tempest_workspace }}
+            tempest workspace remove --name tempest-{{ site_name }}
 
         - name: Remove existing tempest director
           file:
-            path: "/home/stack/tempest/{{ tempest_workspace }}"
+            path: "/home/stack/tempest-{{ site_name }}"
             state: absent
 
       when: remove | bool
 
+
+
+- name: Initialize and run Tempest. The default concurrency is number of undercloud vcpus. Set `-e concurrency=<num>` to override.
+  hosts: director
+  become: yes
+  become_user: stack
+  remote_user: root
+  gather_facts: no
+  vars:
+    workspace_name: "tempest-{{ site_name }}"
+    # Setting this to 0 causes the default value (system vcpus) to be used.
+    concurrency: 0
+  tasks:
     # Check if workspace exists already
     - name: Check existing workspaces
       shell: tempest workspace list -c Name -f value
@@ -39,18 +51,18 @@
     # If not, then setup the workspace correctly
     - block:
         - name: tempest init
-          shell: "cd ~ && tempest init {{ tempest_workspace }}"
+          shell: "cd ~ && tempest init {{ workspace_name }}"
 
-        - name: Grab provider-network ID
-          shell: "source ~/{{ tempest_workspace }}rc && openstack network show provider-network -c id -f value"
+        - name: Grab network uuid
+          shell: "source ~/{{ site_name }}rc && openstack network show {{ network_name }} -c id -f value"
           register: nested_shell_output
           changed_when: false
 
         - name: discover-tempest-config
           shell: |
-            source ~/{{ tempest_workspace }}rc
+            source ~/{{ site_name }}rc
 
-            cd ~/tempest/{{ tempest_workspace }} && \
+            cd ~/{{ workspace_name }} && \
             discover-tempest-config \
               --convert-to-raw \
               --network-id {{ nested_shell_output.stdout }} \
@@ -63,45 +75,104 @@
             name: crudini
             state: installed
 
-        - name: Set volume-feature-enabled.api_v2 in tempest.conf
-          shell: "crudini --set ~/tempest/{{ tempest_workspace }}/etc/tempest.conf volume-feature-enabled api_v2 True"
+        - name: Modify tempest.conf configuration using crudini
+          shell: |
+            tempest_conf=/home/stack/{{ workspace_name }}/etc/tempest.conf
 
-        - name: Set compute.fixed_network_name in tempest.conf
-          shell: "crudini --set ~/tempest/{{ tempest_workspace }}/etc/tempest.conf compute fixed_network_name ansible-generated-tempest-network"
+            # scenario
+            crudini --del ${tempest_conf} scenario img_dir
+            crudini --set ${tempest_conf} scenario img_file /home/stack/images/rhel-server-7.7-x86_64-kvm.qcow2
 
-        - name: Set compute.min_compute_nodes in tempest.conf
-          shell: "crudini --set ~/tempest/{{ tempest_workspace }}/etc/tempest.conf compute min_compute_nodes 6"
+            # auth
+            crudini --set ${tempest_conf} auth create_isolated_networks false
+
+            # image
+            crudini --set ${tempest_conf} image image_path /home/stack/images/rhel-server-7.7-x86_64-kvm.qcow2
+            crudini --del ${tempest_conf} image http_image
+
+            # network-feature-enabled
+            crudini --set ${tempest_conf} network-feature-enabled floating_ips false
+
+            # compute
+            crudini --set ${tempest_conf} compute min_compute_nodes 1
+            crudini --set ${tempest_conf} compute fixed_network_name {{ network_name }}
+            crudini --set ${tempest_conf} compute compute_volume_common_az nova
+
+            # network
+            crudini --del ${tempest_conf} network public_network_id
+            crudini --set ${tempest_conf} network project_networks_reachable true
+            crudini --set ${tempest_conf} network shared_physical_network true
+
+            # volume
+            crudini --del ${tempest_conf} volume backend1_name
+            crudini --set ${tempest_conf} volume volume_size 10
+
+            # volume-feature-enabled
+            crudini --set ${tempest_conf} volume-feature-enabled api_v2 False
+
+            # validation
+            crudini --set ${tempest_conf} validation image_ssh_user cloud-user
+            crudini --set ${tempest_conf} validation connect_method fixed
+            crudini --set ${tempest_conf} validation network_for_ssh {{ network_name }}
+
+        - name: Download the RHEL qcow to use for Tempest
+          get_url:
+            url: "http://{{ hostvars[groups['infra'][0]].ansible_host }}/rhel7/isos/rhel-server-7.7-x86_64-kvm.qcow2"
+            dest: ~/images/rhel-server-7.7-x86_64-kvm.qcow2
 
       # If anything above fails, then the workspace wasn't setup correctly
       # Remove it by deleting the workspace directory
       rescue:
         - name: Delete workspace on rescue
           file:
-            path: "~/tempest/{{ tempest_workspace }}"
+            path: "~/{{ workspace_name }}"
             state: absent
 
         - set_fact:
             rescued: yes
 
-      when: tempest_workspace not in shell_output.stdout_lines
+      when: workspace_name not in shell_output.stdout_lines
 
     # This block always reaches, unless rescued is defined. At that point
     # the workspace should not exist anymore
     - block:
+        - name: Create directory to hold output HTML reports
+          file:
+            path: ~/ansible-generated-logs
+            state: directory
+            mode: '0755'
+
         - name: Create saved_state.json
-          shell: "cd ~/tempest/{{ tempest_workspace }} && tempest cleanup --init-saved-state"
+          shell:
+            chdir: "~/{{ workspace_name }}"
+            cmd: "tempest cleanup --init-saved-state"
+
+        - name: Grab Tempest next-stream value for generating HTML output
+          shell:
+            cmd: "cat ~/{{ workspace_name }}/.stestr/next-stream"
+          register: next_stream
 
         - name: Run Tempest smoke tests
-          shell: "cd ~/tempest/{{ tempest_workspace }} && tempest run --smoke {{ concurrency | ternary(\"--concurrency %s\" % concurrency, '') }}"
+          shell:
+            chdir: "~/{{ workspace_name }}"
+            cmd: "tempest run --smoke --subunit {{ concurrency | ternary('--concurrency %s' % concurrency, '') }}"
+
+        - name: Generate Tempest HTML output
+          shell:
+            chdir: "~/{{ workspace_name }}"
+            cmd: "subunit2html .stestr/{{ next_stream.stdout }} ~/ansible-generated-logs/tempest-{{ next_stream.stdout }}.html"
+
+        - name: Grab quick results from HTML output
+          shell:
+            cmd: "grep Status ~/ansible-generated-logs/tempest-{{ next_stream.stdout }}.html"
           register: shell_output
 
       always:
-        - name: Tempest test output
+        - name: Tempest results
           debug:
             var: shell_output.stdout_lines
-          failed_when: shell_output.rc != 0
+
       tags:
         - run
 
       when: rescued is not defined
-...
