@@ -25,7 +25,10 @@ ansible-playbook \
 
 This playbook has the following role requirements:
 
+  - `oasis_roles.system.hostname`
+  - `oasis_roles.system.firewalld`
   - `linux-system-roles.network`
+  - `oasis_roles.system.rhsm`
 
 ## Playbook variables
 
