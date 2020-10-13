@@ -68,8 +68,8 @@ Another group, **Blocks**, has more playbooks. These playbooks are to be thought
 
 There is more documentation within the `_docs` folder. These docs will refer to operational docs on how to perform certain tasks. For ease, we'll point to them here:
 
-- [Setup a local development environment](setup.md)
-- [ansible-inventory structure and documentation](ansible-inventory.md)
+- [Setup a local development environment](_docs/setup-development-environment.md)
+- [ansible-inventory structure and documentation](_docs/ansible-inventory.md)
 - [How to add an edge site](_docs/add-site.md)
 - [How to add a node to a site](_docs/add-node.md)
 - [How to add a new compute role](_docs/add-role.md)
