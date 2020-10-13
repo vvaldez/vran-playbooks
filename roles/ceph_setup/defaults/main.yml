@@ -1,0 +1,4 @@
+---
+ceph_automation_username: ansible
+ceph_automation_password:
+...
