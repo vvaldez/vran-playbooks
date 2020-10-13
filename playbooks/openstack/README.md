@@ -1,21 +1,41 @@
+# RHOSP + Ansible documentation
+
 ## What is this
 
-At a high level, a reference architecture for deploying and managing the lifecycle of Red Hat OpenStack Platform director deployed OpenStack cloud using Red Hat Ansible.
+At a high level, a reference architecture for deploying and managing the lifecycle of a Red Hat OpenStack Platform Director deployed OpenStack cloud using Red Hat Ansible.
 
-This framework has been created to be generic enough to be used to jumpstart deploying and managing OpenStack clusters using Ansible. It does not aim to be an all-in-one deployment tool though. Infrastructure, storage, networking, architectures, etc. are always unique across, that's why consulting services are in need, for the individualized problem solving. That does not mean that we cannot distill the actions that are typically taken to deploy and manage OpenStack infrastructure into a framework, which is what this is.
+This framework has been created to be generic enough to be used to jumpstart deploying and managing RHOSP clusters using Red Hat Ansible.
+
+It does not aim to be an all-in-one deployment tool though. Infrastructure, storage, networking, architectures, etc. are always unique across organizations, and each presents it's own unique challenges. That's why consulting services are needed, for individualized problem solving. That does not mean that we cannot distill the actions that are typically taken to deploy and manage RHOSP infrastructure into a framework, which is what this is.
 
 ## Components
 
-- **[ansible-inventory](ansible-inventory.md)**: This is implentation specific code. This holds your variables, secrets, host configuration, etc.
-- **[ansible-playbooks](ansible-playbooks.md)**: This is the Ansible code doing the work. Here you find playbooks, roles, collections, that are generalized enough to be freely shared and contributed to. Everything in here consumes the configuration as code defined within `ansible-inventory`.
+- **[ansible-inventory](_docs/ansible-inventory.md)**: This is implentation specific code. This holds your variables, secrets, host configuration, etc.
+- **[ansible-playbooks](_docs/ansible-playbooks.md)**: This is the Ansible code doing the work. Here you find playbooks, roles, collections, that are generalized enough to be freely shared and contributed to. Everything in here consumes the configuration as code defined within `ansible-inventory`.
+- **[Template Packs](templates/README.md)**: OOO templates bundled into "packs" of static and parameterized jinja2 templates. These packs act as "input" templates. Each pack contains an Ansible task file that is ran to do the template generation. This file should be named `tasks-to-generate-templates.yml`. Template packs can be very tightly coupled to the variables and data structures that they consume, which are held within `ansible-inventory`, so it may be necessary to have access to correlating inventory host files, group_vars, and variables that go along with a template pack to fully understand what is expected.
+
+#### Template packs
+
+- [vran](templates/vran/README.md): Templates developed for use with VRAN proof of concept
+- [vagrant-libvirt](templates/vagrant-libvirt/README.md): Templates that can be used for virtualized deployments using vagrant and libvirt.
+
+## User documentation
+
+There is more documentation within the `_docs` folder. These docs will refer to operational docs on how to perform certain tasks. For ease, we'll point to them here:
+
+- [Setup a local development environment](_docs/setup-development-environment.md)
+- [ansible-inventory structure and documentation](_docs/ansible-inventory.md)
+- [How to add an edge site](_docs/add-site.md)
+- [How to add a node to a site](_docs/add-node.md)
+- [How to add a new compute role](_docs/add-role.md)
+- [How to delete an edge site](_docs/delete-site.md)
+- [How to delete a node from a site](_docs/delete-node.md)
 
 ## How to use
 
 Please read in order the documents provided above. They aim to walk a user through settting up a development environment, understanding the structure of the two main components above, and using the framework.
 
-Want to incorporate an existing deployment into using this framework? Read the documentation above.
-
-Want to try out this framework in a sample environment? Provided within `ansible-inventory` is code to spin up virtual OpenStack environments using Vagrant, as long as you have meeting some minimal hardware requirements with [qemu](https://www.qemu.org/)/[libvirt](https://libvirt.org/) installed. Again, the above documents cover how to setup and use the included samples.
+Below we'll also call out technical documentation for developed playbooks.
 
 ## Ansible Playbooks
 
@@ -27,9 +47,9 @@ Each playbook is documented with the following information:
 - Playbook variables
 - Inventory requirements
 
-Playbooks are currently grouped by usage. There are 3 main groups: **Add**, **Delete**, and **Update**. These are meant to be playbooks that perform a set of tasks that are needed to complete a day-2 operation.
+Playbooks are currently grouped by usage. There are 4 main groups: **General**, **Add**, **Delete**, and **Update**. These are meant to be playbooks that perform a set of tasks that are needed to complete a day-_n_ operation.
 
-Another group, **Blocks**, has more playbooks. These playbooks are to be thought of as functions. They each have playbook variables that need to be defined to be ran. They are consumed as `import_playbook` tasks in any of the 3 playbook groups above.
+#### General
 
 - [ansible-generated-templates-generate-locally](ansible-generated-templates-generate-locally.md)
 - [ansible-generated-templates-upload](ansible-generated-templates-upload.md)
@@ -52,6 +72,10 @@ Another group, **Blocks**, has more playbooks. These playbooks are to be thought
 
 #### Blocks
 
+Another group, **Blocks**, have additional playbooks. These playbooks are to be thought of as functions. Day-_n_ operations are typically a mix of one off tasks and re-use of "block" playbooks.
+
+"Block" playbooks each have playbook variables that need to be defined to be ran. They are consumed as `import_playbook` tasks in any of the playbook groups above.
+
 - [add-director-to-site-group](blocks/add-director-to-site-group.md)
 - [generate-instackenv](blocks/generate-instackenv.md)
 - [openstack-aggregate-create](blocks/openstack-aggregate-create.md)
@@ -63,31 +87,6 @@ Another group, **Blocks**, has more playbooks. These playbooks are to be thought
 - [openstack-undercloud-install](blocks/openstack-undercloud-install.md)
 - [openstack-undercloud-upgrade](blocks/openstack-undercloud-upgrade.md)
 - [tempest-run](blocks/tempest-run.md)
-
-## User documentation
-
-There is more documentation within the `_docs` folder. These docs will refer to operational docs on how to perform certain tasks. For ease, we'll point to them here:
-
-- [Setup a local development environment](_docs/setup-development-environment.md)
-- [ansible-inventory structure and documentation](_docs/ansible-inventory.md)
-- [How to add an edge site](_docs/add-site.md)
-- [How to add a node to a site](_docs/add-node.md)
-- [How to add a new compute role](_docs/add-role.md)
-- [How to delete an edge site](_docs/delete-site.md)
-- [How to delete a node from a site](_docs/delete-node.md)
-
-# Developer Workflow
-
-Envisioned developer workflow goes as follows:
-
-1. Developer pulls down `ansible-inventory.git:master` and `ansible-playbooks.git:master` repositories locally. (Or works on jumpbox)
-2. Developer creates either a feature or personal branch to make changes.
-3. Developer checks out new branch.
-4. Developer makes changes to `ansible-inventory.git`/`ansible-playbooks.git`.
-5. When satisfied, developer pushes changes to new branch.
-6. Developer submits a pull request from new branch to `master` branch.
-7. Lead approves/rejects pull requests. Repeat until steps 4 - 7 until necessary.
-8. Master is always referenced as current, working, code.
 
 # Ansible Vault
 
