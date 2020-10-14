@@ -1,61 +1,73 @@
 # ansible-inventory
 
-This guide aims to provide instructions of how to structure and prepare the the [ansible-inventory](https://gitlab.consulting.redhat.com/openstack-cop/ansible-bundle/ansible-inventory) repository to deploy your own environment.
-
-The goal is to provide some hints to use `ansible-inventory`. The idea is to avoid the need for you to write from scratch all templates. You could re-use some of the templates and variables already prepared in the sample `ansible-inventory` repository.
-
-One of the key features of this repository is the ability to parameterize tripleo templates using Jinja2 syntax and then using the Ansible template module to generate output templates. This creates the ability to more easily manage numerous OpenStakc clusters than handling static tripleo templates. We'll cover this in more detail in the following documentation.
-
-## Where to deploy
-
-If you already have a virtual or baremetal environment you can incorparate your templates into this framework and use it to deploy and manage the environment.
-
-The sample `ansible-inventory` repository includes a demonstration environment based on [Vagrant](https://www.vagrantup.com/) that can be used to spin up a fully virtual OpenStack cluster on a [libvirt](https://github.com/vagrant-libvirt/vagrant-libvirt) based hypervisor.
-
-Ideally you will store and run these playbooks from your laptop or from a server with SSH access to the servers that will host the OSP infrastructure, from now on named as the `bastion`.
-
-## Setup
-
-See [setup](setup.md) documentation.
+This guide aims to cover the structure and contents of the `ansible-inventory` repository. The repository has many different hosts, groups, and variables. This guide will attempt to cover only hosts, groups, and variables pertaining to OpenStack automation.
 
 ## Structure
 
-The below directory tree attempts a high level overview of the key components of the current directory structure.
+We'll start at the top level of the repository and work down.
 
-```sh
-$ tree ansible-inventory/
-├── environment_1/ # Top level directory to delineate a unique environment
-│   ├── ansible-generated/ # Output templates folder
-│   │   ├── development/
-│   │   │   └── ...
-│   │   └── production/
-│   │       └── ...
-│   ├── hosts/
-│   │   ├── group_vars/ # Group variables folder
-│   │   │   ├── all.yml
-│   │   │   ├── development.yml
-│   │   │   ├── production.yml
-│   │   │   └── ...
-│   │   ├── host_vars/  # Host variables folder
-│   │   │   ├── bastion.example.com.yml
-│   │   │   └── ...
-│   │   ├── hosts-development # Host inventory
-│   │   ├── hosts-production  # ...
-│   │   └── ...
-│   └── templates # Input templates folder
-│       ├── shared      # Shared input templates
-│       │   └── ...
-│       ├── development # Inventory specific input templates
-│       │   └── ...
-│       └── production  # ...
-│           └── ...
-├── environment_2/ # ...
-│   └── ...
-├── ansible.cfg
-├── generate-all-envs.sh # Script to generate output templates
-├── README.md
-└── requirements.txt # pip requirements
 ```
+$ tree ansible-inventory -F -L 1
+ansible-inventory
+├── ansible.cfg
+├── generate-all-envs.sh*
+├── tewksbury1/
+└── vagrant/
+```
+
+At the top level we have a couple special files and couple directories:
+
+- `ansible.cfg`: Typical Ansible configuration file
+- `generate-all-envs.sh`: Shell script that will attempt generate the local output templates for all "environments" found. "Environments" are explained in detail below.
+- `tewsbury1`: The tewksbury1 environment
+- `vagrant`: The vagrant1 environment
+
+So essentially there are two files and some folders.
+
+Each folder in this top-level directory represents an "environment". Inside of these folders is where you'll find the unique hosts files, groups, group variables, host variables, and the ansible-generated output templates for the unique environment. Environments do not share any data, they are completely separate.
+
+A couple ideas for usage of keeping multiple environments in a single `ansible-inventory` repository:
+
+- Multiple, but different datacenters. Say `dc-east`, `dc-west`, etc
+- Separating production environments like `virtual`, `test`, `qa`, `prod`, etc
+
+### Environment structure
+
+For all the following examples we'll be using the `tewksbury1` environment as reference.
+
+Let's take a look at what the structure looks like inside of an environment. For now, we'll also omit files and look only at the directory structure.
+
+```
+$ tree ansible-inventory/tewksbury1 -F -d
+ansible-inventory/tewksbury1
+├── ansible-generated
+│   ├── heat
+│   ├── scripts
+│   └── templates
+│       ├── environments
+│       └── network
+└── inventory
+    ├── group_vars
+    │   ├── all
+    │   ├── ceph
+    │   ├── computes
+    │   ├── openstack
+    │   │   └── roles
+    │   ├── rhv
+    │   ├── satellite
+    │   ├── site_central
+    │   ├── site_central_tor
+    │   ├── site_edge1
+    │   ├── site_edge2
+    │   ├── site_edge_tor
+    │   ├── site_infrastructure
+    │   ├── tor_networking
+    │   ├── tower
+    │   └── vdu
+    └── host_vars
+```
+
+
 
 ### Directory components
 

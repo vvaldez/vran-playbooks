@@ -17,8 +17,8 @@ It does not aim to be an all-in-one deployment tool though. Infrastructure, stor
 
 #### Template packs
 
-- [vran](templates/vran/README.md): Templates developed for use with VRAN proof of concept
-- [vagrant-libvirt](templates/vagrant-libvirt/README.md): Templates that can be used for virtualized deployments using vagrant and libvirt.
+- **vran**: Templates developed for use with VRAN proof of concept
+- **vagrant-libvirt**: Templates that can be used for virtualized deployments using vagrant and libvirt.
 
 ## User documentation
 
