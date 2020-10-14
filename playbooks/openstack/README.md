@@ -79,6 +79,7 @@ Another group, **Blocks**, have additional playbooks. These playbooks are to be 
 
 - [add-director-to-site-group](blocks/add-director-to-site-group.md)
 - [generate-instackenv](blocks/generate-instackenv.md)
+- [generate-templates-locally]()
 - [openstack-aggregate-create](blocks/openstack-aggregate-create.md)
 - [openstack-overcloud-delete](blocks/openstack-overcloud-delete.md)
 - [openstack-overcloud-deploy](blocks/openstack-overcloud-deploy.md)
