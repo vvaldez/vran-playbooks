@@ -238,7 +238,11 @@ resources:
                           next_hop:
                             get_param: ExternalInterfaceDefaultRoute
               - type: ovs_bridge
+{% if current_site.type == 'spine' %}
+                name: br-provider
+{% else %}
                 name: br-{{ current_site.name_lower }}
+{% endif %}
                 use_dhcp: false
                 mtu: 9000
                 members:
