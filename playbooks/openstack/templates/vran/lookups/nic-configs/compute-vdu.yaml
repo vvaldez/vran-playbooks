@@ -188,6 +188,19 @@ resources:
                     name: nic2
                     mtu:
                       get_attr: [MinViableMtu, value]
+{% if current_site.type == 'spine' %}
+                - type: vlan
+                  mtu:
+                    get_param: StorageMtu
+                  vlan_id:
+                    get_param: StorageNetworkVlanID
+                  addresses:
+                  - ip_netmask:
+                      get_param: StorageIpSubnet
+                  routes:
+                    list_concat_unique:
+                      - get_param: StorageInterfaceRoutes
+{% endif %}
                 - type: vlan
                   mtu:
                     get_param: InternalApiMtu
@@ -225,7 +238,11 @@ resources:
                           next_hop:
                             get_param: ExternalInterfaceDefaultRoute
               - type: ovs_bridge
+{% if current_site.type == 'spine' %}
+                name: br-provider
+{% else %}
                 name: br-{{ current_site.name_lower }}
+{% endif %}
                 use_dhcp: false
                 mtu: 9000
                 members:
