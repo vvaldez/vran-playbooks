@@ -1,3 +1,8 @@
+{% if my_idx == 0 %}
+{% set affix = 'subnet' %}
+{% else %}
+{% set affix = current_site.name_lower + '_subnet' %}
+{% endif %}
 ###############################################################################
 # Role: ComputeVdu{{ current_site.name_upper }}
 ###############################################################################
