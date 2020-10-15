@@ -3,8 +3,8 @@
 This playbook will:
 
 - Register Tower VM to RHSM upstream
-- Run the role `tower_setup` see the role (../roles/tower_setup/README.md)[README] for details
-- Run the role `tower_config` see the role (../roles/tower_config/README.md)[README] for details
+- Run the role `tower_setup` see the role [README](../roles/tower_setup/README.md) for details
+- Run the role `tower_config` see the role [README](../roles/tower_config/README.md) for details
 
 ## Usage
 
