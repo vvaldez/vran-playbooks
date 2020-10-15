@@ -1,0 +1,68 @@
+---
+- debug:
+    msg: Using component URI {{ fw_file_info.firmware_base_uri }}/{{ fw_file_info.bundle_ver }}/{{ _component }}
+    verbosity: 1
+
+- name: "{{ _component }}: Start update"
+  community.general.redfish_command:
+    category: Update
+    command: SimpleUpdate
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+    update_image_uri: "{{ fw_file_info.firmware_base_uri }}/{{ fw_file_info.bundle_ver }}/{{ _component }}"
+  notify: restart server
+
+- name: "{{ _component }}: Wait for task to populate"
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Accept: application/json
+  register: fw_job_stat
+  until: fw_job_stat.json.Members[-1].JobState | default('') != 'New'
+  ignore_errors: true
+  retries: 30
+  delay: 2
+
+- name: "{{ _component }}: Wait for file to download"
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Accept: application/json
+  register: fw_job_stat
+  until: fw_job_stat.json.Members[-1].Messages[0].Message | default('') is not search('Downloading')
+  ignore_errors: true
+  retries: 60
+  delay: 10
+
+- name: "{{ _component }}: Detect scheduling failure"
+  assert:
+    that: fw_job_stat.json.Members[-1].JobStatus != 'Critical'
+    fail_msg: "{{ fw_job_stat.json.Members[-1].Messages[0].Message }}"
+
+- name: "{{ _component }}: Wait for task to schedule"
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    headers:
+      Accept: application/json
+  register: fw_job_stat
+  until: fw_job_stat.json.Members[-1].Messages[0].Message | default('') is search('successfully scheduled')
+  ignore_errors: true
+  retries: 30
+  delay: 10
+...

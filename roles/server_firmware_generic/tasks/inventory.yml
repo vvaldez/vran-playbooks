@@ -1,0 +1,42 @@
+---
+- name: Get firmware inventory
+  community.general.redfish_info:
+    category: Update
+    command: GetFirmwareInventory
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+  register: fw_inv_out
+
+- name: Get firmware update capabilities
+  community.general.redfish_info:
+    category: Update
+    command: GetFirmwareUpdateCapabilities
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+  register: fw_upd_cap_out
+
+- name: Set manager firmware version
+  vars:
+    _query: "[?Name=='{{ oob.manager_name }}']"
+  set_fact:
+    fw_mgr_fw: "{{ item.Version }}"
+  loop: "{{ fw_inv_out.redfish_facts.firmware.entries | json_query(_query) }}"
+  when: item.Id is search('Installed')
+
+- name: Find applicable firmware files
+  set_fact:
+    fw_to_update: "{{ lookup('template', 'find_fw_updates.j2') }}"
+
+- name: Set update capabilities
+  set_fact:
+    fw_upd_cap: "{{ fw_upd_cap_out.redfish_facts.firmware_update_capabilities.entries['#UpdateService.SimpleUpdate'] }}"
+
+- debug:
+    msg:
+      - "Detected current manager firmware as: {{ fw_mgr_fw }}"
+      - "Detected list of update capabilities as: {{ fw_upd_cap }}"
+      - "Detected list of firmware updates to apply as: {{ fw_to_update }}"
+    verbosity: 1
+...
