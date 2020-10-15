@@ -1,0 +1,39 @@
+---
+- set_fact:
+    _racadm_cmd: >-
+      racadm update -f {{ _mgr_update.filename }}
+      -l {{ fw_file_info.manager_base_uri }}/{{ fw_file_info.bundle_ver }}
+
+- name: Update iDRAC firmware from {{ fw_mgr_fw }} to {{ _mgr_update.version }}
+  vars:
+    ansible_user: "{{ oob_username }}"
+    ansible_password: "{{ oob_password }}"
+    ansible_connection: ssh
+  raw: "{{ _racadm_cmd }}"
+  delegate_to: "{{ oob.ipaddr }}"
+  register: _drac_result
+  changed_when: "'RAC987' in _drac_result.stdout"
+  failed_when: "'RAC987' not in _drac_result.stdout"
+
+- name: Wait until redfish is available and showing new firmware
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/Managers/{{ oob.resource_ids.manager }}
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    status_code:
+      - -1
+      - 200
+      - 500
+    headers:
+      Accept: application/json
+    validate_certs: false
+    force_basic_auth: yes
+  register: _redfish_result
+  ignore_errors: true
+  until: _redfish_result.json.FirmwareVersion | default('') == _mgr_update.version
+  delay: 30
+  retries: 30
+
+- set_fact:
+    fw_mgr_fw: "{{ _redfish_result.json.FirmwareVersion }}"
+...

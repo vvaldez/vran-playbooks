@@ -1,0 +1,33 @@
+---
+- name: Discover all jobs
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    method: GET
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    status_code:
+      - 200
+      - 400
+    headers:
+      Accept: application/json
+  register: _jobs_out
+  until: _jobs_out.json.Members is defined # post-update, manager may not be ready for this yet
+  delay: 10
+  retries: 30
+
+- name: Delete discovered jobs
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs/{{ item.Id }}
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    method: DELETE
+    validate_certs: false
+    force_basic_auth: yes
+    headers:
+      Accept: application/json
+  changed_when: true
+  loop: "{{ _jobs_out.json.Members }}"
+...

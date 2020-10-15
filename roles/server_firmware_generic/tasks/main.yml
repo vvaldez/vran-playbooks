@@ -1,0 +1,34 @@
+---
+- name: Gather inventory
+  include_tasks: inventory.yml
+
+- name: Perform manager updates
+  include_tasks: update_manager_{{ oob.SystemManufacturer | lower }}.yml
+  loop: "{{ fw_manager.updates }}"
+  loop_control:
+    loop_var: _mgr_update
+  when: fw_mgr_fw is version(_mgr_update.version, '<')
+
+- name: Purge jobs
+  include_tasks: purge_jobs.yml
+
+- name: Perform firmware updates via HTTP
+  include_tasks: update_fw_http.yml
+  loop: "{{ fw_to_update }}"
+  loop_control:
+    loop_var: _component
+  when: "'HTTP' in fw_upd_cap"
+
+- name: Restart server if updates were applied
+  meta: flush_handlers
+
+- name: Wait for jobs to finish
+  include_tasks: wait_job_status.yml
+
+- name: Wait for OS to be connectable
+  vars:
+    ansible_connection: ssh
+  wait_for_connection:
+    timeout: 900
+  when: fw_has_os
+...

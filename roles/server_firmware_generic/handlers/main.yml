@@ -1,0 +1,11 @@
+---
+- name: restart server
+  community.general.redfish_command:
+    category: Systems
+    command:
+      - PowerGracefulRestart
+    resource_id: "{{ oob.resource_ids.system }}"
+    baseuri: "{{ oob.ipaddr }}"
+    username: "{{ oob_username }}"
+    password: "{{ oob_password }}"
+...
