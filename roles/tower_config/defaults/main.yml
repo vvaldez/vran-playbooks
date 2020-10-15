@@ -3,6 +3,7 @@
 tower_host: "{{ hostvars[groups['tower'].0].ansible_host }}"
 tower_username: "{{ tower_username | default('admin') }}"
 tower_password: "{{ tower_password }}"
+tower_config_type: 'Minimal'
 
 # Tower CLI config
 tower_config_repos_rhel7:

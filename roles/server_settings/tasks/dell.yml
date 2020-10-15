@@ -5,55 +5,6 @@
     idrac_user: "{{ oob_username }}"
     idrac_password: "{{ oob_password }}"
 
-- name: Discover NICs
-  include_tasks: discover_nic.yml
-
-- name: Generate Server Configuration Profile
-  template:
-    src: scp.json.j2
-    dest: "{{ role_path }}/scp_{{ inventory_hostname }}.json"
-  delegate_to: localhost
-  changed_when: False
-
-- debug:
-    msg: "{{ lookup('file', scp_loc) }}"
-    verbosity: 1
-  vars:
-    scp_loc: "{{ role_path }}/scp_{{ inventory_hostname }}.json"
-
-- name: Set attributes via Server Configuration Profile
-  dellemc.openmanage.idrac_server_config_profile:
-    idrac_ip: "{{ oob.ipaddr }}"
-    idrac_user: "{{ oob_username }}"
-    idrac_password: "{{ oob_password }}"
-    command: import
-    share_name: "{{ role_path }}"
-    scp_file: scp_{{ inventory_hostname }}.json
-    scp_components: ALL
-    job_wait: True
-
-- name: Remove temporary file
-  file:
-    path: "{{ role_path }}/scp_{{ inventory_hostname }}.json"
-    state: absent
-  delegate_to: localhost
-  changed_when: False
-
-- name: Wait until redfish is available
-  uri:
-    url: https://{{ oob.ipaddr }}/redfish/v1/Systems
-    url_username: "{{ oob_username }}"
-    url_password: "{{ oob_password }}"
-    headers:
-      Accept: application/json
-    validate_certs: false
-    force_basic_auth: yes
-  register: ss_redfish_result
-  ignore_errors: true
-  until: ss_redfish_result.status is match('200')
-  delay: 10
-  retries: 30
-
 - name: Set BIOS attributes
   community.general.redfish_config:
     category: Systems
@@ -84,4 +35,49 @@
     command: SetSystemAttributes
     resource_id: "{{ oob.resource_ids.manager }}"
     manager_attributes: "{{ oob.config.idrac }}"
+
+- meta: flush_handlers
+
+- include_tasks: wait_latest_job.yml
+  when: ss_bios_set.changed
+
+- name: Discover NICs
+  include_tasks: discover_nic.yml
+
+- name: Generate Server Configuration Profile
+  template:
+    src: scp.json.j2
+    dest: "{{ role_path }}/scp_{{ inventory_hostname }}.json"
+  delegate_to: localhost
+  changed_when: False
+
+- debug:
+    msg: "{{ lookup('file', scp_loc) }}"
+    verbosity: 1
+  vars:
+    scp_loc: "{{ role_path }}/scp_{{ inventory_hostname }}.json"
+
+- name: Set attributes via Server Configuration Profile
+  dellemc.openmanage.idrac_server_config_profile:
+    idrac_ip: "{{ oob.ipaddr }}"
+    idrac_user: "{{ oob_username }}"
+    idrac_password: "{{ oob_password }}"
+    command: import
+    share_name: "{{ role_path }}"
+    scp_file: scp_{{ inventory_hostname }}.json
+    scp_components: ALL
+    job_wait: True
+  register: ss_scp_set
+
+- name: Remove temporary file
+  file:
+    path: "{{ role_path }}/scp_{{ inventory_hostname }}.json"
+    state: absent
+  delegate_to: localhost
+  changed_when: False
+
+- include_tasks: wait_redfish_avail.yml
+
+- include_tasks: wait_latest_job.yml
+  when: ss_scp_set.changed
 ...

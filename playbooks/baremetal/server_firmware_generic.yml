@@ -1,0 +1,21 @@
+---
+- name: Update server firmware (non-serial)
+  hosts: computes,vdu
+  connection: local
+  gather_facts: False
+  serial: 100%
+
+  tasks:
+    - include_role:
+        name: server_firmware_generic
+
+- name: Update server firmware (serial)
+  hosts: ceph,rhvh
+  connection: local
+  gather_facts: False
+  serial: 1
+
+  tasks:
+    - include_role:
+        name: server_firmware_generic
+...

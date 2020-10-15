@@ -1,0 +1,11 @@
+{% set update_files = [] -%}
+{% for entry in fw_inv_out.redfish_facts.firmware.entries -%}
+{% if entry.Updateable and entry.Id is search('Current') -%}
+{% for fw_update in fw_desired -%}
+{% if fw_update.search in entry.Name and entry.Version != fw_update.version -%}
+{% do update_files.append(fw_update.filename) -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{% endfor -%}
+{{ update_files | unique }}

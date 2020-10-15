@@ -1,0 +1,33 @@
+---
+- name: Wait for running jobs to finish
+  uri:
+    url: https://{{ oob.ipaddr }}/redfish/v1/JobService/Jobs?$expand=.($levels=1)
+    url_username: "{{ oob_username }}"
+    url_password: "{{ oob_password }}"
+    validate_certs: false
+    force_basic_auth: yes
+    return_content: yes
+    status_code:
+      - 200
+      - 400
+    headers:
+      Accept: application/json
+  register: fw_job_stat
+  vars:
+    _query1: json.Members[?JobState=='Starting']
+    _query2: json.Members[?JobState=='Running']
+  until:
+    - not fw_job_stat | json_query(_query1)
+    - not fw_job_stat | json_query(_query2)
+  ignore_errors: true
+  retries: 120
+  delay: 60
+
+- name: Ensure no failures occurred
+  vars:
+    _query1: json.Members[?JobStatus=='Critical']
+    _query2: json.Members[?JobStatus=='Critical'].Id
+  assert:
+    that: not fw_job_stat | json_query(_query1)
+    fail_msg: Detected failure of job(s) {{ fw_job_stat | json_query(_query2) }}
+...

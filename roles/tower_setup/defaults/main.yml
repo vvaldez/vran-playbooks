@@ -12,8 +12,8 @@ tower_rabbitmq_password: "{{ tower_password }}"
 # Tower Organization
 tower_org: "Default"
 
-# Tower version 
-tower_version: "3.6.1-1"
+# Tower version
+tower_version: "3.7.1-1"
 tower_rhel_version: "8"
 
 # Tower setup archive variables

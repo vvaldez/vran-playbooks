@@ -1,0 +1,21 @@
+---
+fw_has_os: False
+fw_file_info:
+  manager_base_uri: http://172.17.118.15/firmware
+  firmware_base_uri: http://172.17.118.15/firmware
+  bundle_ver: v1
+fw_desired:
+  - search: Intel(R) Ethernet
+    version: 19.5.12
+    filename: Network_Firmware_YP4R0_WN64_19.5.12_A00.EXE
+  - search: BIOS
+    version: 2.8.2
+    filename: BIOS_HC85T_WN64_2.8.2_02.EXE
+fw_manager:
+  search: Integrated Dell Remote Access Controller
+  updates:
+    - version: 3.36.103.36
+      filename: iDRAC_3.36.103.36_A00.EXE
+    - version: 4.22.00.53
+      filename: iDRAC_4.22.00.53_A00.EXE
+...
