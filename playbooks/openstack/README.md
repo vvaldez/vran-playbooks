@@ -90,6 +90,10 @@ Another group, **Blocks**, have additional playbooks. These playbooks are to be 
 - [openstack-undercloud-upgrade](blocks/openstack-undercloud-upgrade.md)
 - [tempest-run](blocks/tempest-run.md)
 
+## Ansible Roles
+
+- [discover](../../roles/discover/README.md) - Discovers `pxe_drac` and `staging_ovirt` MAC addresses of `{{ instackenv }}` items.
+
 # Ansible Vault
 
 Ansible Vault is used to encrypt sensitive strings in the `ansible-inventory/` repository. `./vault_secret` in the `ansible-playbooks/` repository must contain the secret string to decrypt the sensitive strings:
