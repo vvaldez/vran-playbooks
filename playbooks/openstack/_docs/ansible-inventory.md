@@ -31,7 +31,7 @@ A couple ideas for usage of keeping multiple environments in a single `ansible-i
 - Multiple, but different datacenters. Say `dc-east`, `dc-west`, etc
 - Separating production environments like `virtual`, `test`, `qa`, `prod`, etc
 
-### Environment structure
+### Folder structure
 
 For all the following examples we'll be using the `tewksbury1` environment as reference.
 
@@ -67,121 +67,145 @@ ansible-inventory/tewksbury1
     └── host_vars
 ```
 
+There are two top-level folders:
+
+- `ansible-generated/`: This folder holds the generated OOO templates as they would look on the `director` host. All the files in this folder are placed there by Ansible. Do not create or edit any files in the folder manually, as they will be overridden. The files are static, and changes to Ansible group or host variables or input templates will not be reflected until a template generation playbook is ran (local or upload). They need to me manually kept updated and can be done so by running the [generate templates locally playbook](../ansible-generated-templates-generate-locally.md).
+- `inventory/`: This is your typical Ansible inventory directory structure. The best resource for information on how to build an Ansible inventory can be found in the upstream docs [here]((https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html).
+
+### Host inventory
+
+Now that we observed the folder structure of the repository, next let's zoom in on the Ansible host inventory and document what relates to the OpenStack automation.
 
 
-### Directory components
-
-- `environment/`: At the top level of `ansible-inventory` is any number of "environment" folders. The names of these folders does not matter. These folders delineate unique environments. They are meant to separate environments that are unique. Let's say we're managing two datacenters. One within IBM cloud which has 3 separate clusters (dev, staging, prod). This could be one environment folder called `ibm/` and then have the different clusters as seperate hosts files.
-
-  But we also have another datacenter we manage, for instance a virtual vagrant environment, this could be another top level environment folder named `vagrant/`. We would then end up with a top level structure looking like:
-
-  ```
-  $ tree ansible-inventory/
-  ├── ibm/
-  │   └── ...
-  ├── vagrant/
-  │   └── ...
-  └── ...
-  ```
-
-  Let's take a look at the directory structure within an environment.
-
-
-  ```
-  ├── ibm/ # Top level directory to delineate a unique environment
-  │   ├── ansible-generated/ # Output templates folder
-  │   │   └── statler/
-  │   │       └── ...
-  │   ├── hosts/
-  │   │   ├── group_vars/ # Group variables folder
-  │   │   │   ├── all.yml
-  │   │   │   ├── development.yml
-  │   │   │   ├── production.yml
-  │   │   │   └── ...
-  │   │   ├── host_vars/  # Host variables folder
-  │   │   │   ├── bastion.example.com.yml
-  │   │   │   └── ...
-  │   │   ├── hosts-development # Host inventory
-  │   │   ├── hosts-production  # ...
-  │   │   └── ...
-  │   └── templates # Input templates folder
-  │       ├── shared      # Shared input templates
-  │       │   └── ...
-  │       ├── development # Inventory specific input templates
-  │       │   └── ...
-  │       └── production  # ...
-  │           └── ...
-  ```
-
-  - `ansible-generated/`: The folder where generated output templates get created to. Nothing in this folder should be touched by a human.
-
-  - `hosts/`: A typical Ansible hosts folder. Where to store ansible inventory files and where the `group_vars/` and `host_vars/` folders are stored.
-
-  - `templates/`: Where to store the Jinja2 parameterized tripleo templates. There should be a `templates/shared/` folder used by defaults. Templates in this folder can be overriden by any `templates/<group>/`. The name of the group should come from the top level group defined in any Ansible host file. This should be the name or environment of the cluster.
-
-  The `generate-all-envs.sh` script and called playbook account for this structure when looking for input templates and generating the output templates.
-
-- `ansible.cfg`: A typical Ansible configuration file. There are two key settings in this file that should be understood:
-
-  ```ini
-  [defaults]
-  hash_behaviour=merge
-  vault_password_file=.vault_secret
-  ```
-
-  - `hash_behaviour=merge` gives us the ability to have keys that are dictionaries merge. This [option](https://docs.ansible.com/ansible/latest/reference_appendices/config.html#default-hash-behaviour) is utilized within this framework. At this point do not change it.
-
-  - `vault_password_file=.vault_secret` all vaulted keys should be encrypted with the password defined in this file.
-
-- `generate-all-envs.sh`: This script will take all input templates and directory structure found within `<environment>/templates/<group>` and copy the directory structure as well as generating the output files into the corresponding folder in `<environment>/ansible-generated/<group>`. Essentially, we copy the directory structure first, then treat each file as a jinja2 template, and generate the output file.
-
-  This script will look for all environments and all groups within it, and generate the according templates. You can also generate a specific group's templates by passing in that inventory file as the single parameter.
-
-  ```sh
-  $ ./generate-all-envs.sh # generate templates for all environments and groups
-  $ ./generate-all-envs.sh ibm/hosts/hosts-development # generate this specific group's templates
-  ```
-
-  There is a special precedence dealing with the `<environment>/templates/shared/` folder. The the output generated from the files in this folder will be overridden by identical files found in any `<environment>/templates/<group>/` folder. This creates the capability to override shared templates with templates that may be very unique to a specific group. This capability should be used as sparingly as possible, if most templates in shared are overridden, it may more sense to break out this group into it's own top level environment folder structure.
-
-- `requirements.txt`: A pip requirement file used to install any Python dependencies.
-
-## Populate your variables
-
-Variables will contain your deployment values, for example, networks, IP addresses and features, to produce the heat tripleo yaml templates for the deployment. These templates contain jinja expressions to set the variable values.
-
-Replace `<group>` with a meaningful name, i.e.: lab, ci. This `<group>` is a group in your Ansible inventory that will have the deployment host, director and overcloud as children.
-
-This the the main location of variables, as Ansible practices, they are named per the group name of host name. Precedence of the files from least to greatest is:
-
+In the following output, any folders or files not relevant to OpenStack have been omitted.
 ```
-1. <environment>/hosts/group_vars/all.yml
-2. <environment>/hosts/group_vars/<group>.yml
-3. <environment>/hosts/hosts_vars/<host>.yml
+ansible-inventory/tewksbury1/inventory
+├── group_vars/
+│   ├── all/
+│   │   ├── oob.yml
+│   │   ├── rhsm.yml
+│   │   ├── secrets.yml
+│   │   ├── sites.yml
+│   │   └── vars.yml
+...
+│   ├── openstack/
+│   │   ├── openstack.yml
+│   │   └── roles/
+│   │       ├── compute-sriov.yaml
+│   │       ├── compute-vdu.yaml
+│   │       ├── compute-virtual.yaml
+│   │       └── controller.yaml
+...
+│   ├── site_central/
+│   │   ├── install.yml
+│   │   ├── kvm_vm.yml
+│   │   └── site.yml
+│   ├── site_central_tor/
+│   │   └── vars.yml
+│   ├── site_edge1/
+│   │   └── site.yml
+│   ├── site_edge2/
+│   │   └── site.yml
+│   ├── site_edge_tor/
+│   │   └── vars.yml
+...
+├── hosts.yml
+...
+└── infra.yml
 ```
 
-`<environment>/hosts/group_vars/all.yml` - We use this special variables file to define any "defaults" for variables that apply to all groups. If the same variable is defined in any of the below files, they take precedence.
+Essentially, the groups and group variables shown in the output above are needed to successfully generate the output OOO templates from the input templates.
 
-`<environment>/hosts/group_vars/<group>.yml` - Networking data for overcloud and undercloud, list of repositories, baremetal node information.
-In this example we specify the network information to deploy director.
+The input templates depend on variables inside of these files to be populated for required logic or variable expansion to happen.
+
+Next, we'll pick out some important variable files and take a look at their contents and structure.
+
+### `openstack` inventory variables
+
+There are a couple key files to point out in the openstack group variables folder.
+
+```
+...
+│   ├── openstack/
+│   │   ├── openstack.yml
+│   │   └── roles/
+│   │       ├── compute-sriov.yaml
+│   │       ├── compute-vdu.yaml
+│   │       ├── compute-virtual.yaml
+│   │       └── controller.yaml
+...
+```
+
+Let's start with `openstack/openstack.yml`.
 
 ```yml
-named_env: <group_name> # A special variable used to name this specific cluster. This should be the identical to the group name.
+# This should match a folder name within ansible-playbooks/playbooks/openstack/templates/
+template_pack: vran
 
-undercloud: # All variables used to generate any templates needed up to `openstack undercloud install`
+#################
+# Undercloud
+#################
+
+undercloud:
   ...
 
-overcloud:  # All variables used to generate tripleo overcloud templates
-  ...
+#################
+# Overcloud
+#################
 
-instackenv: # All variables used to generate instackenv.yaml file
+overcloud:
+  ooo:
+    ...
+
+#################
+# Instackenv
+#################
+
+instackenv:
   ...
 ```
 
-`<environment>/hosts/host_vars/server-name.yml` - Specific variables to apply to individual Ansible hosts.
+For brevity, we omitted specific variables with `...` in the output above.
 
-## Generate the templates and deploy
+First, we set the value of `template_pack: vran`. This sets the template pack to use as input templates. "Template packs" are documented elsewhere, take a look at the main [README](../README.md) for more information. **Note:** Depending on the template pack chosen, that could change what variables are consumed and required to be set.
 
-From now on you can use the steps in the main README.md of the ansible-playbooks repository to generate the templates and deploy.
+There are 3 main dictionary keys that exist:
 
-NOTE: if a failure occurs generating a template, for example if you remove the SSL variables because you are deploying a non-ssl environment, and you leave the SSL templates, you will get a failure, there is work in progress to add more validation in the templates to take this into account. You can either remove the templates or even better contribute to include conditions in the templates.
+- `undercloud`: This is where we set all variables needed to be set to generate `undercloud.conf` and be able to run the [install-undercloud.yml](../install-undercloud.md) playbook.
+- `overcloud.ooo`: This is where we set all variables needed to be able to generate the OOO overcloud templates. The `vran` template pack also consumes a lot of data structures set in the `site_*` groups, and those are also needed as well, but we'll take a look at them later.
+- `instackenv`: This is a list where we set the node information of a typical instackenv.yaml file. The details of this list and how to populate it can be found in the `discover` [role documentation](../../../roles/discover/README.md). In the end, this variable is used to generate an `instackenv.yaml`.
+
+There are also some files underneath `openstack/roles/`. These set some variables specific to overcloud "roles" that are also needed for template generation. They are all identical, but have values, so let's pick two and take a look. Let's pick:
+
+- `openstack/roles/compute-sriov.yaml`
+
+  ```yml
+  role:
+    compute_sriov:
+      name_upper: ComputeSriov
+      name_lower: compute-sriov
+      role_data_file: "{{ relative_path_to_templates | default(omit) }}/lookups/roles-data/compute-sriov.yaml"
+      nic_config_file: "{{ relative_path_to_templates | default(omit) }}/lookups/nic-configs/compute-sriov.yaml"
+  ```
+
+- `openstack/roles/compute-vdu.yaml`
+
+  ```yml
+  role:
+    compute_vdu:
+      name_upper: ComputeVdu
+      name_lower: compute-vdu
+      role_data_file: "{{ relative_path_to_templates | default(omit) }}/lookups/roles-data/compute-vdu.yaml"
+      nic_config_file: "{{ relative_path_to_templates | default(omit) }}/lookups/nic-configs/compute-vdu.yaml"
+  ```
+
+The top level dictionary `role` needs to be set. In the end, all keys the belong to role are merged together.
+
+Then we create any **unique** role we want underneath, for example `compute_sriov`. Each role must have the following keys set:
+
+- `name_upper`: OOO templates need to reference overcloud roles in uppercase and lowercase, depending on the usage. We set the uppercase string to use for the role name here, camel case is preferred.
+- `name_lower`: OOO templates need to reference overcloud roles in uppercase and lowercase, depending on the usage. We set the lower string to use for the role name here, all lower case with hypens separating words is preferred.
+- `role_data_file`: This needs to be the path to a OOO "role-data" template. Note the usage of a special variable `{{ relative_path_to_templates | default(omit) }}`. This is important, always use this variable as shown and then append the relative path from the "template pack" folder used to the template. e.g. inside the `vran` template pack directory is a path to `./lookups/roles-data/compute-vdu.yaml`. See the template pack documentation for more information.
+- `nic_config_file`: This needs to be the path to a OOO "network-config" template. This is important, always use this variable as shown and then append the relative path from the "template pack" folder used to the template. e.g. inside the `vran` template pack directory is a path to `./lookups/nic-configs/compute-vdu.yaml`. See the template pack documentation for more information.
+
+### `site_*` inventory variables
