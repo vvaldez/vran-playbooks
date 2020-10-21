@@ -19,17 +19,15 @@ The following steps walkthrough setting up a development workspace to use and co
 - Clone the repositories
 
     ```sh
-    git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-inventory.git
-    git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-playbooks.git
-    git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-elk.git
-    git clone ssh://git@gitlab.consulting.redhat.com:2222/osp-novello/ansible-monitoring.git
+    git clone ssh://git@gitlab.consulting.redhat.com:2222/<ansible-inventory-repository>
+    git clone ssh://git@gitlab.consulting.redhat.com:2222/<ansible-playbooks-repository>
     ```
 
 - Install Python dependencies
 
     ```sh
     # Install dependencies
-    pip install -r ansible-inventory/requirements.txt
+    pip install -r ansible-playbooks/requirements.txt
     ```
 
 - Install Ansible dependencies
@@ -48,26 +46,18 @@ The following steps walkthrough setting up a development workspace to use and co
 
 - Place private key
 
-  The private key used to connect to all hosts needs to be in place. All of the hosts files start with these lines:
-
-    ```ini
-    [all:vars]
-    ansible_user=root
-    ansible_ssh_private_key_file=~/.ssh/novello_rsa
-    ```
-
-    Make sure that the above private key exists, has the `0644` permissions, and is correct.
+  The private key used to connect to all hosts needs to be in place. That the the current host can SSH into systems using key authentication.
 
 - Test Ansible connectivity
 
     ```sh
-    ansible -i ansible-inventory/ibm/hosts/osp-waldorf -m ping director
+    ansible -i ansible-inventory/example/inventory/hosts.yml -m ping director
     ```
 
     The output should show:
 
     ```
-    director.waldorf.dal10.ole.redhat.com | SUCCESS => {
+    director.example.com | SUCCESS => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python"
     },
